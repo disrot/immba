@@ -905,6 +905,8 @@ details[open] .chevron {
   transform: translateY(-3px);
   box-shadow: var(--shadow);
 }
+
+.cta-band {
   padding: 0 0 4.5rem;
 }
 

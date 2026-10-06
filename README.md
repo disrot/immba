@@ -7,13 +7,19 @@ https://www.management.fju.edu.tw/esubweb/immbaengindex/
 
 ## Run locally
 
-Open `index.html` in a browser, or serve the folder:
-
 ```bash
-python3 -m http.server 5173
+npm install
+npm run dev
 ```
 
-Then visit http://localhost:5173
-# immba
-# immba
-# immba
+Then visit the URL Vite prints (typically http://localhost:5173).
+
+## Production build
+
+```bash
+npm run build
+```
+
+The deployable site is written to `dist/`. Preview it with `npm run preview`.
+
+Netlify and Vercel pick up `npm run build` and the `dist` output automatically.
