@@ -42,7 +42,7 @@
             data-i18n="notice.official"
             >Official imMBA website</a
           >
-          <button type="button" class="notice-collapse" data-collapse-nav data-i18n="notice.collapse">
+          <button type="button" class="notice-collapse" data-collapse-nav data-i18n="notice.collapse" aria-expanded="true">
             Collapse main menu
           </button>
         </div>
@@ -50,36 +50,24 @@
     </div>
 
     <header class="site-header" data-header>
-      <div class="container brand-tier">
-        <a class="logo" href="#top">
-          <img
-            class="logo-img"
-            src="images/logo.jpg"
-            alt="Fu Jen Catholic University International MBA (imMBA)"
-            data-i18n-attr="alt:brand.name"
-            width="48"
-            height="48"
-          />
-          <span class="logo-text">
-            <strong data-i18n="brand.name">Fu Jen Catholic University International MBA (imMBA)</strong>
-          </span>
-        </a>
-        <button
-          class="menu-toggle"
-          type="button"
-          data-menu-toggle
-          aria-expanded="false"
-          aria-controls="mobile-nav"
-          aria-label="Open menu"
-        >
-          <span class="sr-only" data-i18n="nav.menu">Open menu</span>
-          <span></span>
-          <span></span>
-        </button>
-      </div>
+      <div class="container header-grid">
+        <div class="brand-tier">
+          <a class="logo" href="#top">
+            <img
+              class="logo-img"
+              src="images/logo.jpg"
+              alt="Fu Jen Catholic University International MBA (imMBA)"
+              data-i18n-attr="alt:brand.name"
+              width="48"
+              height="48"
+            />
+            <span class="logo-text">
+              <strong data-i18n="brand.name">Fu Jen Catholic University International MBA (imMBA)</strong>
+            </span>
+          </a>
+        </div>
 
-      <div class="nav-tier" data-nav-tier>
-        <div class="container nav-tier-inner">
+        <div class="nav-desktop-wrap" data-nav-tier>
           <nav class="nav-desktop" aria-label="Primary" data-i18n-attr="aria-label:nav.primary">
             <div class="nav-item">
               <a href="#intro" data-i18n="nav.about">About</a>
@@ -110,20 +98,43 @@
               >College of Management</a
             >
           </nav>
-          <div class="header-actions">
-            <button type="button" class="lang-toggle" data-lang-toggle data-i18n="langButton" aria-label="Switch language">
-              中文
-            </button>
-            <a
-              class="btn btn-primary"
-              href="https://idsasys.oie.fju.edu.tw/"
-              target="_blank"
-              rel="noopener noreferrer"
-              data-i18n="cta.apply"
-              >Apply Now</a
-            >
-          </div>
         </div>
+
+        <div class="header-actions">
+          <button
+            type="button"
+            class="nav-collapse"
+            data-collapse-nav
+            aria-expanded="true"
+            aria-label="Collapse main menu"
+          >
+            <span class="sr-only" data-i18n="notice.collapse">Collapse main menu</span>
+          </button>
+          <button type="button" class="lang-toggle" data-lang-toggle data-i18n="langButton" aria-label="Switch language">
+            中文
+          </button>
+          <a
+            class="btn btn-primary header-apply"
+            href="https://idsasys.oie.fju.edu.tw/"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-i18n="cta.apply"
+            >Apply Now</a
+          >
+        </div>
+
+        <button
+          class="menu-toggle"
+          type="button"
+          data-menu-toggle
+          aria-expanded="false"
+          aria-controls="mobile-nav"
+          aria-label="Open menu"
+        >
+          <span class="sr-only" data-i18n="nav.menu">Open menu</span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
 
       <nav class="nav-mobile" id="mobile-nav" data-mobile-nav hidden>
@@ -186,16 +197,16 @@
               <div>
                 <dt>
                   <span data-i18n="stat.top">Top</span>
-                  <span class="stat-count" data-count="20" data-duration="1200">0</span>
+                  <span class="stat-count" data-count="3" data-duration="900">0</span>
                 </dt>
-                <dd data-i18n="trust.c1">Far East Asia · International Management</dd>
+                <dd data-i18n="hero.c1">in Taiwan for International Management</dd>
               </div>
               <div>
                 <dt>
-                  <span class="stat-count" data-count="100" data-suffix="%" data-duration="1600">0</span>
-                  <span data-i18n="stat.english">English</span>
+                  <span data-i18n="stat.top">Top</span>
+                  <span class="stat-count" data-count="20" data-duration="1200">0</span>
                 </dt>
-                <dd data-i18n="trust.c3">All imMBA courses conducted in English</dd>
+                <dd data-i18n="trust.c1">Far East Asia · International Management</dd>
               </div>
               <div>
                 <dt>
@@ -206,10 +217,10 @@
               </div>
               <div>
                 <dt>
-                  <span data-i18n="stat.top">Top</span>
-                  <span class="stat-count" data-count="3" data-duration="900">0</span>
+                  <span class="stat-count" data-count="100" data-suffix="%" data-duration="1600">0</span>
+                  <span data-i18n="stat.english">English</span>
                 </dt>
-                <dd data-i18n="hero.c1">in Taiwan for International Management</dd>
+                <dd data-i18n="trust.c3">All imMBA courses conducted in English</dd>
               </div>
             </dl>
             <div class="hero-ctas hero-enter hero-enter-cta">
@@ -417,43 +428,6 @@
             <p data-i18n="admissions.dates">
               14 September – 14 October. Local applicants should use the Chinese admissions track.
             </p>
-            <ol class="steps">
-              <li>
-                <span class="step-num">01</span>
-                <h3 data-i18n="admissions.s1.title">Choose your path</h3>
-                <p data-i18n="admissions.s1.body">
-                  Two-year imMBA at Fu Jen, or dual master’s with UM-Flint, KEDGE, or IQS. Dual-degree students must be
-                  admitted and pay extra full or partial tuition at the partner school.
-                </p>
-              </li>
-              <li>
-                <span class="step-num">02</span>
-                <h3 data-i18n="admissions.s2.title">Prepare your file</h3>
-                <p data-i18n="admissions.s2.body">
-                  English autobiography, English study plan, English proficiency (TOEFL, IELTS, or TOEIC — CEFR B2
-                  preferred), two recommendation letters, plus any supporting materials.
-                </p>
-              </li>
-              <li>
-                <span class="step-num">03</span>
-                <h3 data-i18n="admissions.s3.title">Apply online</h3>
-                <p>
-                  <span data-i18n="admissions.s3a">Submit through the official portal at</span>
-                  <a href="https://idsasys.oie.fju.edu.tw/" target="_blank" rel="noopener noreferrer"
-                    >idsasys.oie.fju.edu.tw</a
-                  >.
-                  <span data-i18n="admissions.s3b">Typical windows: Spring mid-Oct to late Dec; Fall January to June.</span>
-                </p>
-              </li>
-              <li>
-                <span class="step-num">04</span>
-                <h3 data-i18n="admissions.s4.title">Review fees &amp; scholarships</h3>
-                <p data-i18n="admissions.s4.body">
-                  International tuition is NT$123,000 per semester. Eligible students may choose preferential fees of
-                  NT$68,660 or the President Scholarship of NT$40,600 per semester (up to four terms) — not both.
-                </p>
-              </li>
-            </ol>
             <a
               class="btn btn-primary ghost-cta"
               href="https://idsasys.oie.fju.edu.tw/"
@@ -464,8 +438,83 @@
             >
           </div>
         </div>
-        <div class="offset-media">
+        <div class="offset-media imsg-stage">
           <img src="images/feat-admissions.jpg" alt="" />
+          <figure class="imsg-phone">
+            <figcaption class="sr-only" data-i18n="admissions.eyebrow">Admissions</figcaption>
+            <div class="imsg-bezel">
+              <div class="imsg-island" aria-hidden="true"></div>
+              <div class="notify-lock">
+                <p class="notify-clock" aria-hidden="true">9:41</p>
+                <p class="notify-date" data-i18n="admissions.open">Now open · International students only</p>
+              </div>
+              <div class="notify-list" tabindex="0">
+                <article class="notify-card">
+                  <header class="notify-meta">
+                    <img class="notify-icon" src="images/logo.jpg" alt="" width="32" height="32" />
+                    <span data-i18n="brand.short">imMBA</span>
+                    <time>now</time>
+                  </header>
+                  <h3 data-i18n="admissions.spring">Spring 2027 applications</h3>
+                  <p data-i18n="admissions.dates">
+                    14 September – 14 October. Local applicants should use the Chinese admissions track.
+                  </p>
+                </article>
+                <article class="notify-card">
+                  <header class="notify-meta">
+                    <img class="notify-icon" src="images/logo.jpg" alt="" width="32" height="32" />
+                    <span data-i18n="brand.short">imMBA</span>
+                    <time>01</time>
+                  </header>
+                  <h3 data-i18n="admissions.s1.title">Choose your path</h3>
+                  <p data-i18n="admissions.s1.body">
+                    Two-year imMBA at Fu Jen, or dual master’s with UM-Flint, KEDGE, or IQS. Dual-degree students must be
+                    admitted and pay extra full or partial tuition at the partner school.
+                  </p>
+                </article>
+                <article class="notify-card">
+                  <header class="notify-meta">
+                    <img class="notify-icon" src="images/logo.jpg" alt="" width="32" height="32" />
+                    <span data-i18n="brand.short">imMBA</span>
+                    <time>02</time>
+                  </header>
+                  <h3 data-i18n="admissions.s2.title">Prepare your file</h3>
+                  <p data-i18n="admissions.s2.body">
+                    English autobiography, English study plan, English proficiency (TOEFL, IELTS, or TOEIC — CEFR B2
+                    preferred), two recommendation letters, plus any supporting materials.
+                  </p>
+                </article>
+                <article class="notify-card">
+                  <header class="notify-meta">
+                    <img class="notify-icon" src="images/logo.jpg" alt="" width="32" height="32" />
+                    <span data-i18n="brand.short">imMBA</span>
+                    <time>03</time>
+                  </header>
+                  <h3 data-i18n="admissions.s3.title">Apply online</h3>
+                  <p>
+                    <span data-i18n="admissions.s3a">Submit through the official portal at</span>
+                    <a href="https://idsasys.oie.fju.edu.tw/" target="_blank" rel="noopener noreferrer"
+                      >idsasys.oie.fju.edu.tw</a
+                    >.
+                    <span data-i18n="admissions.s3b">Typical windows: Spring mid-Oct to late Dec; Fall January to June.</span>
+                  </p>
+                </article>
+                <article class="notify-card">
+                  <header class="notify-meta">
+                    <img class="notify-icon" src="images/logo.jpg" alt="" width="32" height="32" />
+                    <span data-i18n="brand.short">imMBA</span>
+                    <time>04</time>
+                  </header>
+                  <h3 data-i18n="admissions.s4.title">Review fees &amp; scholarships</h3>
+                  <p data-i18n="admissions.s4.body">
+                    International tuition is NT$123,000 per semester. Eligible students may choose preferential fees of
+                    NT$68,660 or the President Scholarship of NT$40,600 per semester (up to four terms) — not both.
+                  </p>
+                </article>
+              </div>
+              <div class="imsg-home" aria-hidden="true"></div>
+            </div>
+          </figure>
         </div>
       </section>
 
@@ -518,7 +567,7 @@
               Student Center.
             </p>
             <a
-              class="btn btn-ghost ghost-cta"
+              class="btn btn-ghost ghost-cta btn-framed"
               href="https://isc.oie.fju.edu.tw/"
               target="_blank"
               rel="noopener noreferrer"
@@ -749,74 +798,126 @@
           <p class="label" data-i18n="nav.announcements">Announcements</p>
           <h2 data-i18n="news.title">What’s happening in the program.</h2>
           <div class="news-list">
-            <article class="news-item">
-              <time datetime="2026-09-14">14 Sep 2026</time>
-              <h3 data-i18n="news.n1.title">Spring 2027 — apply now</h3>
-              <p data-i18n="news.n1.body">
-                International-student track is open 14 September – 14 October. Start your file while the window is live.
+            <a class="news-item news-card" href="./announcements/spring-2027.html">
+              <time datetime="2026-08-19">2026/08/19</time>
+              <h3 data-i18n="news.n1.title">
+                Spring 2027, apply NOW!! (Sep 14 - Oct 14) - This track is open to international students only
+              </h3>
+              <p data-i18n="news.n1.body">★ When to apply: Sep 14 - Oct 14</p>
+              <span class="arrow-link" data-i18n="article.read">Read more</span>
+            </a>
+            <a class="news-item news-card" href="./announcements/two-years.html">
+              <time datetime="2026-09-08">2026/09/08</time>
+              <h3 data-i18n="news.n2.title">【How much is possible in two years?】</h3>
+              <p data-i18n="news.n2.body">
+                If you're choosing a graduate program, you may be looking for more than just a master's degree.
               </p>
-              <a
-                class="arrow-link"
-                href="https://idsasys.oie.fju.edu.tw/"
-                target="_blank"
-                rel="noopener noreferrer"
-                data-i18n="cta.portal"
-                >Apply on the official portal</a
-              >
-            </article>
-            <article class="news-item">
-              <time datetime="2026-09-08">8 Sep 2026</time>
-              <h3 data-i18n="news.n2.title">How much is possible in two years?</h3>
-              <p data-i18n="news.n2.body">A look at dual-degree and exchange outcomes across the imMBA journey.</p>
-            </article>
-            <article class="news-item">
-              <time datetime="2026-09-02">2 Sep 2026</time>
-              <h3 data-i18n="news.n3.title">90 seconds with the professor · AI × Product</h3>
-              <p data-i18n="news.n3.body">Short faculty conversations on how AI is reshaping product work.</p>
-            </article>
-            <article class="news-item">
-              <time datetime="2026-08-26">26 Aug 2026</time>
-              <h3 data-i18n="news.n4.title">New course: Data Analytics for International Business</h3>
-              <p data-i18n="news.n4.body">Analytics skills for managers who operate across markets.</p>
-            </article>
-            <article class="news-item">
-              <time datetime="2026-07-29">29 Jul 2026</time>
-              <h3 data-i18n="news.n5.title">Partner spotlight: IQS School of Management</h3>
-              <p data-i18n="news.n5.body">Meet one of the dual-degree homes for imMBA students in Spain.</p>
-            </article>
-            <article class="news-item">
-              <time datetime="2026-07-15">15 Jul 2026</time>
-              <h3 data-i18n="news.n6.title">Across the Pacific, one more global partner</h3>
-              <p data-i18n="news.n6.body">Expanding the network that makes Fu Jen’s international MBA possible.</p>
-            </article>
+              <span class="arrow-link" data-i18n="article.read">Read more</span>
+            </a>
+            <a class="news-item news-card" href="./announcements/ai-product.html">
+              <time datetime="2026-09-02">2026/09/02</time>
+              <h3 data-i18n="news.n3.title">【90 Seconds with the Professor｜AI × Product】</h3>
+              <p data-i18n="news.n3.body">What is AI-Assisted Digital Product Development all about?</p>
+              <span class="arrow-link" data-i18n="article.read">Read more</span>
+            </a>
+            <a class="news-item news-card" href="./announcements/data-analytics.html">
+              <time datetime="2026-08-26">2026/08/26</time>
+              <h3 data-i18n="news.n4.title">【New Course Spotlight｜Data Analytics for International Business】</h3>
+              <p data-i18n="news.n4.body">
+                Last week, we explored AI × Product. This week, we look at AI × Data and how data supports better
+                business decisions.
+              </p>
+              <span class="arrow-link" data-i18n="article.read">Read more</span>
+            </a>
+            <a class="news-item news-card" href="./announcements/iqs.html">
+              <time datetime="2026-07-29">2026/07/29</time>
+              <h3 data-i18n="news.n5.title">【Partner Spotlight | IQS School of Management】</h3>
+              <p data-i18n="news.n5.body">
+                When people think of Spain, Barcelona is often known for its architecture and vibrant culture.
+              </p>
+              <span class="arrow-link" data-i18n="article.read">Read more</span>
+            </a>
+            <a class="news-item news-card" href="./announcements/pacific-partner.html">
+              <time datetime="2026-07-15">2026/07/15</time>
+              <h3 data-i18n="news.n6.title">【Across the Pacific, One More Global Partner】</h3>
+              <p data-i18n="news.n6.body">
+                Recently, faculty members from Fu Jen's College of Management visited sister school California State
+                Polytechnic University, Pomona (CPP).
+              </p>
+              <span class="arrow-link" data-i18n="article.read">Read more</span>
+            </a>
           </div>
+        </div>
+      </section>
 
-          <div id="events">
-            <span class="rule" aria-hidden="true"></span>
-            <p class="label" data-i18n="nav.events">Events</p>
-            <h2 data-i18n="events.title">Info sessions and campus conversations.</h2>
-            <div class="news-list">
-              <article class="news-item">
-                <time datetime="2026-09-29">29 Sep 2026</time>
-                <h3 data-i18n="events.e1">Admissions info session recap</h3>
-                <p data-i18n="events.e1b">
-                  Local student applications opened the following day. International applicants use the English track on
-                  this site.
-                </p>
-              </article>
-              <article class="news-item">
-                <time datetime="2026-09-15">15 Sep 2026</time>
-                <h3 data-i18n="events.e2">International students info session</h3>
-                <p data-i18n="events.e2b">
-                  Get to know Fu Jen imMBA — dual degrees, classroom mix, and how to file for Spring 2027.
-                </p>
-              </article>
-              <article class="news-item">
-                <time datetime="2026-09-02">2 Sep 2026</time>
-                <h3 data-i18n="events.e3">90 seconds with the professor · AI × Product</h3>
-                <p data-i18n="events.e3b">Short faculty conversations on how AI is reshaping product work.</p>
-              </article>
+      <section class="resources" id="events">
+        <div class="container">
+          <span class="rule" aria-hidden="true"></span>
+          <p class="label" data-i18n="nav.events">Events</p>
+          <h2 data-i18n="gallery.title">Photo Gallery</h2>
+          <p data-i18n="gallery.body">Campus life, classrooms, and the College of Management at Fu Jen.</p>
+          <div class="gallery-carousel" data-gallery>
+            <div class="gallery-toolbar">
+              <button type="button" class="gallery-nav" data-gallery-prev data-i18n-attr="aria-label:gallery.prev" aria-label="Previous photo">
+                ‹
+              </button>
+              <button type="button" class="gallery-nav" data-gallery-next data-i18n-attr="aria-label:gallery.next" aria-label="Next photo">
+                ›
+              </button>
             </div>
+            <div class="gallery-viewport" tabindex="0" data-gallery-viewport>
+              <ul class="gallery-track" data-gallery-track>
+                <li class="gallery-slide">
+                  <img src="images/gallery/menu01779415441.jpg" alt="" width="640" height="640" />
+                </li>
+                <li class="gallery-slide">
+                  <img src="images/gallery/menu01779415376.jpg" alt="" width="640" height="640" />
+                </li>
+                <li class="gallery-slide">
+                  <img src="images/gallery/menu01779415351.jpg" alt="" width="640" height="640" />
+                </li>
+                <li class="gallery-slide">
+                  <img src="images/gallery/menu01779415325.jpg" alt="" width="640" height="640" />
+                </li>
+                <li class="gallery-slide">
+                  <img src="images/gallery/menu01779415283.jpg" alt="" width="640" height="640" />
+                </li>
+                <li class="gallery-slide">
+                  <img src="images/gallery/menu01779415236.jpg" alt="" width="640" height="640" />
+                </li>
+                <li class="gallery-slide">
+                  <img src="images/gallery/menu01495178958.jpg" alt="" width="640" height="640" />
+                </li>
+                <li class="gallery-slide">
+                  <img src="images/gallery/menu01495180378.JPG" alt="" width="640" height="640" />
+                </li>
+                <li class="gallery-slide">
+                  <img src="images/gallery/menu01495180622.jpg" alt="" width="640" height="640" />
+                </li>
+                <li class="gallery-slide">
+                  <img src="images/gallery/menu01495178992.jpg" alt="" width="640" height="640" />
+                </li>
+                <li class="gallery-slide">
+                  <img src="images/gallery/menu01495179136.jpg" alt="" width="640" height="640" />
+                </li>
+                <li class="gallery-slide">
+                  <img src="images/gallery/menu01495180670.JPG" alt="" width="640" height="640" />
+                </li>
+                <li class="gallery-slide">
+                  <img src="images/gallery/menu01495179352.jpg" alt="" width="640" height="640" />
+                </li>
+                <li class="gallery-slide">
+                  <img src="images/gallery/menu01495179186.jpg" alt="" width="640" height="640" />
+                </li>
+                <li class="gallery-slide">
+                  <img src="images/gallery/menu01495179016.jpg" alt="" width="640" height="640" />
+                </li>
+                <li class="gallery-slide">
+                  <img src="images/gallery/menu01495179047.jpg" alt="" width="640" height="640" />
+                </li>
+              </ul>
+            </div>
+            <div class="gallery-dots" data-gallery-dots role="tablist" aria-label="Photo Gallery"></div>
           </div>
         </div>
       </section>

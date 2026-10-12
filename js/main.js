@@ -181,27 +181,127 @@ const translations = {
     "market.item2": "Software notes and reading list for the new analytics spotlight course.",
     "market.item3": "Workshop handouts and recommended product-practice readings.",
     "market.item4": "2-credit required course packet — often reused after the first semester.",
-    "events.title": "Info sessions and campus conversations.",
-    "events.e1": "Admissions info session recap",
-    "events.e1b":
-      "Local student applications opened the following day. International applicants use the English track on this site.",
-    "events.e2": "International students info session",
-    "events.e2b": "Get to know Fu Jen imMBA — dual degrees, classroom mix, and how to file for Spring 2027.",
-    "events.e3": "90 seconds with the professor · AI × Product",
-    "events.e3b": "Short faculty conversations on how AI is reshaping product work.",
+    "events.title": "Photo Gallery",
+    "gallery.title": "Photo Gallery",
+    "gallery.body": "Campus life, classrooms, and the College of Management at Fu Jen.",
+    "gallery.prev": "Previous photo",
+    "gallery.next": "Next photo",
+    "events.e1": "【9/29 Admissions Info Session Recap｜Local Student Applications Open Tomorrow!】",
+    "events.e1b": "Missed today's International Management MBA (imMBA) info session? Here are a few highlights!",
+    "events.e1.p1": "Missed today's International Management MBA (imMBA) info session? Here are a few highlights!",
+    "events.e1.p2":
+      "imMBA Chair Dr. Tu, Yi-ning walked students through our ''Admissions Guide'', covering the application process, program resources, and international study opportunities. She also shared updates on potential new partner universities in Europe and the U.S., bringing more possibilities for dual master's degrees.",
+    "events.e1.p3":
+      "First-year imMBA student Zoe also shared her story. When she applied, her TOEIC score was in the 500s. After a year in imMBA's English-taught environment, learning and interacting with international classmates, she reached 805!",
+    "events.e1.p4":
+      "Zoe also shared practical tips from her own application experience—from preparing application materials to highlighting what makes an applicant stand out. Her experience shows that where you start doesn't have to limit where you can go. Give yourself a chance!",
+    "events.e1.p5": "Stop by the imMBA office at LM208-1 and pick up our ''Admissions Guide''!",
+    "events.e1.p6": "International Management MBA (imMBA) 2027 Admissions",
+    "events.e1.p7": "Local Student Application Period｜9/30–10/13",
+    "events.e1.tags": "#FJCU_imMBA #dual_master_degree",
+    "events.e2": "【International Students: Get to Know Fu Jen imMBA at Our Info Session!】",
+    "events.e2b":
+      "Fu Jen's International Management MBA (imMBA) is hosting an information session for international students on October 1.",
+    "events.e2.p1":
+      "Fu Jen's International Management MBA (imMBA) is hosting an information session for international students on October 1.",
+    "events.e2.p2":
+      "If you have a bachelor's degree (or are currently a junior or senior) and a TOEIC score of 700+ or equivalent English proficiency, come learn about imMBA.",
+    "events.e2.p3":
+      "Study in a fully English-taught environment with students from around the world, explore four scholarship opportunities, and pursue dual master's degrees in the U.S., Spain, or France.",
+    "events.e2.p4": "International Management MBA Information Session",
+    "events.e2.p5": "Oct. 1 (Thu.) at noon｜Location will be emailed after registration closes",
+    "events.e2.p6": "Free lunch for registered attendees (limited quantities)",
+    "events.e2.p7": "Registration deadline: Sep. 29 (Tue.)",
+    "events.e2.p8": "The session will be conducted in English. Feel free to share this with international friends!",
+    "events.e2.tags": "#FJCU_imMBA #dual_master_degree",
+    "events.e3": "【New Course Spotlight｜AI-Assisted Digital Product Development】",
+    "events.e3b": "Want to turn a business idea into a working digital product—even without coding experience?",
+    "events.e3.p1": "Want to turn a business idea into a working digital product—even without coding experience?",
+    "events.e3.p2":
+      "AI is changing how products are developed. For business students, using AI to turn ideas into practical solutions is becoming an essential skill.",
+    "events.e3.p3":
+      "This semester, Fu Jen imMBA introduces AI-Assisted Digital Product Development, where students learn product design, web development, and data management while building a functional digital product.",
+    "events.e3.p4":
+      "As AI reshapes the business world, this course equips business students to apply AI and solve real-world problems.",
+    "events.e3.tags": "#FJCU_imMBA #dual_master_degree",
     "news.title": "What’s happening in the program.",
-    "news.n1.title": "Spring 2027 — apply now",
-    "news.n1.body": "International-student track is open 14 September – 14 October. Start your file while the window is live.",
-    "news.n2.title": "How much is possible in two years?",
-    "news.n2.body": "A look at dual-degree and exchange outcomes across the imMBA journey.",
-    "news.n3.title": "90 seconds with the professor · AI × Product",
-    "news.n3.body": "Short faculty conversations on how AI is reshaping product work.",
-    "news.n4.title": "New course: Data Analytics for International Business",
-    "news.n4.body": "Analytics skills for managers who operate across markets.",
-    "news.n5.title": "Partner spotlight: IQS School of Management",
-    "news.n5.body": "Meet one of the dual-degree homes for imMBA students in Spain.",
-    "news.n6.title": "Across the Pacific, one more global partner",
-    "news.n6.body": "Expanding the network that makes Fu Jen’s international MBA possible.",
+    "news.n1.title":
+      "Spring 2027, apply NOW!! (Sep 14 - Oct 14) - This track is open to international students only",
+    "news.n1.body": "★ When to apply: Sep 14 - Oct 14",
+    "news.n1.p1": "Spring 2027",
+    "news.n1.p2": "★ When to apply: Sep 14 - Oct 14",
+    "news.n1.p3": "★ How to apply: Apply online and submit required documents.",
+    "news.n1.p4": "★ Required Documents",
+    "news.n1.d1": "1.The certificate or diploma of your highest degree",
+    "news.n1.d2": "2.Complete academic transcripts issued by your school for each year of study",
+    "news.n1.d3": "3.A financial statement showing that you have sufficient funds to study in Taiwan",
+    "news.n1.d4": "4.Receipt for application fee",
+    "news.n1.d5": "5.Verification of nationality",
+    "news.n1.d6": "6.Declaration Form: Download the form from the application system",
+    "news.n1.d7": "7.Two recommendation letters",
+    "news.n1.d8": "8.Transcript of English Proficiency",
+    "news.n1.d9": "9.A biography with a study plan",
+    "news.n1.d10": "10.Any other materials which may contribute to the application for admission",
+    "news.n1.p5": "For more detailed information:",
+    "news.n2.title": "【How much is possible in two years?】",
+    "news.n2.body":
+      "If you're choosing a graduate program, you may be looking for more than just a master's degree.",
+    "news.n2.p1": "If you're choosing a graduate program, you may be looking for more than just a master's degree.",
+    "news.n2.p2":
+      "International Management MBA (imMBA) offers a fully English-taught environment where you study with students from around the world, gain cross-cultural experience, and build an international network. You'll also have opportunities to study abroad and explore more possibilities.",
+    "news.n2.p3": "What is imMBA all about? Who is it for? What opportunities does it offer?",
+    "news.n2.p4": "Join us on September 29 and discover where imMBA could take you.",
+    "news.n2.p5": "Fu Jen imMBA 2027 Admissions Information Session",
+    "news.n2.p6": "September 29 (Tue.)｜12:10 PM｜LM202 Meeting Room",
+    "news.n2.p7": "Registration opens on September 14 (Mon.). Stay tuned!",
+    "news.n2.p8": "Your future starts with imMBA.",
+    "news.n2.tags": "#FJCU_imMBA #Dual_Master_Degree",
+    "news.n3.title": "【90 Seconds with the Professor｜AI × Product】",
+    "news.n3.body": "What is AI-Assisted Digital Product Development all about?",
+    "news.n3.p1": "What is AI-Assisted Digital Product Development all about?",
+    "news.n3.p2":
+      "Starting with a business idea, how can AI support the development of a digital product? And what skills can business students gain from this course?",
+    "news.n3.p3":
+      "In just 90 seconds, our professor introduces the course and gives you a quick look at the key ideas behind AI × Product.",
+    "news.n3.p4": "90 seconds—let's hear from the professor.",
+    "news.n3.tags": "#FJCU_imMBA #dual_master_degree",
+    "news.n4.title": "【New Course Spotlight｜Data Analytics for International Business】",
+    "news.n4.body":
+      "Last week, we explored AI × Product. This week, we look at AI × Data and how data supports better business decisions.",
+    "news.n4.p1":
+      "Last week, we explored AI × Product. This week, we look at AI × Data and how data supports better business decisions.",
+    "news.n4.p2":
+      "In the AI era, identifying problems, spotting trends, and making data-informed decisions are becoming essential skills for business professionals.",
+    "news.n4.p3":
+      "This academic year, Fu Jen imMBA introduces Data Analytics for International Business, covering data visualization, statistical analysis, and machine learning through real-world business applications.",
+    "news.n4.p4":
+      "From AI × Product to AI × Data, these two new courses respond to the changes brought by AI from different angles, helping business students build the skills to solve problems and make better decisions.",
+    "news.n4.tags": "#FJCU_imMBA #dual_master_degree",
+    "news.n5.title": "【Partner Spotlight | IQS School of Management】",
+    "news.n5.body": "When people think of Spain, Barcelona is often known for its architecture and vibrant culture.",
+    "news.n5.p1":
+      "When people think of Spain, Barcelona is often known for its architecture and vibrant culture. For business students, it is also one of Europe's leading hubs for innovation and entrepreneurship.",
+    "news.n5.p2":
+      "Located in Barcelona, IQS School of Management is part of IQS, a founding member of Universitat Ramon Llull, and one of the dual-degree partners of Fu Jen imMBA. Founded in 1905, IQS School of Management is AACSB-accredited and is recognized for integrating management, technology, and innovation.",
+    "news.n5.p3":
+      "Through the imMBA 1+1 Dual Master's Degree Program, students may spend their second year at IQS, choosing between the Master in Industrial Business Management and the Master in International Marketing in a Digital Environment. Upon meeting the graduation requirements of both institutions, students earn master's degrees from both universities. Under the partnership agreement, imMBA dual-degree students are eligible for a tuition discount while studying at IQS.",
+    "news.n5.p4":
+      "The partnership offers students the opportunity to experience the European higher education system, broaden their global perspective, and thrive in an increasingly interconnected world.",
+    "news.n5.tags": "#FJCU_imMBA #Dual_Master_Degree",
+    "news.n6.title": "【Across the Pacific, One More Global Partner】",
+    "news.n6.body":
+      "Recently, faculty members from Fu Jen's College of Management visited sister school California State Polytechnic University, Pomona (CPP).",
+    "news.n6.p1":
+      "Recently, faculty members from Fu Jen's College of Management visited sister school California State Polytechnic University, Pomona (CPP). The two sides discussed various areas of collaboration, including the possibility of a 1+1 dual master's degree for the International Management MBA (imMBA).",
+    "news.n6.p2":
+      "CPP is part of the California State University system. Its College of Business Administration holds AACSB accreditation in both business and accounting and is known for its Learn by Doing approach. Its research and practice centers focus on areas such as Customer Insights, Entrepreneurship, Digital Innovation, Business Analytics, and Cyber Risk.",
+    "news.n6.p3":
+      "Both institutions will continue discussions on curriculum alignment, credit transfer, and program planning, with the goal of creating more international learning and dual degree opportunities for imMBA students.",
+    "news.n6.tags": "#FJCU_imMBA #Dual_Master_Degree",
+    "article.back": "Back to highlights",
+    "article.read": "Read more",
+    "article.announcement": "Announcement",
+    "article.event": "Event",
     "downloads.title": "Official forms and brochures.",
     "downloads.d1": "Admission Brochure for Degree-Seeking International Students",
     "downloads.d2": "Graduation Requirements (imMBA)",
@@ -408,26 +508,113 @@ const translations = {
     "market.item2": "新開「國際企業資料分析」課程的軟體筆記與書單。",
     "market.item3": "工作坊講義與產品實務推薦讀物。",
     "market.item4": "必修 2 學分商業倫理課程包，第一學期後常被重複使用。",
-    "events.title": "說明會與校園對談。",
-    "events.e1": "招生說明會回顧",
-    "events.e1b": "本地生申請於次日開放。國際學生請使用本站英語招生通道。",
-    "events.e2": "國際學生說明會",
-    "events.e2b": "認識輔大 imMBA：雙聯、課堂組成，以及 2027 春季申請方式。",
-    "events.e3": "教授 90 秒｜AI × 產品",
-    "events.e3b": "短講：AI 如何改寫產品工作。",
+    "events.title": "相片集錦",
+    "gallery.title": "相片集錦",
+    "gallery.body": "輔仁大學校園生活、課堂與管理學院。",
+    "gallery.prev": "上一張",
+    "gallery.next": "下一張",
+    "events.e1": "【9/29 招生說明會回顧｜本地生申請明日開放！】",
+    "events.e1b": "錯過今天的國際經營管理碩士（imMBA）說明會了嗎？以下是重點回顧！",
+    "events.e1.p1": "錯過今天的國際經營管理碩士（imMBA）說明會了嗎？以下是重點回顧！",
+    "events.e1.p2":
+      "imMBA 主任涂薏寧老師帶領同學認識《招生指南》，說明申請流程、學程資源與海外學習機會，並分享歐洲與美國潛在新夥伴學校的最新進展，為雙聯碩士帶來更多可能。",
+    "events.e1.p3":
+      "一年級同學 Zoe 也分享她的故事。申請時 TOEIC 約 500 多分；在 imMBA 全英語環境中與國際同學學習互動一年後，她考到 805 分！",
+    "events.e1.p4":
+      "Zoe 也從自身申請經驗分享實用建議——從準備申請資料到凸顯個人亮點。她的經驗說明：起點不必限制你能走到哪裡。給自己一個機會！",
+    "events.e1.p5": "歡迎到 LM208-1 imMBA 辦公室索取《招生指南》！",
+    "events.e1.p6": "國際經營管理碩士（imMBA）2027 招生",
+    "events.e1.p7": "本地生申請期間｜9/30–10/13",
+    "events.e1.tags": "#FJCU_imMBA #dual_master_degree",
+    "events.e2": "【國際學生：來說明會認識輔大 imMBA！】",
+    "events.e2b": "輔仁大學國際經營管理碩士（imMBA）將於 10 月 1 日舉辦國際學生說明會。",
+    "events.e2.p1": "輔仁大學國際經營管理碩士（imMBA）將於 10 月 1 日舉辦國際學生說明會。",
+    "events.e2.p2":
+      "若你已有學士學位（或目前為大三、大四），且 TOEIC 700 分以上或具備同等英語能力，歡迎前來認識 imMBA。",
+    "events.e2.p3":
+      "在全英語環境與來自世界各地的同學一起學習，了解四項獎學金機會，並可攻讀美國、西班牙或法國的雙聯碩士。",
+    "events.e2.p4": "國際經營管理碩士說明會",
+    "events.e2.p5": "10 月 1 日（四）中午｜地點將於報名截止後以電子郵件通知",
+    "events.e2.p6": "報名參加者備有免費午餐（數量有限）",
+    "events.e2.p7": "報名截止：9 月 29 日（二）",
+    "events.e2.p8": "說明會以英語進行。歡迎轉分享給國際朋友！",
+    "events.e2.tags": "#FJCU_imMBA #dual_master_degree",
+    "events.e3": "【新課焦點｜AI 輔助數位產品開發】",
+    "events.e3b": "想把商業想法做成可用的數位產品——即使沒有程式經驗？",
+    "events.e3.p1": "想把商業想法做成可用的數位產品——即使沒有程式經驗？",
+    "events.e3.p2": "AI 正在改變產品開發方式。對商管學生而言，用 AI 把想法變成實用解方，正成為必備能力。",
+    "events.e3.p3":
+      "本學期輔大 imMBA 新開「AI 輔助數位產品開發」，學生學習產品設計、網站開發與資料管理，並實作一套可用的數位產品。",
+    "events.e3.p4": "在 AI 改寫商業世界之際，本課程協助商管學生運用 AI、解決真實問題。",
+    "events.e3.tags": "#FJCU_imMBA #dual_master_degree",
     "news.title": "學程最新消息。",
-    "news.n1.title": "2027 春季班 — 立即申請",
-    "news.n1.body": "國際學生通道自 9 月 14 日至 10 月 14 日開放，把握申請期。",
-    "news.n2.title": "兩年可以完成多少事？",
-    "news.n2.body": "看看雙聯與交換在 imMBA 兩年旅程中的成果。",
-    "news.n3.title": "教授 90 秒｜AI × 產品",
-    "news.n3.body": "短講：AI 如何改寫產品工作。",
-    "news.n4.title": "新課：國際企業資料分析",
-    "news.n4.body": "協助跨市場經理人建立分析能力。",
-    "news.n5.title": "夥伴聚焦：IQS 管理學院",
-    "news.n5.body": "認識西班牙雙聯學位合作學校之一。",
-    "news.n6.title": "跨越太平洋，再添全球夥伴",
-    "news.n6.body": "持續擴充讓輔大國際 MBA 成為可能的網絡。",
+    "news.n1.title": "2027 春季班，立即申請！！（9/14–10/14）— 本通道僅開放國際學生",
+    "news.n1.body": "★ 申請時間：9 月 14 日至 10 月 14 日",
+    "news.n1.p1": "2027 春季班",
+    "news.n1.p2": "★ 申請時間：9 月 14 日至 10 月 14 日",
+    "news.n1.p3": "★ 申請方式：線上申請並繳交應備文件。",
+    "news.n1.p4": "★ 應備文件",
+    "news.n1.d1": "1.最高學歷證書或文憑",
+    "news.n1.d2": "2.就讀各學年完整成績單（由學校核發）",
+    "news.n1.d3": "3.足以證明有能力在臺求學的財力證明",
+    "news.n1.d4": "4.報名費繳費收據",
+    "news.n1.d5": "5.國籍證明",
+    "news.n1.d6": "6.切結書：請自申請系統下載",
+    "news.n1.d7": "7.兩封推薦信",
+    "news.n1.d8": "8.英語能力成績單",
+    "news.n1.d9": "9.含讀書計畫之自傳",
+    "news.n1.d10": "10.其他有助於入學申請的資料",
+    "news.n1.p5": "更多詳細資訊：",
+    "news.n2.title": "【兩年可以完成多少事？】",
+    "news.n2.body": "如果你正在選擇研究所，你要找的也許不只是一張碩士文憑。",
+    "news.n2.p1": "如果你正在選擇研究所，你要找的也許不只是一張碩士文憑。",
+    "news.n2.p2":
+      "國際經營管理碩士（imMBA）提供全英語環境，與來自世界各地的同學一起學習，累積跨文化經驗並建立國際網絡。你也將有機會出國進修、探索更多可能。",
+    "news.n2.p3": "imMBA 是什麼？適合誰？能帶來哪些機會？",
+    "news.n2.p4": "9 月 29 日與我們見面，看看 imMBA 能帶你走多遠。",
+    "news.n2.p5": "輔大 imMBA 2027 招生說明會",
+    "news.n2.p6": "9 月 29 日（二）｜中午 12:10｜LM202 會議室",
+    "news.n2.p7": "報名於 9 月 14 日（一）開始，敬請期待！",
+    "news.n2.p8": "你的未來，從 imMBA 開始。",
+    "news.n2.tags": "#FJCU_imMBA #Dual_Master_Degree",
+    "news.n3.title": "【教授 90 秒｜AI × 產品】",
+    "news.n3.body": "「AI 輔助數位產品開發」到底在學什麼？",
+    "news.n3.p1": "「AI 輔助數位產品開發」到底在學什麼？",
+    "news.n3.p2": "從一個商業想法出發，AI 如何協助開發數位產品？商管學生又能從這門課得到哪些能力？",
+    "news.n3.p3": "只要 90 秒，教授介紹這門課，帶你快速認識 AI × 產品的核心概念。",
+    "news.n3.p4": "90 秒——聽聽教授怎麼說。",
+    "news.n3.tags": "#FJCU_imMBA #dual_master_degree",
+    "news.n4.title": "【新課焦點｜國際企業資料分析】",
+    "news.n4.body": "上週我們談了 AI × 產品。本週來看 AI × 資料，以及資料如何支持更好的商業決策。",
+    "news.n4.p1": "上週我們談了 AI × 產品。本週來看 AI × 資料，以及資料如何支持更好的商業決策。",
+    "news.n4.p2": "在 AI 時代，辨識問題、掌握趨勢，並依資料做出決策，正成為商管專業人士的關鍵能力。",
+    "news.n4.p3":
+      "本學年輔大 imMBA 新開「國際企業資料分析」，透過真實商業應用教授資料視覺化、統計分析與機器學習。",
+    "news.n4.p4":
+      "從 AI × 產品到 AI × 資料，兩門新課從不同角度回應 AI 帶來的改變，幫助商管學生培養解決問題與做出更好決策的能力。",
+    "news.n4.tags": "#FJCU_imMBA #dual_master_degree",
+    "news.n5.title": "【夥伴聚焦｜IQS 管理學院】",
+    "news.n5.body": "提到西班牙，人們常想到巴塞隆納的建築與活力文化。",
+    "news.n5.p1":
+      "提到西班牙，人們常想到巴塞隆納的建築與活力文化。對商管學生而言，這裡也是歐洲創新與創業的重要樞紐之一。",
+    "news.n5.p2":
+      "位於巴塞隆納的 IQS School of Management 隸屬 IQS，是 Ramon Llull 大學創始成員之一，也是輔大 imMBA 雙聯夥伴。創立於 1905 年，IQS School of Management 具 AACSB 認證，以整合管理、科技與創新著稱。",
+    "news.n5.p3":
+      "透過 imMBA 1+1 雙聯碩士，學生可於第二年到 IQS 就讀，選擇工業企業管理碩士或數位環境國際行銷碩士。符合兩校畢業規定後，可取得兩校碩士學位。依合作協議，imMBA 雙聯生於 IQS 就讀可享學費優惠。",
+    "news.n5.p4": "這項合作讓學生體驗歐洲高等教育、拓展全球視野，並在日益連結的世界中成長。",
+    "news.n5.tags": "#FJCU_imMBA #Dual_Master_Degree",
+    "news.n6.title": "【跨越太平洋，再添全球夥伴】",
+    "news.n6.body": "近日，輔大管理學院師長拜訪姐妹校加州州立理工大學波莫納分校（CPP）。",
+    "news.n6.p1":
+      "近日，輔大管理學院師長拜訪姐妹校加州州立理工大學波莫納分校（CPP）。雙方討論多項合作，包括國際經營管理碩士（imMBA）1+1 雙聯碩士的可能。",
+    "news.n6.p2":
+      "CPP 隸屬加州州立大學系統。其商管學院在商學與會計皆具 AACSB 認證，以「做中學」著稱。研究與實務中心涵蓋顧客洞察、創業、數位創新、商業分析與網路風險等領域。",
+    "news.n6.p3": "雙方將持續就課程對接、學分採計與學程規劃進行討論，為 imMBA 學生創造更多國際學習與雙聯機會。",
+    "news.n6.tags": "#FJCU_imMBA #Dual_Master_Degree",
+    "article.back": "返回亮點",
+    "article.read": "閱讀全文",
+    "article.announcement": "公告",
+    "article.event": "活動",
     "downloads.title": "官方表件與簡章。",
     "downloads.d1": "學位國際學生招生簡章",
     "downloads.d2": "畢業規定（imMBA）",
@@ -459,16 +646,16 @@ const translations = {
 const header = document.querySelector("[data-header]");
 const menuToggle = document.querySelector("[data-menu-toggle]");
 const mobileNav = document.querySelector("[data-mobile-nav]");
-const year = document.querySelector("[data-year]");
-const collapseBtn = document.querySelector("[data-collapse-nav]");
+const yearNodes = document.querySelectorAll("[data-year]");
+const collapseButtons = document.querySelectorAll("[data-collapse-nav]");
 const langButtons = document.querySelectorAll("[data-lang-toggle]");
 const metaDescription = document.querySelector('meta[name="description"]');
 
 let lang = localStorage.getItem("immba-lang") === "zh" ? "zh" : "en";
 
-if (year) {
-  year.textContent = String(new Date().getFullYear());
-}
+yearNodes.forEach((node) => {
+  node.textContent = String(new Date().getFullYear());
+});
 
 const dict = () => translations[lang];
 
@@ -476,8 +663,12 @@ const applyLang = () => {
   const d = dict();
   document.documentElement.lang = lang === "zh" ? "zh-TW" : "en";
   document.body.dataset.lang = lang;
-  document.title = d["meta.title"];
-  if (metaDescription) metaDescription.setAttribute("content", d["meta.description"]);
+  const titleKey = document.body.getAttribute("data-title-key");
+  document.title = titleKey && d[titleKey] ? `${d[titleKey]} — ${d["brand.short"]}` : d["meta.title"];
+  const descKey = document.body.getAttribute("data-desc-key");
+  if (metaDescription) {
+    metaDescription.setAttribute("content", (descKey && d[descKey]) || d["meta.description"]);
+  }
 
   document.querySelectorAll("[data-i18n]").forEach((node) => {
     const key = node.getAttribute("data-i18n");
@@ -503,10 +694,15 @@ const applyLang = () => {
 };
 
 const syncCollapseLabel = () => {
-  if (!collapseBtn) return;
   const collapsed = document.body.classList.contains("nav-collapsed");
-  collapseBtn.textContent = collapsed ? dict()["notice.expand"] : dict()["notice.collapse"];
-  collapseBtn.setAttribute("aria-expanded", String(!collapsed));
+  const label = collapsed ? dict()["notice.expand"] : dict()["notice.collapse"];
+  collapseButtons.forEach((btn) => {
+    btn.setAttribute("aria-expanded", String(!collapsed));
+    btn.setAttribute("aria-label", label);
+    const sr = btn.querySelector(".sr-only");
+    if (sr) sr.textContent = label;
+    else btn.textContent = label;
+  });
 };
 
 applyLang();
@@ -534,10 +730,12 @@ mobileNav?.querySelectorAll("a").forEach((link) => {
   link.addEventListener("click", closeMenu);
 });
 
-collapseBtn?.addEventListener("click", () => {
-  document.body.classList.toggle("nav-collapsed");
-  closeMenu();
-  syncCollapseLabel();
+collapseButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.body.classList.toggle("nav-collapsed");
+    closeMenu();
+    syncCollapseLabel();
+  });
 });
 
 langButtons.forEach((btn) => {
@@ -706,6 +904,102 @@ const animateCount = (el) => {
   };
   requestAnimationFrame(tick);
 };
+
+const initGallery = () => {
+  const root = document.querySelector("[data-gallery]");
+  if (!root) return;
+  const track = root.querySelector("[data-gallery-track]");
+  const viewport = root.querySelector("[data-gallery-viewport]");
+  const slides = [...root.querySelectorAll(".gallery-slide")];
+  const prev = root.querySelector("[data-gallery-prev]");
+  const next = root.querySelector("[data-gallery-next]");
+  const dotsWrap = root.querySelector("[data-gallery-dots]");
+  if (!track || !slides.length) return;
+
+  const dots = slides.map((_, index) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "gallery-dot";
+    btn.setAttribute("aria-label", `Photo ${index + 1}`);
+    btn.addEventListener("click", () => goTo(index));
+    dotsWrap?.append(btn);
+    return btn;
+  });
+
+  const step = () => {
+    const slide = slides[0];
+    const styles = getComputedStyle(track);
+    const gap = Number.parseFloat(styles.columnGap || styles.gap) || 0;
+    return slide.getBoundingClientRect().width + gap;
+  };
+
+  const currentIndex = () => {
+    const width = step() || 1;
+    return Math.round(track.scrollLeft / width);
+  };
+
+  const syncDots = () => {
+    const i = Math.max(0, Math.min(slides.length - 1, currentIndex()));
+    dots.forEach((dot, index) => dot.classList.toggle("is-active", index === i));
+  };
+
+  const goTo = (index) => {
+    const width = step();
+    const max = Math.max(0, slides.length - 1);
+    const nextIndex = ((index % slides.length) + slides.length) % slides.length;
+    track.scrollTo({
+      left: Math.min(max, nextIndex) * width,
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+    });
+  };
+
+  const move = (dir) => {
+    const i = currentIndex();
+    let nextIndex = i + dir;
+    if (nextIndex < 0) nextIndex = slides.length - 1;
+    if (nextIndex >= slides.length) nextIndex = 0;
+    goTo(nextIndex);
+  };
+
+  prev?.addEventListener("click", () => move(-1));
+  next?.addEventListener("click", () => move(1));
+  track.addEventListener("scroll", syncDots, { passive: true });
+  window.addEventListener("resize", syncDots);
+
+  viewport?.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      move(-1);
+    }
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      move(1);
+    }
+  });
+
+  let timer = 0;
+  const stop = () => {
+    window.clearInterval(timer);
+    timer = 0;
+  };
+  const start = () => {
+    if (prefersReducedMotion) return;
+    stop();
+    timer = window.setInterval(() => move(1), 5000);
+  };
+
+  root.addEventListener("mouseenter", stop);
+  root.addEventListener("mouseleave", start);
+  root.addEventListener("focusin", stop);
+  root.addEventListener("focusout", (event) => {
+    if (!root.contains(event.relatedTarget)) start();
+  });
+
+  syncDots();
+  start();
+};
+
+initGallery();
 
 const counters = document.querySelectorAll(".stat-count");
 if (counters.length) {
