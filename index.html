@@ -52,7 +52,7 @@
     <header class="site-header" data-header>
       <div class="container header-grid">
         <div class="brand-tier">
-          <a class="logo" href="#top">
+          <a class="logo" href="index.html#top" data-i18n-attr="aria-label:brand.name" aria-label="Fu Jen Catholic University International MBA (imMBA)">
             <img
               class="logo-img"
               src="images/logo.jpg"
@@ -70,22 +70,22 @@
         <div class="nav-desktop-wrap" data-nav-tier>
           <nav class="nav-desktop" aria-label="Primary" data-i18n-attr="aria-label:nav.primary">
             <div class="nav-item">
-              <a href="#intro" data-i18n="nav.about">About</a>
+              <a href="about.html" data-i18n="nav.about">About</a>
               <div class="nav-dropdown" role="menu">
-                <a href="#overview" role="menuitem" data-i18n="nav.overview">Overview and Ranking</a>
-                <a href="#environment" role="menuitem" data-i18n="nav.environment">Our Learning Environment</a>
+                <a href="about.html#overview" role="menuitem" data-i18n="nav.overview">Overview and Ranking</a>
+                <a href="about.html#environment" role="menuitem" data-i18n="nav.environment">Our Learning Environment</a>
               </div>
             </div>
             <div class="nav-item">
-              <a href="#admissions" data-i18n="nav.admissions">Admissions</a>
+              <a href="admissions.html" data-i18n="nav.admissions">Admissions</a>
               <div class="nav-dropdown" role="menu">
-                <a href="#admissions" role="menuitem" data-i18n="nav.apply">Apply for Fu Jen imMBA</a>
+                <a href="admissions.html" role="menuitem" data-i18n="nav.apply">Apply for Fu Jen imMBA</a>
               </div>
             </div>
             <div class="nav-item">
-              <a href="#curriculum" data-i18n="nav.courses">Courses</a>
+              <a href="curriculum.html" data-i18n="nav.courses">Courses</a>
               <div class="nav-dropdown" role="menu">
-                <a href="#curriculum" role="menuitem" data-i18n="nav.requirements">Curriculum and Requirements</a>
+                <a href="curriculum.html" role="menuitem" data-i18n="nav.requirements">Curriculum and Requirements</a>
               </div>
             </div>
             <a href="#faculty" data-i18n="nav.faculty">Faculty</a>
@@ -140,16 +140,16 @@
       <nav class="nav-mobile" id="mobile-nav" data-mobile-nav hidden>
         <details>
           <summary><span data-i18n="nav.about">About</span></summary>
-          <a href="#overview" data-i18n="nav.overview">Overview and Ranking</a>
-          <a href="#environment" data-i18n="nav.environment">Our Learning Environment</a>
+          <a href="about.html#overview" data-i18n="nav.overview">Overview and Ranking</a>
+          <a href="about.html#environment" data-i18n="nav.environment">Our Learning Environment</a>
         </details>
         <details>
           <summary><span data-i18n="nav.admissions">Admissions</span></summary>
-          <a href="#admissions" data-i18n="nav.apply">Apply for Fu Jen imMBA</a>
+          <a href="admissions.html" data-i18n="nav.apply">Apply for Fu Jen imMBA</a>
         </details>
         <details>
           <summary><span data-i18n="nav.courses">Courses</span></summary>
-          <a href="#curriculum" data-i18n="nav.requirements">Curriculum and Requirements</a>
+          <a href="curriculum.html" data-i18n="nav.requirements">Curriculum and Requirements</a>
         </details>
         <a href="#faculty" data-i18n="nav.faculty">Faculty</a>
         <a href="#guide" data-i18n="nav.guide">imMBA Guide</a>
@@ -797,127 +797,40 @@
           <span class="rule" aria-hidden="true"></span>
           <p class="label" data-i18n="nav.announcements">Announcements</p>
           <h2 data-i18n="news.title">What’s happening in the program.</h2>
-          <div class="news-list">
-            <a class="news-item news-card" href="./announcements/spring-2027.html">
+          <div class="news-list" data-news-list>
+            <a class="news-item news-card" href="announcement.html?id=n1">
               <time datetime="2026-08-19">2026/08/19</time>
-              <h3 data-i18n="news.n1.title">
+              <h3>
                 Spring 2027, apply NOW!! (Sep 14 - Oct 14) - This track is open to international students only
               </h3>
-              <p data-i18n="news.n1.body">★ When to apply: Sep 14 - Oct 14</p>
-              <span class="arrow-link" data-i18n="article.read">Read more</span>
-            </a>
-            <a class="news-item news-card" href="./announcements/two-years.html">
-              <time datetime="2026-09-08">2026/09/08</time>
-              <h3 data-i18n="news.n2.title">【How much is possible in two years?】</h3>
-              <p data-i18n="news.n2.body">
-                If you're choosing a graduate program, you may be looking for more than just a master's degree.
-              </p>
-              <span class="arrow-link" data-i18n="article.read">Read more</span>
-            </a>
-            <a class="news-item news-card" href="./announcements/ai-product.html">
-              <time datetime="2026-09-02">2026/09/02</time>
-              <h3 data-i18n="news.n3.title">【90 Seconds with the Professor｜AI × Product】</h3>
-              <p data-i18n="news.n3.body">What is AI-Assisted Digital Product Development all about?</p>
-              <span class="arrow-link" data-i18n="article.read">Read more</span>
-            </a>
-            <a class="news-item news-card" href="./announcements/data-analytics.html">
-              <time datetime="2026-08-26">2026/08/26</time>
-              <h3 data-i18n="news.n4.title">【New Course Spotlight｜Data Analytics for International Business】</h3>
-              <p data-i18n="news.n4.body">
-                Last week, we explored AI × Product. This week, we look at AI × Data and how data supports better
-                business decisions.
-              </p>
-              <span class="arrow-link" data-i18n="article.read">Read more</span>
-            </a>
-            <a class="news-item news-card" href="./announcements/iqs.html">
-              <time datetime="2026-07-29">2026/07/29</time>
-              <h3 data-i18n="news.n5.title">【Partner Spotlight | IQS School of Management】</h3>
-              <p data-i18n="news.n5.body">
-                When people think of Spain, Barcelona is often known for its architecture and vibrant culture.
-              </p>
-              <span class="arrow-link" data-i18n="article.read">Read more</span>
-            </a>
-            <a class="news-item news-card" href="./announcements/pacific-partner.html">
-              <time datetime="2026-07-15">2026/07/15</time>
-              <h3 data-i18n="news.n6.title">【Across the Pacific, One More Global Partner】</h3>
-              <p data-i18n="news.n6.body">
-                Recently, faculty members from Fu Jen's College of Management visited sister school California State
-                Polytechnic University, Pomona (CPP).
-              </p>
-              <span class="arrow-link" data-i18n="article.read">Read more</span>
+              <span class="arrow-link">View Details</span>
             </a>
           </div>
+          <p class="news-source-ref">
+            <a href="https://www.management.fju.edu.tw/subweb/immba/news.php" target="_blank" rel="noopener noreferrer" data-i18n="news.sourceLine"
+              >Official news</a
+            >
+          </p>
         </div>
       </section>
 
-      <section class="resources" id="events">
+      <section class="gallery-band" id="events">
         <div class="container">
           <span class="rule" aria-hidden="true"></span>
           <p class="label" data-i18n="nav.events">Events</p>
           <h2 data-i18n="gallery.title">Photo Gallery</h2>
           <p data-i18n="gallery.body">Campus life, classrooms, and the College of Management at Fu Jen.</p>
-          <div class="gallery-carousel" data-gallery>
-            <div class="gallery-toolbar">
-              <button type="button" class="gallery-nav" data-gallery-prev data-i18n-attr="aria-label:gallery.prev" aria-label="Previous photo">
-                ‹
-              </button>
-              <button type="button" class="gallery-nav" data-gallery-next data-i18n-attr="aria-label:gallery.next" aria-label="Next photo">
-                ›
-              </button>
-            </div>
-            <div class="gallery-viewport" tabindex="0" data-gallery-viewport>
-              <ul class="gallery-track" data-gallery-track>
-                <li class="gallery-slide">
-                  <img src="images/gallery/menu01779415441.jpg" alt="" width="640" height="640" />
-                </li>
-                <li class="gallery-slide">
-                  <img src="images/gallery/menu01779415376.jpg" alt="" width="640" height="640" />
-                </li>
-                <li class="gallery-slide">
-                  <img src="images/gallery/menu01779415351.jpg" alt="" width="640" height="640" />
-                </li>
-                <li class="gallery-slide">
-                  <img src="images/gallery/menu01779415325.jpg" alt="" width="640" height="640" />
-                </li>
-                <li class="gallery-slide">
-                  <img src="images/gallery/menu01779415283.jpg" alt="" width="640" height="640" />
-                </li>
-                <li class="gallery-slide">
-                  <img src="images/gallery/menu01779415236.jpg" alt="" width="640" height="640" />
-                </li>
-                <li class="gallery-slide">
-                  <img src="images/gallery/menu01495178958.jpg" alt="" width="640" height="640" />
-                </li>
-                <li class="gallery-slide">
-                  <img src="images/gallery/menu01495180378.JPG" alt="" width="640" height="640" />
-                </li>
-                <li class="gallery-slide">
-                  <img src="images/gallery/menu01495180622.jpg" alt="" width="640" height="640" />
-                </li>
-                <li class="gallery-slide">
-                  <img src="images/gallery/menu01495178992.jpg" alt="" width="640" height="640" />
-                </li>
-                <li class="gallery-slide">
-                  <img src="images/gallery/menu01495179136.jpg" alt="" width="640" height="640" />
-                </li>
-                <li class="gallery-slide">
-                  <img src="images/gallery/menu01495180670.JPG" alt="" width="640" height="640" />
-                </li>
-                <li class="gallery-slide">
-                  <img src="images/gallery/menu01495179352.jpg" alt="" width="640" height="640" />
-                </li>
-                <li class="gallery-slide">
-                  <img src="images/gallery/menu01495179186.jpg" alt="" width="640" height="640" />
-                </li>
-                <li class="gallery-slide">
-                  <img src="images/gallery/menu01495179016.jpg" alt="" width="640" height="640" />
-                </li>
-                <li class="gallery-slide">
-                  <img src="images/gallery/menu01495179047.jpg" alt="" width="640" height="640" />
-                </li>
-              </ul>
-            </div>
-            <div class="gallery-dots" data-gallery-dots role="tablist" aria-label="Photo Gallery"></div>
+        </div>
+        <div class="tv-carousel" data-gallery tabindex="0">
+          <div class="tv-stage" data-gallery-stage></div>
+          <button type="button" class="tv-arrow tv-arrow-prev" data-gallery-prev data-i18n-attr="aria-label:gallery.prev" aria-label="Previous photo">
+            ‹
+          </button>
+          <button type="button" class="tv-arrow tv-arrow-next" data-gallery-next data-i18n-attr="aria-label:gallery.next" aria-label="Next photo">
+            ›
+          </button>
+          <div class="tv-chrome">
+            <div class="tv-dots" data-gallery-dots role="tablist" aria-label="Photo Gallery"></div>
           </div>
         </div>
       </section>
@@ -956,9 +869,9 @@
           <div>
             <h2 data-i18n="footer.explore">Explore</h2>
             <ul class="footer-links">
-              <li><a href="#intro" data-i18n="nav.about">About</a></li>
-              <li><a href="#admissions" data-i18n="nav.admissions">Admissions</a></li>
-              <li><a href="#curriculum" data-i18n="nav.courses">Courses</a></li>
+              <li><a href="about.html" data-i18n="nav.about">About</a></li>
+              <li><a href="admissions.html" data-i18n="nav.admissions">Admissions</a></li>
+              <li><a href="curriculum.html" data-i18n="nav.courses">Courses</a></li>
               <li><a href="#faculty" data-i18n="nav.faculty">Faculty</a></li>
               <li>
                 <a

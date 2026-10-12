@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign in — imMBA</title>
+    <meta name="description" content="imMBA announcement back-office login" />
+    <meta name="theme-color" content="#163300" />
+    <meta name="color-scheme" content="light" />
+    <link rel="icon" href="logo.jpg" type="image/jpeg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="login-page" data-title-key="login.title">
+    <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
+
+    <header class="login-top" data-header>
+      <a
+        class="logo login-brand"
+        href="index.html#top"
+        data-i18n-attr="aria-label:brand.name"
+        aria-label="Fu Jen Catholic University International MBA (imMBA)"
+      >
+        <img
+          class="logo-img"
+          src="images/logo.jpg"
+          alt="Fu Jen Catholic University International MBA (imMBA)"
+          data-i18n-attr="alt:brand.name"
+          width="32"
+          height="32"
+        />
+        <span class="logo-text">
+          <strong data-i18n="brand.short">imMBA</strong>
+        </span>
+      </a>
+      <button type="button" class="lang-toggle" data-lang-toggle data-i18n="langButton" aria-label="Switch language">
+        中文
+      </button>
+    </header>
+
+    <main id="main" class="login-stage">
+      <section class="login-card">
+        <div class="login-mark" aria-hidden="true">
+          <svg class="login-ring" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="54" fill="none" stroke="#163300" stroke-width="2.5" stroke-dasharray="2.2 7.4" />
+            <circle cx="60" cy="60" r="48" fill="none" stroke="#9fe870" stroke-width="3.5" stroke-dasharray="1.6 8.2" stroke-dashoffset="4" />
+          </svg>
+          <img src="images/logo.jpg" alt="" width="56" height="56" />
+        </div>
+        <h1 data-i18n="login.title">Sign in</h1>
+        <form class="login-form" data-login-form>
+          <label class="login-field">
+            <span class="sr-only" data-i18n="login.user">Username</span>
+            <input type="text" name="username" autocomplete="username" required data-i18n-attr="placeholder:login.user" placeholder="Username" />
+          </label>
+          <label class="login-field">
+            <span class="sr-only" data-i18n="login.pass">Password</span>
+            <input type="password" name="password" autocomplete="current-password" required data-i18n-attr="placeholder:login.pass" placeholder="Password" />
+          </label>
+          <label class="login-keep">
+            <input type="checkbox" name="remember" />
+            <span data-i18n="login.keep">Keep me signed in</span>
+          </label>
+          <p class="login-error" data-login-error data-i18n="login.error" hidden>Username or password is incorrect.</p>
+          <button type="submit" class="btn btn-primary login-submit" data-i18n="login.submit">Sign in</button>
+        </form>
+      </section>
+    </main>
+
+    <footer class="login-foot">
+      <p>
+        <a href="https://www.fju.edu.tw/" target="_blank" rel="noopener noreferrer" data-i18n="footer.privacy">Privacy</a>
+        <a href="https://www.fju.edu.tw/" target="_blank" rel="noopener noreferrer" data-i18n="footer.legal">Legal</a>
+        <a href="index.html#top" data-i18n="admin.site">View website</a>
+      </p>
+      <p>© <span data-year></span> <span data-i18n="footer.copy">Fu Jen Catholic University. All rights reserved.</span></p>
+    </footer>
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

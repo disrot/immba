@@ -1,3 +1,7 @@
+import { renderNewsArticle, renderNewsCards } from "./news-ui.js";
+import { initGallery, refreshGalleryCaptions } from "./gallery.js";
+import { guardAdminPage, initLoginForm, initLogoGate } from "./auth.js";
+
 const translations = {
   en: {
     "meta.title": "Fu Jen imMBA — MBA Program in International Management",
@@ -299,8 +303,28 @@ const translations = {
       "Both institutions will continue discussions on curriculum alignment, credit transfer, and program planning, with the goal of creating more international learning and dual degree opportunities for imMBA students.",
     "news.n6.tags": "#FJCU_imMBA #Dual_Master_Degree",
     "article.back": "Back to highlights",
-    "article.read": "Read more",
+    "article.read": "View Details",
     "article.announcement": "Announcement",
+    "news.source": "Official news",
+    "news.sourceLine": "Official news",
+    "admin.kicker": "AdminNews",
+    "admin.title": "Announcement back-office",
+    "admin.lede": "Create, preview, update, or delete one bilingual record at a time. Saving or deleting always applies to Chinese and English together.",
+    "admin.new": "New announcement",
+    "admin.restore": "Restore defaults",
+    "admin.site": "View website",
+    "admin.save": "Save both languages",
+    "admin.translateEn": "Auto-translate to English",
+    "admin.translateZh": "Auto-translate to Chinese",
+    "admin.logout": "Sign out",
+    "login.title": "Sign in",
+    "login.lede": "Sign in to manage announcements. A single click on the logo returns to the home page.",
+    "login.user": "Username",
+    "login.pass": "Password",
+    "login.submit": "Sign in",
+    "login.keep": "Keep me signed in",
+    "login.error": "Username or password is incorrect.",
+    "nav.admin": "AdminNews",
     "article.event": "Event",
     "downloads.title": "Official forms and brochures.",
     "downloads.d1": "Admission Brochure for Degree-Seeking International Students",
@@ -612,8 +636,28 @@ const translations = {
     "news.n6.p3": "雙方將持續就課程對接、學分採計與學程規劃進行討論，為 imMBA 學生創造更多國際學習與雙聯機會。",
     "news.n6.tags": "#FJCU_imMBA #Dual_Master_Degree",
     "article.back": "返回亮點",
-    "article.read": "閱讀全文",
+    "article.read": "查看詳情",
     "article.announcement": "公告",
+    "news.source": "官方消息",
+    "news.sourceLine": "官方消息",
+    "admin.kicker": "AdminNews",
+    "admin.title": "公告後台",
+    "admin.lede": "一次新增、預覽、更新或刪除一筆雙語公告。儲存或刪除時，中文與英文會一併處理。",
+    "admin.new": "新增公告",
+    "admin.restore": "還原預設",
+    "admin.site": "查看前台",
+    "admin.save": "儲存雙語版本",
+    "admin.translateEn": "自動翻譯成英文",
+    "admin.translateZh": "自動翻譯成中文",
+    "admin.logout": "登出",
+    "login.title": "登入",
+    "login.lede": "登入後即可管理公告。點一下校徽會回到首頁。",
+    "login.user": "帳號",
+    "login.pass": "密碼",
+    "login.submit": "登入",
+    "login.keep": "保持登入",
+    "login.error": "帳號或密碼不正確。",
+    "nav.admin": "AdminNews",
     "article.event": "活動",
     "downloads.title": "官方表件與簡章。",
     "downloads.d1": "學位國際學生招生簡章",
@@ -691,7 +735,17 @@ const applyLang = () => {
   });
 
   syncCollapseLabel();
+  renderNewsCards(lang, { view: d["article.read"], source: d["news.source"] });
+  renderNewsArticle(lang);
+  refreshGalleryCaptions();
 };
+
+window.addEventListener("storage", (event) => {
+  if (event.key === "immba-admin-news-v1" || event.key === "immba-lang") {
+    lang = localStorage.getItem("immba-lang") === "zh" ? "zh" : "en";
+    applyLang();
+  }
+});
 
 const syncCollapseLabel = () => {
   const collapsed = document.body.classList.contains("nav-collapsed");
@@ -705,6 +759,9 @@ const syncCollapseLabel = () => {
   });
 };
 
+initLogoGate();
+initLoginForm();
+guardAdminPage();
 applyLang();
 
 const setScrolled = () => {
@@ -727,7 +784,10 @@ menuToggle?.addEventListener("click", () => {
 });
 
 mobileNav?.querySelectorAll("a").forEach((link) => {
-  link.addEventListener("click", closeMenu);
+  link.addEventListener("click", () => {
+    const href = link.getAttribute("href") || "";
+    if (href.startsWith("#")) closeMenu();
+  });
 });
 
 collapseButtons.forEach((btn) => {
@@ -903,100 +963,6 @@ const animateCount = (el) => {
     if (progress < 1) requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
-};
-
-const initGallery = () => {
-  const root = document.querySelector("[data-gallery]");
-  if (!root) return;
-  const track = root.querySelector("[data-gallery-track]");
-  const viewport = root.querySelector("[data-gallery-viewport]");
-  const slides = [...root.querySelectorAll(".gallery-slide")];
-  const prev = root.querySelector("[data-gallery-prev]");
-  const next = root.querySelector("[data-gallery-next]");
-  const dotsWrap = root.querySelector("[data-gallery-dots]");
-  if (!track || !slides.length) return;
-
-  const dots = slides.map((_, index) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "gallery-dot";
-    btn.setAttribute("aria-label", `Photo ${index + 1}`);
-    btn.addEventListener("click", () => goTo(index));
-    dotsWrap?.append(btn);
-    return btn;
-  });
-
-  const step = () => {
-    const slide = slides[0];
-    const styles = getComputedStyle(track);
-    const gap = Number.parseFloat(styles.columnGap || styles.gap) || 0;
-    return slide.getBoundingClientRect().width + gap;
-  };
-
-  const currentIndex = () => {
-    const width = step() || 1;
-    return Math.round(track.scrollLeft / width);
-  };
-
-  const syncDots = () => {
-    const i = Math.max(0, Math.min(slides.length - 1, currentIndex()));
-    dots.forEach((dot, index) => dot.classList.toggle("is-active", index === i));
-  };
-
-  const goTo = (index) => {
-    const width = step();
-    const max = Math.max(0, slides.length - 1);
-    const nextIndex = ((index % slides.length) + slides.length) % slides.length;
-    track.scrollTo({
-      left: Math.min(max, nextIndex) * width,
-      behavior: prefersReducedMotion ? "auto" : "smooth",
-    });
-  };
-
-  const move = (dir) => {
-    const i = currentIndex();
-    let nextIndex = i + dir;
-    if (nextIndex < 0) nextIndex = slides.length - 1;
-    if (nextIndex >= slides.length) nextIndex = 0;
-    goTo(nextIndex);
-  };
-
-  prev?.addEventListener("click", () => move(-1));
-  next?.addEventListener("click", () => move(1));
-  track.addEventListener("scroll", syncDots, { passive: true });
-  window.addEventListener("resize", syncDots);
-
-  viewport?.addEventListener("keydown", (event) => {
-    if (event.key === "ArrowLeft") {
-      event.preventDefault();
-      move(-1);
-    }
-    if (event.key === "ArrowRight") {
-      event.preventDefault();
-      move(1);
-    }
-  });
-
-  let timer = 0;
-  const stop = () => {
-    window.clearInterval(timer);
-    timer = 0;
-  };
-  const start = () => {
-    if (prefersReducedMotion) return;
-    stop();
-    timer = window.setInterval(() => move(1), 5000);
-  };
-
-  root.addEventListener("mouseenter", stop);
-  root.addEventListener("mouseleave", start);
-  root.addEventListener("focusin", stop);
-  root.addEventListener("focusout", (event) => {
-    if (!root.contains(event.relatedTarget)) start();
-  });
-
-  syncDots();
-  start();
 };
 
 initGallery();
