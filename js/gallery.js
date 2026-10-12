@@ -1,66 +1,80 @@
+const galleryUrls = import.meta.glob("../images/gallery/*", {
+  eager: true,
+  query: "?url",
+  import: "default",
+});
+
+const gallerySrc = (name) => {
+  const match = Object.entries(galleryUrls).find(([key]) => {
+    const file = key.split("/").pop()?.split("?")[0];
+    return file === name;
+  });
+  return match?.[1] || `images/gallery/${name}`;
+};
+
 const GALLERY_SLIDES = [
   {
-    src: "images/gallery/menu01779415441.jpg",
+    src: gallerySrc("menu01779415441.jpg"),
     title: { en: "College of Management", zh: "管理學院" },
   },
   {
-    src: "images/gallery/menu01779415376.jpg",
+    src: gallerySrc("menu01779415376.jpg"),
     title: { en: "Campus life at Fu Jen", zh: "輔大校園生活" },
   },
   {
-    src: "images/gallery/menu01779415351.jpg",
+    src: gallerySrc("menu01779415351.jpg"),
     title: { en: "Learning together", zh: "一起學習" },
   },
   {
-    src: "images/gallery/menu01779415325.jpg",
+    src: gallerySrc("menu01779415325.jpg"),
     title: { en: "Classroom moments", zh: "課堂時光" },
   },
   {
-    src: "images/gallery/menu01779415283.jpg",
+    src: gallerySrc("menu01779415283.jpg"),
     title: { en: "International classroom", zh: "國際課堂" },
   },
   {
-    src: "images/gallery/menu01779415236.jpg",
+    src: gallerySrc("menu01779415236.jpg"),
     title: { en: "imMBA community", zh: "imMBA 社群" },
   },
   {
-    src: "images/gallery/menu01495178958.jpg",
+    src: gallerySrc("menu01495178958.jpg"),
     title: { en: "On campus", zh: "校園一景" },
   },
   {
-    src: "images/gallery/menu01495180378.JPG",
+    src: gallerySrc("menu01495180378.JPG"),
     title: { en: "College gathering", zh: "學院活動" },
   },
   {
-    src: "images/gallery/menu01495180622.jpg",
+    src: gallerySrc("menu01495180622.jpg"),
     title: { en: "Fu Jen halls", zh: "輔大廳堂" },
   },
   {
-    src: "images/gallery/menu01495178992.jpg",
+    src: gallerySrc("menu01495178992.jpg"),
     title: { en: "Study spaces", zh: "學習空間" },
   },
   {
-    src: "images/gallery/menu01495179136.jpg",
+    src: gallerySrc("menu01495179136.jpg"),
     title: { en: "Program highlights", zh: "學程亮點" },
   },
   {
-    src: "images/gallery/menu01495180670.JPG",
+    src: gallerySrc("menu01495180670.JPG"),
     title: { en: "Student life", zh: "學生生活" },
   },
   {
-    src: "images/gallery/menu01495179352.jpg",
+    src: gallerySrc("menu01495179352.jpg"),
     title: { en: "Management building", zh: "管理學院大樓" },
   },
   {
-    src: "images/gallery/menu01495179186.jpg",
+    src: gallerySrc("menu01495179186.jpg"),
     title: { en: "Between classes", zh: "課間時光" },
   },
   {
-    src: "images/gallery/menu01495179016.jpg",
+    src: gallerySrc("menu01495179016.jpg"),
     title: { en: "New Taipei campus", zh: "新北校園" },
   },
   {
-    src: "images/gallery/menu01495179047.jpg",
+    src: gallerySrc("menu01495179047.jpg"),
     title: { en: "Photo Gallery", zh: "相片集錦" },
   },
 ];

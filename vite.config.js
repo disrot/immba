@@ -1,6 +1,18 @@
 import { defineConfig } from "vite";
-import { readdirSync, statSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
+
+/** Copy gallery files Vite would otherwise skip (JS string URLs are not in the module graph). */
+const copyGalleryImages = () => ({
+  name: "copy-gallery-images",
+  writeBundle() {
+    const from = resolve("images/gallery");
+    const to = resolve("dist/images/gallery");
+    if (!existsSync(from)) return;
+    mkdirSync(to, { recursive: true });
+    cpSync(from, to, { recursive: true });
+  },
+});
 
 const htmlInput = (dir, acc = {}) => {
   for (const name of readdirSync(dir)) {
@@ -18,6 +30,7 @@ const htmlInput = (dir, acc = {}) => {
 export default defineConfig({
   base: "./",
   publicDir: "public",
+  plugins: [copyGalleryImages()],
   build: {
     outDir: "dist",
     assetsDir: "assets",
