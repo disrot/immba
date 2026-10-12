@@ -522,10 +522,21 @@ body.nav-collapsed .nav-tier {
   overflow: hidden;
 }
 
-.hero-media img {
+.hero-media img,
+.hero-media video {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.hero-media video {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+
+.hero-media.is-video video {
+  display: block;
 }
 
 .hero-media::after {

@@ -550,6 +550,16 @@ langButtons.forEach((btn) => {
 
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+const heroMedia = document.querySelector(".hero-media");
+const heroVideo = document.querySelector("[data-hero-video]");
+if (heroMedia && heroVideo && !prefersReducedMotion) {
+  const showVideo = () => heroMedia.classList.add("is-video");
+  heroVideo.addEventListener("canplay", showVideo, { once: true });
+  heroVideo.play().then(showVideo).catch(() => {
+    heroMedia.classList.remove("is-video");
+  });
+}
+
 const accordion = document.querySelector("[data-accordion]");
 if (accordion) {
   const panels = [...accordion.querySelectorAll(":scope > details")];
