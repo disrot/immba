@@ -1,6 +1,8 @@
 import { renderNewsArticle, renderNewsCards } from "./news-ui.js";
 import { initGallery, refreshGalleryCaptions } from "./gallery.js";
 import { guardAdminPage, initLoginForm, initLogoGate } from "./auth.js";
+import { initFacultyDirectory } from "./faculty.js";
+import { initMarketplace } from "./marketplace.js";
 
 const translations = {
   en: {
@@ -82,6 +84,16 @@ const translations = {
     "partners.um": "University of Michigan–Flint, USA",
     "partners.kedge": "Kedge Business School, France",
     "partners.iqs": "IQS School of Management, Spain",
+    "kw.ibm": "International Business Management",
+    "kw.strategy": "Strategic Management",
+    "kw.supply": "Supply Chain",
+    "kw.marketing": "Marketing Management",
+    "kw.org": "Organization Design",
+    "kw.finance": "Financial Management",
+    "kw.analytics": "Data Analytics",
+    "kw.ai": "AI Product Development",
+    "kw.ethics": "Business Ethics",
+    "kw.sr": "Curriculum themes across international management and English-taught core courses.",
     "curr.eyebrow": "Curriculum highlights",
     "curr.title": "A clear structure. A global core. Room to specialize.",
     "curr.body":
@@ -137,6 +149,21 @@ const translations = {
     "admissions.s4.title": "Review fees & scholarships",
     "admissions.s4.body":
       "International tuition is NT$123,000 per semester. Eligible students may choose preferential fees of NT$68,660 or the President Scholarship of NT$40,600 per semester (up to four terms) — not both.",
+    "faculty.pageTitle": "Faculty Directory",
+    "faculty.meta":
+      "Full-time and part-time faculty of Fu Jen Catholic University’s International MBA (imMBA).",
+    "faculty.headline": "Faculty directory",
+    "faculty.searchLabel": "Name",
+    "faculty.search": "Search by name...",
+    "faculty.typeLabel": "Faculty Type",
+    "faculty.typeAll": "All Faculty",
+    "faculty.typeChair": "Chair Professor",
+    "faculty.typeProfessor": "Professor",
+    "faculty.typeAssociate": "Associate Professor",
+    "faculty.typeAssistant": "Assistant Professor",
+    "faculty.typeParttime": "Part-time",
+    "faculty.lastName": "Last Name",
+    "faculty.empty": "No faculty match these filters.",
     "faculty.eyebrow": "Faculty",
     "faculty.title": "Scholars and practitioners who teach across borders.",
     "faculty.body":
@@ -178,6 +205,21 @@ const translations = {
     "exchange.body":
       "If you are not on a dual-degree track, Fu Jen’s global tuition-free exchange program is open to imMBA students. Procedures, requirements, deadlines, and school lists are handled by the Fu Jen International Student Center.",
     "exchange.cta": "International Student Center",
+    "market.pageTitle": "Marketplace",
+    "market.meta": "Student-to-student course packets, textbooks, and materials for Fu Jen imMBA.",
+    "market.headline": "Course packets",
+    "market.filter": "Filter by",
+    "market.filterAll": "All products",
+    "market.filterCore": "Core",
+    "market.filterSpot": "Spotlight",
+    "market.filterElective": "Elective",
+    "market.sort": "Sort by",
+    "market.sortFeatured": "Featured",
+    "market.sortAz": "Alphabetically, A–Z",
+    "market.sortZa": "Alphabetically, Z–A",
+    "market.sortLow": "Price, low to high",
+    "market.sortHigh": "Price, high to low",
+    "market.empty": "No packets match these filters.",
     "market.title": "Books & materials marketplace",
     "market.body":
       "A student-to-student board for course books and materials used in the English-taught imMBA curriculum. Listings below are representative placeholders based on core and spotlight courses.",
@@ -350,6 +392,7 @@ const translations = {
     "footer.copy": "Fu Jen Catholic University. All rights reserved.",
     "footer.privacy": "Privacy",
     "footer.legal": "Legal",
+    "ui.top": "Back to top",
     "langButton": "中文",
     "langAria": "Switch to Traditional Chinese",
   },
@@ -432,6 +475,16 @@ const translations = {
     "partners.um": "密西根大學 Flint 分校，美國",
     "partners.kedge": "Kedge 商學院，法國",
     "partners.iqs": "IQS 管理學院，西班牙",
+    "kw.ibm": "國際企業管理",
+    "kw.strategy": "策略管理",
+    "kw.supply": "供應鏈",
+    "kw.marketing": "行銷管理",
+    "kw.org": "組織設計",
+    "kw.finance": "財務管理",
+    "kw.analytics": "數據分析",
+    "kw.ai": "AI 產品開發",
+    "kw.ethics": "商業倫理",
+    "kw.sr": "課程主題涵蓋國際管理與全英語核心課程。",
     "curr.eyebrow": "課程重點",
     "curr.title": "結構清楚、核心國際化，也保留專長空間。",
     "curr.body":
@@ -485,6 +538,20 @@ const translations = {
     "admissions.s4.title": "學雜費與獎學金",
     "admissions.s4.body":
       "國際生每學期學雜費新台幣 123,000 元。符合資格者可選擇本地生優惠學雜費 68,660 元，或校長獎學金每學期 40,600 元（至多四學期），兩者擇一。",
+    "faculty.pageTitle": "師資名錄",
+    "faculty.meta": "輔仁大學國際經營管理碩士（imMBA）專任與兼任師資。",
+    "faculty.headline": "師資名錄",
+    "faculty.searchLabel": "姓名",
+    "faculty.search": "依姓名搜尋…",
+    "faculty.typeLabel": "職稱",
+    "faculty.typeAll": "全部師資",
+    "faculty.typeChair": "講座教授",
+    "faculty.typeProfessor": "教授",
+    "faculty.typeAssociate": "副教授",
+    "faculty.typeAssistant": "助理教授",
+    "faculty.typeParttime": "兼任",
+    "faculty.lastName": "姓氏",
+    "faculty.empty": "沒有符合條件的師資。",
     "faculty.eyebrow": "師資陣容",
     "faculty.title": "跨領域、跨國界的學者與實務教師。",
     "faculty.body": "以下為學程專任與兼任師資示例。論文指導教授名單於每年三月與十月公布。",
@@ -525,6 +592,21 @@ const translations = {
     "exchange.body":
       "未走雙聯者，可使用輔仁大學全球免學費交換。申請流程、資格、期限與學校資訊請洽國際學生中心。",
     "exchange.cta": "國際學生中心",
+    "market.pageTitle": "教材市集",
+    "market.meta": "輔仁大學 imMBA 學生教材、課程包與用書流通市集。",
+    "market.headline": "課程教材包",
+    "market.filter": "篩選",
+    "market.filterAll": "全部商品",
+    "market.filterCore": "核心課程",
+    "market.filterSpot": "焦點課程",
+    "market.filterElective": "選修",
+    "market.sort": "排序",
+    "market.sortFeatured": "精選",
+    "market.sortAz": "名稱 A–Z",
+    "market.sortZa": "名稱 Z–A",
+    "market.sortLow": "價格由低到高",
+    "market.sortHigh": "價格由高到低",
+    "market.empty": "沒有符合條件的教材。",
     "market.title": "二手書與教材市集",
     "market.body":
       "供 imMBA 英語課程教材與用書流通的學生市集。以下為依核心與焦點課程整理的代表項目。",
@@ -682,6 +764,7 @@ const translations = {
     "footer.copy": "輔仁大學 版權所有。",
     "footer.privacy": "隱私權",
     "footer.legal": "法律聲明",
+    "ui.top": "回到頂端",
     "langButton": "English",
     "langAria": "切換為英文",
   },
@@ -738,6 +821,8 @@ const applyLang = () => {
   renderNewsCards(lang, { view: d["article.read"], source: d["news.source"] });
   renderNewsArticle(lang);
   refreshGalleryCaptions();
+  window.dispatchEvent(new Event("resize"));
+  window.dispatchEvent(new CustomEvent("immba:lang"));
 };
 
 window.addEventListener("storage", (event) => {
@@ -966,6 +1051,8 @@ const animateCount = (el) => {
 };
 
 initGallery();
+initFacultyDirectory();
+initMarketplace();
 
 const counters = document.querySelectorAll(".stat-count");
 if (counters.length) {

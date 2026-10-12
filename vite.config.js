@@ -2,15 +2,17 @@ import { defineConfig } from "vite";
 import { cpSync, existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-/** Copy gallery files Vite would otherwise skip (JS string URLs are not in the module graph). */
-const copyGalleryImages = () => ({
-  name: "copy-gallery-images",
+/** Copy folders Vite would otherwise skip (JS string URLs are not in the module graph). */
+const copyStaticImages = () => ({
+  name: "copy-static-images",
   writeBundle() {
-    const from = resolve("images/gallery");
-    const to = resolve("dist/images/gallery");
-    if (!existsSync(from)) return;
-    mkdirSync(to, { recursive: true });
-    cpSync(from, to, { recursive: true });
+    ["gallery", "faculty", "partners"].forEach((folder) => {
+      const from = resolve("images", folder);
+      const to = resolve("dist/images", folder);
+      if (!existsSync(from)) return;
+      mkdirSync(to, { recursive: true });
+      cpSync(from, to, { recursive: true });
+    });
   },
 });
 
@@ -30,7 +32,7 @@ const htmlInput = (dir, acc = {}) => {
 export default defineConfig({
   base: "./",
   publicDir: "public",
-  plugins: [copyGalleryImages()],
+  plugins: [copyStaticImages()],
   build: {
     outDir: "dist",
     assetsDir: "assets",
