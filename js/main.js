@@ -39,6 +39,9 @@ const translations = {
     "hero.lede": "Cultivating global managers with AACSB-accredited excellence",
     "hero.note": "Spring 2027 is open to international students · Apply 14 Sep – 14 Oct",
     "hero.panel": "Program highlights",
+    "stat.top": "Top",
+    "stat.credits": "credits",
+    "stat.english": "English",
     "hero.k1": "Eduniversal 2025",
     "hero.s1": "Top 3",
     "hero.c1": "in Taiwan for International Management",
@@ -266,12 +269,15 @@ const translations = {
     "hero.lede": "以 AACSB 認證的卓越標準，培育全球經理人",
     "hero.note": "2027 年春季班開放國際學生申請 · 9/14–10/14",
     "hero.panel": "學程亮點",
+    "stat.top": "Top",
+    "stat.credits": "學分",
+    "stat.english": "英語",
     "hero.k1": "Eduniversal 2025",
     "hero.s1": "Top 3",
     "hero.c1": "台灣國際管理領域名列前茅",
     "hero.k2": "國際課堂",
     "hero.s2": "30+",
-    "hero.c2": "來自 30 餘國的同學，本地與非本地比可達 1:1",
+    "hero.c2": "來自全球的國家，本地／國際生比例可達 1:1",
     "hero.k3": "雙聯碩士選擇",
     "hero.c3": "兩年兩學位 — 密西根大學 Flint（美國）、KEDGE（法國）或 IQS（西班牙）。",
     "trust.label": "關鍵數據",
@@ -542,18 +548,115 @@ langButtons.forEach((btn) => {
   });
 });
 
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 const accordion = document.querySelector("[data-accordion]");
-accordion?.addEventListener(
-  "toggle",
-  (event) => {
-    const opened = event.target;
-    if (!(opened instanceof HTMLDetailsElement) || !opened.open) return;
-    accordion.querySelectorAll("details").forEach((item) => {
-      if (item !== opened) item.open = false;
-    });
-  },
-  true
-);
+if (accordion) {
+  const panels = [...accordion.querySelectorAll(":scope > details")];
+  const accordionMs = 420;
+  const accordionEase = "cubic-bezier(0.39, 0.575, 0.565, 1)";
+  const heightTransition = `height ${accordionMs}ms ${accordionEase}, opacity ${accordionMs - 80}ms ease`;
+
+  const panelBody = (panel) => panel.querySelector(".details-body");
+
+  const clearBodyMotion = (body) => {
+    body.style.height = "";
+    body.style.opacity = "";
+    body.style.transition = "";
+  };
+
+  const expandPanel = (panel) => {
+    const body = panelBody(panel);
+    if (!body || panel.classList.contains("is-expanded")) return;
+    panel.open = true;
+    body.inert = false;
+    if (prefersReducedMotion) {
+      panel.classList.add("is-expanded");
+      clearBodyMotion(body);
+      return;
+    }
+    body.style.transition = "none";
+    body.style.height = "0px";
+    body.style.opacity = "0";
+    panel.classList.add("is-expanded");
+    const end = body.scrollHeight;
+    void body.offsetHeight;
+    body.style.transition = heightTransition;
+    body.style.height = `${end}px`;
+    body.style.opacity = "1";
+    const done = (event) => {
+      if (event && event.propertyName && event.propertyName !== "height") return;
+      body.removeEventListener("transitionend", done);
+      if (panel.classList.contains("is-expanded")) clearBodyMotion(body);
+    };
+    body.addEventListener("transitionend", done);
+    window.setTimeout(() => done(), accordionMs + 40);
+  };
+
+  const collapsePanel = (panel) => {
+    const body = panelBody(panel);
+    if (!body || (!panel.classList.contains("is-expanded") && !panel.open)) return;
+    if (prefersReducedMotion) {
+      panel.classList.remove("is-expanded");
+      panel.open = false;
+      body.inert = true;
+      body.style.height = "0px";
+      body.style.opacity = "0";
+      body.style.transition = "";
+      return;
+    }
+    const start = body.getBoundingClientRect().height || body.scrollHeight;
+    body.style.transition = "none";
+    body.style.height = `${start}px`;
+    body.style.opacity = "1";
+    void body.offsetHeight;
+    panel.classList.remove("is-expanded");
+    body.style.transition = heightTransition;
+    body.style.height = "0px";
+    body.style.opacity = "0";
+    const done = (event) => {
+      if (event && event.propertyName && event.propertyName !== "height") return;
+      body.removeEventListener("transitionend", done);
+      if (panel.classList.contains("is-expanded")) return;
+      panel.open = false;
+      body.inert = true;
+      body.style.transition = "";
+      body.style.height = "0px";
+      body.style.opacity = "0";
+    };
+    body.addEventListener("transitionend", done);
+    window.setTimeout(() => done(), accordionMs + 40);
+  };
+
+  panels.forEach((panel) => {
+    const body = panelBody(panel);
+    if (panel.open || panel.classList.contains("is-expanded")) {
+      panel.open = true;
+      panel.classList.add("is-expanded");
+      if (body) body.inert = false;
+    } else if (body) {
+      body.inert = true;
+    }
+
+    panel.querySelector("summary")?.addEventListener(
+      "click",
+      (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const opening = !panel.classList.contains("is-expanded");
+        if (opening) {
+          panels.forEach((other) => {
+            if (other !== panel) collapsePanel(other);
+          });
+          expandPanel(panel);
+        } else {
+          collapsePanel(panel);
+        }
+      },
+      true
+    );
+  });
+}
 
 document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
   anchor.addEventListener("click", (event) => {
@@ -567,3 +670,44 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
     window.scrollTo({ top, behavior: "smooth" });
   });
 });
+
+const easeOutCubic = (t) => 1 - (1 - t) ** 3;
+
+const formatCount = (el, value) => {
+  const suffix = el.dataset.suffix || "";
+  el.textContent = `${Math.round(value)}${suffix}`;
+};
+
+const animateCount = (el) => {
+  if (el.dataset.counted === "1") return;
+  el.dataset.counted = "1";
+  const target = Number(el.dataset.count);
+  const duration = Number(el.dataset.duration) || 1200;
+  if (!Number.isFinite(target)) return;
+  if (prefersReducedMotion) {
+    formatCount(el, target);
+    return;
+  }
+  const start = performance.now();
+  const tick = (now) => {
+    const progress = Math.min(1, (now - start) / duration);
+    formatCount(el, target * easeOutCubic(progress));
+    if (progress < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+};
+
+const counters = document.querySelectorAll(".stat-count");
+if (counters.length) {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        animateCount(entry.target);
+        observer.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.45, rootMargin: "0px 0px -8% 0px" }
+  );
+  counters.forEach((el) => observer.observe(el));
+}
