@@ -30,7 +30,16 @@ const siblingFromHome = (homeHref, file) => {
 };
 
 export const initLogoGate = () => {
+  const onAdmin = Boolean(document.querySelector("[data-admin-form]"));
   document.querySelectorAll(".site-header a.logo, .login-top a.logo").forEach((logo) => {
+    if (onAdmin) {
+      logo.addEventListener("click", (event) => {
+        event.preventDefault();
+        logoutAdmin();
+        window.location.href = logo.getAttribute("href") || "index.html#top";
+      });
+      return;
+    }
     let timer = 0;
     const goLogin = () => {
       if (timer) {
@@ -90,5 +99,10 @@ export const guardAdminPage = () => {
   document.querySelector("[data-admin-logout]")?.addEventListener("click", () => {
     logoutAdmin();
     window.location.href = "login.html";
+  });
+  document.querySelectorAll('a[data-i18n="admin.site"]').forEach((link) => {
+    link.addEventListener("click", () => {
+      logoutAdmin();
+    });
   });
 };
