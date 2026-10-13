@@ -348,6 +348,10 @@ const translations = {
       "As AI reshapes the business world, this course equips business students to apply AI and solve real-world problems.",
     "events.e3.tags": "#FJCU_imMBA #dual_master_degree",
     "news.title": "What’s happening in the program.",
+    "highlights.pageTitle": "Highlights",
+    "highlights.meta": "Latest announcements and highlights from Fu Jen imMBA.",
+    "highlights.lede": "All program announcements, newest first, with the same date, title, and official source as the original posts.",
+    "highlights.all": "All highlights",
     "news.n1.title":
       "Spring 2027, apply NOW!! (Sep 14 - Oct 14) - This track is open to international students only",
     "news.n1.body": "★ When to apply: Sep 14 - Oct 14",
@@ -814,6 +818,10 @@ const translations = {
     "events.e3.p4": "在 AI 改寫商業世界之際，本課程協助商管學生運用 AI、解決真實問題。",
     "events.e3.tags": "#FJCU_imMBA #dual_master_degree",
     "news.title": "學程最新消息。",
+    "highlights.pageTitle": "亮點特色",
+    "highlights.meta": "輔仁大學 imMBA 最新公告與亮點。",
+    "highlights.lede": "全部學程公告，依最新日期排列，保留原文日期、標題與官方來源。",
+    "highlights.all": "全部亮點",
     "news.n1.title": "2027 春季班，立即申請！！（9/14–10/14）。本通道僅開放國際學生",
     "news.n1.body": "★ 申請時間：9 月 14 日至 10 月 14 日",
     "news.n1.p1": "2027 春季班",
@@ -989,7 +997,11 @@ const applyLang = () => {
   });
 
   syncCollapseLabel();
-  renderNewsCards(lang, { view: d["article.read"], source: d["news.source"] });
+  renderNewsCards(lang, {
+    view: d["article.read"],
+    source: d["news.source"],
+    kicker: d["article.announcement"],
+  });
   renderNewsArticle(lang);
   applyOfficialLinks(d);
   refreshGalleryCaptions();

@@ -12,6 +12,7 @@ const PAGE_OFFICIAL = {
   "graduation.html": `${BASE}subedit.php?EID=16`,
   "dual-degree.html": `${BASE}subedit.php?EID=24`,
   "announcement.html": `${BASE}news.php`,
+  "highlights.html": `${BASE}subedit.php?EID=36`,
 };
 
 const twinLink = (href, label) => {
@@ -47,6 +48,12 @@ export const applyOfficialLinks = (dict) => {
 
   const newsSource = document.querySelector(".news-source-ref a");
   if (newsSource) newsSource.href = `${BASE}news.php`;
+
+  const nested = /\/(announcements|events)\//.test(location.pathname);
+  const highlightsHref = nested ? "../highlights.html" : "highlights.html";
+  document.querySelectorAll('a[data-i18n="nav.highlights"]').forEach((link) => {
+    link.setAttribute("href", highlightsHref);
+  });
 
   document.querySelector("[data-official-rail]")?.remove();
 

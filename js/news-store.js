@@ -331,7 +331,7 @@ export const restoreDefaultNews = () => saveNews(clone(DEFAULT_NEWS));
 export const publishedNews = () =>
   loadNews()
     .filter((item) => item.status === "published")
-    .sort((a, b) => a.order - b.order || b.date.localeCompare(a.date));
+    .sort((a, b) => b.date.localeCompare(a.date) || a.order - b.order);
 
 export const getNewsById = (id) => loadNews().find((item) => item.id === id) || null;
 
