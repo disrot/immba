@@ -12,7 +12,12 @@ const displayDate = (iso) => String(iso || "").replaceAll("-", "/");
 const resolveHref = (item) => {
   const href = (item.linkUrl || `announcement.html?id=${item.id}`).trim();
   try {
-    return new URL(href, document.baseURI).href;
+    const url = new URL(href, document.baseURI);
+    if (url.origin === location.origin) {
+      const file = url.pathname.split("/").pop() || href;
+      return `${file}${url.search}${url.hash}`;
+    }
+    return url.href;
   } catch {
     return href;
   }

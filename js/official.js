@@ -1,25 +1,5 @@
 const BASE = "https://www.management.fju.edu.tw/esubweb/immbaengindex/";
 
-export const OFFICIAL_MENU = [
-  { href: `${BASE}subindex.php`, key: "notice.official" },
-  { href: `${BASE}profile.php?IID=2`, key: "nav.overview" },
-  { href: `${BASE}profile.php?IID=36`, key: "nav.environment" },
-  { href: `${BASE}enroll.php?IID=3`, key: "nav.apply" },
-  { href: `${BASE}class.php?CID=1`, key: "nav.requirements" },
-  { href: `${BASE}teacher.php`, key: "nav.faculty" },
-  { href: `${BASE}subedit.php?EID=35`, key: "nav.guide" },
-  { href: `${BASE}subedit.php?EID=16`, key: "nav.graduation" },
-  { href: `${BASE}subedit.php?EID=24`, key: "nav.dual" },
-  { href: `${BASE}subedit.php?EID=25`, key: "nav.exchange" },
-  { href: `${BASE}subedit.php?EID=36`, key: "nav.highlights" },
-  { href: `${BASE}download.php`, key: "nav.downloads" },
-  { href: `${BASE}news.php`, key: "news.source" },
-  { href: "https://www.management.fju.edu.tw/subweb/immba/", key: "official.zh" },
-  { href: "https://www.management.fju.edu.tw/index_en.php", key: "official.collegeEn" },
-  { href: "https://www.management.fju.edu.tw/subweb/immba/enroll.php?IID=26", key: "official.local" },
-  { href: "http://isc.oie.fju.edu.tw/generalServices.jsp?labelID=39", key: "official.iscProc" },
-];
-
 const PAGE_OFFICIAL = {
   "index.html": `${BASE}subindex.php`,
   "": `${BASE}subindex.php`,
@@ -68,30 +48,7 @@ export const applyOfficialLinks = (dict) => {
   const newsSource = document.querySelector(".news-source-ref a");
   if (newsSource) newsSource.href = `${BASE}news.php`;
 
-  const nav = document.querySelector(".footer-nav");
-  if (nav && !nav.querySelector("[data-official-rail]")) {
-    const col = document.createElement("div");
-    col.setAttribute("data-official-rail", "");
-    const title = document.createElement("h2");
-    title.dataset.i18n = "official.rail";
-    title.textContent = dict["official.rail"] || "Official pages";
-    const list = document.createElement("ul");
-    list.className = "footer-links official-rail";
-    OFFICIAL_MENU.forEach((item) => {
-      const li = document.createElement("li");
-      const a = document.createElement("a");
-      a.href = item.href;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      a.dataset.i18n = item.key;
-      a.textContent = dict[item.key] || item.key;
-      li.appendChild(a);
-      list.appendChild(li);
-    });
-    col.appendChild(title);
-    col.appendChild(list);
-    nav.appendChild(col);
-  }
+  document.querySelector("[data-official-rail]")?.remove();
 
   document.querySelectorAll("[data-i18n='official.page']").forEach((node) => {
     node.textContent = label;

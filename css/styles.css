@@ -2382,31 +2382,42 @@ a.news-card {
   border-color: color-mix(in srgb, var(--text) 28%, transparent);
 }
 
-.official-rail a {
-  font-size: var(--size-sm);
-}
-
 body a[href^="http://"]::after,
 body a[href^="https://"]::after {
-  content: "ext";
-  display: inline-block;
-  margin-left: 0.4em;
-  padding: 0 5px;
-  border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
-  border-radius: 999px;
-  color: color-mix(in srgb, var(--text) 38%, transparent);
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  line-height: 1.5;
-  vertical-align: 0.15em;
+  content: "↗";
+  display: inline;
+  margin-left: 0.22em;
+  padding: 0;
+  border: 0;
+  color: var(--accent-hover);
+  font-size: 0.85em;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1;
+  vertical-align: 0.05em;
   pointer-events: none;
+  white-space: nowrap;
 }
 
-body[data-lang="zh"] a[href^="http://"]::after,
-body[data-lang="zh"] a[href^="https://"]::after {
-  content: "外部";
-  letter-spacing: 0;
+a.news-card::after,
+a.news-item::after,
+a.logo::after {
+  content: none;
+  display: none;
+}
+
+.site-footer a[href^="http://"]::after,
+.site-footer a[href^="https://"]::after,
+.notice-bar a[href^="http://"]::after,
+.notice-bar a[href^="https://"]::after {
+  color: var(--accent);
+}
+
+.btn-primary[href^="http://"]::after,
+.btn-primary[href^="https://"]::after,
+.header-apply[href^="http://"]::after,
+.header-apply[href^="https://"]::after {
+  color: var(--text);
 }
 
 body a[href^="mailto:"]::after,
@@ -3280,16 +3291,12 @@ body a[href^="tel:"]::after {
 
   .footer-nav {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: var(--space-md);
   }
 }
 
 @media (min-width: 1024px) {
-  .footer-nav {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-  }
-
   .stat-row {
     display: flex;
     flex-direction: row;
