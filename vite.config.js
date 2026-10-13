@@ -6,7 +6,7 @@ import { join, resolve } from "node:path";
 const copyStaticImages = () => ({
   name: "copy-static-images",
   writeBundle() {
-    ["gallery", "faculty", "partners"].forEach((folder) => {
+    ["gallery", "faculty", "partners", "environment"].forEach((folder) => {
       const from = resolve("images", folder);
       const to = resolve("dist/images", folder);
       if (!existsSync(from)) return;

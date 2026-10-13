@@ -1,8 +1,11 @@
-const galleryUrls = import.meta.glob("../images/gallery/*", {
-  eager: true,
-  query: "?url",
-  import: "default",
-});
+const galleryUrls =
+  typeof import.meta.glob === "function"
+    ? import.meta.glob("../images/gallery/*", {
+        eager: true,
+        query: "?url",
+        import: "default",
+      })
+    : {};
 
 const gallerySrc = (name) => {
   const match = Object.entries(galleryUrls).find(([key]) => {

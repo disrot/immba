@@ -6,7 +6,7 @@ import { initMarketplace } from "./marketplace.js";
 
 const translations = {
   en: {
-    "meta.title": "Fu Jen imMBA — MBA Program in International Management",
+    "meta.title": "Fu Jen imMBA: MBA Program in International Management",
     "meta.description":
       "AACSB-accredited MBA in International Management at Fu Jen Catholic University. English-taught, globally ranked, with dual-degree options in the USA, France, and Spain.",
     "skip": "Skip to content",
@@ -55,7 +55,7 @@ const translations = {
     "hero.s2": "30+",
     "hero.c2": "countries represented, with a local/non-local mix that can reach 1:1",
     "hero.k3": "Dual master’s options",
-    "hero.c3": "Two years, two degrees — UM-Flint (USA), KEDGE (France), or IQS (Spain).",
+    "hero.c3": "Two years, two degrees at University of Michigan-Flint (USA), KEDGE Business School (France), or Institut Químic de Sarrià IQS (Spain).",
     "trust.label": "Key facts",
     "trust.s1": "Top 20",
     "trust.c1": "Far East Asia · International Management",
@@ -65,25 +65,40 @@ const translations = {
     "trust.c3": "All imMBA courses conducted in English",
     "trust.s4": "Top 5%",
     "trust.c4": "of business schools worldwide hold AACSB",
-    "intro.title": "Practical management, from a genuinely global viewpoint.",
+    "intro.title": "MBA Program in International Management (imMBA)",
     "intro.body":
-      "imMBA is designed to equip students with practical business and management knowledge that travels. The curriculum shows how the world is connected — and how you can lead inside that system.",
+      "Fu Jen MBA in International Management (imMBA) is AACSB accredited, designed to equip students with practical business and management knowledge from a global perspective to enhance their international mobility. Only 5% of the best business schools worldwide are accredited by AACSB.",
+    "intro.body2":
+      "The curriculum delivers a strong understanding of how the world is interconnected through marketing, operations, finance, human resources, technology, and strategy to help students meet the challenges of the up-to-date global economy.",
+    "intro.college":
+      "The College of Management earned AACSB accreditation in 2005, the first college on both sides of the Taiwan Strait to do so, and was reaccredited in 2010, 2015, 2020, and 2025. Of more than 16,000 business schools worldwide, only about 5% hold AACSB accreditation. In 2021 the College was selected for the Ministry of Education bilingual-education program, the only private-university management college in Greater Taipei among 76 applicants. imMBA launched in 2006 when Fu Jen was selected, alongside National Taiwan University and National Chengchi University, to trial a professional MBA college; all courses have been taught in English since academic year 103 (2014–15).",
+    "rank.lede":
+      "According to Eduniversal 2025, Fu Jen imMBA ranks top 3 in Taiwan and top 20 in Far East Asia in the category of International Management.",
+    "rank.taiwan": "in Taiwan in International Management",
+    "rank.fareast": "in Far East Asia in International Management",
+    "rank.aacsbShare": "of business schools worldwide hold AACSB",
+    "rank.countries": "countries represented among exchange and degree-seeking students",
+    "rank.sourceEdu": "Eduniversal, 2025",
+    "rank.sourceAacsb": "AACSB",
+    "rank.sourceClass": "Local / non-local mix can reach 1:1",
+    "rank.official": "Official overview",
+    "aacsb.alt": "AACSB Accredited",
     "intro.f1.title": "International MBA environment",
     "intro.f1.body":
-      "Local and international students study together, coming from more than 30 countries for exchange or degree-seeking. Cultural diversity is part of the classroom, not an add-on.",
-    "intro.f2.title": "Dual master’s in two years",
+      "Fu Jen imMBA recruits both local and international students who come from more than 30 countries worldwide for exchange or degree-seeking. Taking advantage of the cultural diversity, studying at Fu Jen imMBA, the ratio of local to non-local in the classroom could be 1:1.",
+    "intro.f2.title": "Dual master's degree from USA, France, and Spain",
     "intro.f2.body":
-      "Spend M1 at Fu Jen, then M2 abroad. Meet both institutions’ requirements and graduate with two master’s degrees — an efficient path in time and budget.",
-    "intro.f3.title": "Tuition-free global exchange",
+      "Fu Jen imMBA partners with the University of Michigan-Flint (USA), KEDGE Business School (France), and Institut Químic de Sarrià IQS (Spain) to offer dual master's degree options for all imMBA students. Students choosing this path may obtain two master's degrees in two years in an economic way in terms of time and budget.",
+    "intro.f3.title": "Fu Jen tuition-free exchange program with partner schools worldwide",
     "intro.f3.body":
-      "Prefer a semester abroad without a dual-degree track? Fu Jen’s partner-school exchange program is open to imMBA students through the International Student Center.",
+      "Fu Jen imMBA students are encouraged to take this advantage to explore their international perspectives and cross-cultural experiences if they don't plan to join the dual-degree program. For details about the global tuition-free exchange program, please visit Fu Jen International Student Center.",
     "intro.f4.title": "Two enrollment windows",
     "intro.f4.body":
       "Spring intake is typically mid-October to late December. Fall intake runs approximately January to June. International applicants follow the English track on this site.",
     "partners.label": "Dual-degree partners",
-    "partners.um": "University of Michigan–Flint, USA",
-    "partners.kedge": "Kedge Business School, France",
-    "partners.iqs": "IQS School of Management, Spain",
+    "partners.um": "University of Michigan-Flint",
+    "partners.kedge": "KEDGE Business School",
+    "partners.iqs": "Institut Químic de Sarrià IQS",
     "kw.ibm": "International Business Management",
     "kw.strategy": "Strategic Management",
     "kw.supply": "Supply Chain",
@@ -111,7 +126,7 @@ const translations = {
     "curr.thesis": "Thesis",
     "curr.absNote":
       "Enroll in THESIS before the add/drop period in the semester you plan to defend. Advisor lists are released in late March and early October.",
-    "curr.opt": "Optionally required — take 4 of 6 (12 credits)",
+    "curr.opt": "Optionally required: take 4 of 6 (12 credits)",
     "curr.opt1": "Strategic Management: A Global Viewpoint",
     "curr.opt2": "Supply Chain and Operations Management: A Global Viewpoint",
     "curr.opt3": "Marketing Management: International Perspectives",
@@ -120,18 +135,18 @@ const translations = {
     "curr.opt6": "Financial Management: International Perspectives",
     "curr.prereq": "Prerequisites & waivers",
     "curr.prereq1":
-      "Economics, Business Management, Statistics, and Accounting are prerequisite areas. Students from non-business majors must show one of these was passed at undergraduate level before the first semester — or complete an approved FJCU undergraduate equivalent in their first term. Prerequisites do not count toward graduation credits.",
+      "Economics, Business Management, Statistics, and Accounting are prerequisite areas. Students from non-business majors must show one of these was passed at undergraduate level before the first semester, or complete an approved FJCU undergraduate equivalent in their first term. Prerequisites do not count toward graduation credits.",
     "curr.prereq2":
       "Postgraduate course waivers must be requested before official enrollment. There is one chance, with a deadline in the first week of class, subject to the imMBA chair’s approval.",
     "curr.spot": "New course spotlights",
     "curr.spot1.title": "Data Analytics for International Business",
     "curr.spot1.body":
-      "Build the quantitative literacy to read markets, not just reports — a new spotlight course for globally minded managers.",
+      "Build the quantitative literacy to read markets, not just reports. A new spotlight course for globally minded managers.",
     "curr.spot2.title": "AI-Assisted Digital Product Development",
     "curr.spot2.body":
       "Learn how AI changes product practice, from discovery to delivery, with a practitioner-led lens.",
     "admissions.eyebrow": "Admissions",
-    "admissions.title": "How to apply — a straight path, not a maze.",
+    "admissions.title": "How to apply: a straight path, not a maze.",
     "admissions.body":
       "All courses are conducted in English. Choose the two-year Fu Jen imMBA, or a dual master’s with M1 at FJCU and M2 at a partner school. Partner-school tuition and fees apply for the dual track.",
     "admissions.open": "Now open · International students only",
@@ -142,13 +157,57 @@ const translations = {
       "Two-year imMBA at Fu Jen, or dual master’s with UM-Flint, KEDGE, or IQS. Dual-degree students must be admitted and pay extra full or partial tuition at the partner school.",
     "admissions.s2.title": "Prepare your file",
     "admissions.s2.body":
-      "English autobiography, English study plan, English proficiency (TOEFL, IELTS, or TOEIC — CEFR B2 preferred), two recommendation letters, plus any supporting materials.",
+      "English autobiography, English study plan, English proficiency (TOEFL, IELTS, or TOEIC, CEFR B2 preferred), two recommendation letters, plus any supporting materials.",
     "admissions.s3.title": "Apply online",
     "admissions.s3a": "Submit through the official portal at",
     "admissions.s3b": "Typical windows: Spring mid-Oct to late Dec; Fall January to June.",
     "admissions.s4.title": "Review fees & scholarships",
     "admissions.s4.body":
-      "International tuition is NT$123,000 per semester. Eligible students may choose preferential fees of NT$68,660 or the President Scholarship of NT$40,600 per semester (up to four terms) — not both.",
+      "International tuition is NT$123,000 per semester. Eligible students may choose preferential fees of NT$68,660 or the President Scholarship of NT$40,600 per semester (up to four terms), not both.",
+    "admissions.path": "How to apply",
+    "notify.now": "now",
+    "notify.ago2": "2m ago",
+    "notify.ago8": "8m ago",
+    "notify.n1.name": "Fu Jen imMBA",
+    "notify.n2.name": "Admissions Office",
+    "notify.n2.title": "International vs local",
+    "notify.n3.name": "imMBA",
+    "notify.n3.title": "Typical windows",
+    "deadlines.title": "Application Deadlines",
+    "deadlines.r1": "Round 1",
+    "deadlines.r2": "Round 2",
+    "deadlines.r3": "Round 3",
+    "deadlines.m1": "Oct",
+    "deadlines.d1": "14",
+    "deadlines.m2": "Dec",
+    "deadlines.d2": "31",
+    "deadlines.m3": "Jun",
+    "deadlines.d3": "30",
+    "env.pageTitle": "Our Learning Environment",
+    "env.meta":
+      "Classrooms, library, and campus spaces of Fu Jen Catholic University’s International MBA (imMBA).",
+    "env.headline": "Our Learning Environment",
+    "env.p1":
+      "Fu Jen Catholic University sits at a rare junction of two MRT lines. Greater Taipei is well connected, and the Airport MRT makes exploring the world more convenient.",
+    "env.p2":
+      "Step into the Cardinal Shan Building (MD) and you meet a bright, generous humanities lobby and the aroma of Yili Mai coffee, so students can recharge between classes and discussions. Floors 10 to 12 hold the College of Management's professional classrooms, updated equipment, and comfortable rest areas. Most imMBA learning spaces are arranged here.",
+    "env.p3":
+      "Studying in imMBA means more than a strong faculty and an international peer group. It also means a five-star learning environment at the highest point on campus, looking out over Fu Jen.",
+    "env.p4":
+      "Floors 3, 4, and 5 of the Cardinal Shan Building house a well-stocked library. Pause from research, look out the window, and think. Don't miss the new e-learning Fun Learning Self-Study Center on the 5th floor, where creating and learning feel more immediate.",
+    "env.cap.lobby": "Cardinal Shan Building (MD), humanities lobby",
+    "env.cap.class": "College classrooms on MD floors 10 to 12",
+    "env.cap.campus": "Campus and learning spaces",
+    "env.cap.library": "Library levels and self-study spaces",
+    "env.cap.rooms": "Classrooms and gathering spaces",
+    "env.cap.av": "MD 10F multifunctional AV classroom",
+    "env.cap.proclass": "MD 10F professional classroom",
+    "env.cap.discuss": "MD 10F small group discussion room",
+    "env.cap.wave": "Wave bench lounge with plants",
+    "env.cap.circular": "Circular lounge with tree and purple sofas",
+    "env.cap.orange": "Orange curved sofa lounge",
+    "env.cap.ottoman": "Colorful plus-shaped ottomans",
+    "env.cta": "See our learning environment",
     "faculty.pageTitle": "Faculty Directory",
     "faculty.meta":
       "Full-time and part-time faculty of Fu Jen Catholic University’s International MBA (imMBA).",
@@ -168,6 +227,8 @@ const translations = {
     "faculty.title": "Scholars and practitioners who teach across borders.",
     "faculty.body":
       "A sample of the full-time faculty who teach and advise in the program. Advisor lists for thesis supervision are released each March and October.",
+    "faculty.cta": "View faculty directory",
+    "cta.bandTitle": "Take control of your MBA year with imMBA",
     "fac.yt.role": "Associate Professor · Program Chair",
     "fac.yt.bio": "Ph.D. in Information Management, National Chengchi University. Data mining, AI, machine learning.",
     "fac.ml.role": "Chair Professor",
@@ -195,6 +256,8 @@ const translations = {
     "guide.card2.title": "Thesis advising",
     "guide.card2.body":
       "Wait for the official professor list each term, then contact an advisor. Enrolling in THESIS preserves the right to apply for defense that semester.",
+    "grad.pageTitle": "Graduation",
+    "grad.meta": "Graduation requirements, thesis guide, and official forms for Fu Jen imMBA.",
     "grad.title": "42 credits and a thesis defense.",
     "grad.body":
       "Complete 23 required credits (11 absolutely required including a 6-credit thesis, plus 12 optionally required), 19 electives, and the final thesis defense. The minimum for graduation is 42 credits.",
@@ -223,10 +286,11 @@ const translations = {
     "market.title": "Books & materials marketplace",
     "market.body":
       "A student-to-student board for course books and materials used in the English-taught imMBA curriculum. Listings below are representative placeholders based on core and spotlight courses.",
+    "market.cta": "Browse the marketplace",
     "market.item1": "Core textbook and case pack · typically circulated between first-year cohorts.",
     "market.item2": "Software notes and reading list for the new analytics spotlight course.",
     "market.item3": "Workshop handouts and recommended product-practice readings.",
-    "market.item4": "2-credit required course packet — often reused after the first semester.",
+    "market.item4": "2-credit required course packet, often reused after the first semester.",
     "events.title": "Photo Gallery",
     "gallery.title": "Photo Gallery",
     "gallery.body": "Campus life, classrooms, and the College of Management at Fu Jen.",
@@ -240,7 +304,7 @@ const translations = {
     "events.e1.p3":
       "First-year imMBA student Zoe also shared her story. When she applied, her TOEIC score was in the 500s. After a year in imMBA's English-taught environment, learning and interacting with international classmates, she reached 805!",
     "events.e1.p4":
-      "Zoe also shared practical tips from her own application experience—from preparing application materials to highlighting what makes an applicant stand out. Her experience shows that where you start doesn't have to limit where you can go. Give yourself a chance!",
+      "Zoe also shared practical tips from her own application experience, from preparing application materials to highlighting what makes an applicant stand out. Her experience shows that where you start doesn't have to limit where you can go. Give yourself a chance!",
     "events.e1.p5": "Stop by the imMBA office at LM208-1 and pick up our ''Admissions Guide''!",
     "events.e1.p6": "International Management MBA (imMBA) 2027 Admissions",
     "events.e1.p7": "Local Student Application Period｜9/30–10/13",
@@ -261,8 +325,8 @@ const translations = {
     "events.e2.p8": "The session will be conducted in English. Feel free to share this with international friends!",
     "events.e2.tags": "#FJCU_imMBA #dual_master_degree",
     "events.e3": "【New Course Spotlight｜AI-Assisted Digital Product Development】",
-    "events.e3b": "Want to turn a business idea into a working digital product—even without coding experience?",
-    "events.e3.p1": "Want to turn a business idea into a working digital product—even without coding experience?",
+    "events.e3b": "Want to turn a business idea into a working digital product, even without coding experience?",
+    "events.e3.p1": "Want to turn a business idea into a working digital product, even without coding experience?",
     "events.e3.p2":
       "AI is changing how products are developed. For business students, using AI to turn ideas into practical solutions is becoming an essential skill.",
     "events.e3.p3":
@@ -309,7 +373,7 @@ const translations = {
       "Starting with a business idea, how can AI support the development of a digital product? And what skills can business students gain from this course?",
     "news.n3.p3":
       "In just 90 seconds, our professor introduces the course and gives you a quick look at the key ideas behind AI × Product.",
-    "news.n3.p4": "90 seconds—let's hear from the professor.",
+    "news.n3.p4": "90 seconds. Let's hear from the professor.",
     "news.n3.tags": "#FJCU_imMBA #dual_master_degree",
     "news.n4.title": "【New Course Spotlight｜Data Analytics for International Business】",
     "news.n4.body":
@@ -446,7 +510,7 @@ const translations = {
     "hero.s2": "30+",
     "hero.c2": "來自全球的國家，本地／國際生比例可達 1:1",
     "hero.k3": "雙聯碩士選擇",
-    "hero.c3": "兩年兩學位 — 密西根大學 Flint（美國）、KEDGE（法國）或 IQS（西班牙）。",
+    "hero.c3": "兩年兩學位：密西根大學 Flint（美國）、KEDGE 高等商學院（法國）或 Institut Químic de Sarrià IQS（西班牙）。",
     "trust.label": "關鍵數據",
     "trust.s1": "Top 20",
     "trust.c1": "遠東地區 · 國際管理",
@@ -456,25 +520,39 @@ const translations = {
     "trust.c3": "imMBA 課程均以英語授課",
     "trust.s4": "前 5%",
     "trust.c4": "全球商學院取得 AACSB 認證的比例",
-    "intro.title": "務實管理，真正的全球視野。",
+    "intro.title": "輔仁大學國際經營管理碩士班（imMBA）",
     "intro.body":
-      "imMBA 培養可隨你移動的實務商管能力。課程說明世界如何透過行銷、營運、財務、人資、科技與策略彼此連結，協助你面對當代全球經濟。",
-    "intro.f1.title": "國際化 MBA 環境",
+      "輔仁大學國際經營管理碩士班（imMBA）獲 AACSB 認證，旨在培養學生具備全球視野的實務商管知識，提升國際移動力。全球僅約 5% 頂尖商學院獲 AACSB 認證。",
+    "intro.body2":
+      "課程透過行銷、營運、財務、人資、科技與策略，讓學生深入理解世界如何相互連結，以因應當代全球經濟挑戰。",
+    "intro.college":
+      "輔大管理學院於 2005 年通過 AACSB 國際商學院認證，為兩岸首家通過 AACSB 認證的學院，並於 2010、2015、2020 及 2025 年持續通過認證。全球一萬六千多所商管學院中，僅約 5% 能通過 AACSB。2021 年獲選教育部「大專校院學生雙語化學習計畫」重點培育學院，為全台 76 個申請學院中大台北地區唯一獲補助的私立大學管理學院。國際經管（imMBA）於 2006 年與台大、政大同步獲教育部遴選試辦商管專業學院；自 103 學年度起全面英語授課並招收來自世界各地的學生。",
+    "rank.lede": "根據 Eduniversal 2025，國際經管（imMBA）在 International Management 分類排名全台 Top 3、遠東地區 Top 20。",
+    "rank.taiwan": "台灣・國際管理",
+    "rank.fareast": "遠東亞・國際管理",
+    "rank.aacsbShare": "全球商學院取得 AACSB 認證的比例",
+    "rank.countries": "交換或攻讀學位學生來自的國家數",
+    "rank.sourceEdu": "Eduniversal，2025",
+    "rank.sourceAacsb": "AACSB",
+    "rank.sourceClass": "本地生與非本地生可達 1:1",
+    "rank.official": "官方簡介與排名",
+    "aacsb.alt": "AACSB 認證",
+    "intro.f1.title": "國際化 MBA 學習環境",
     "intro.f1.body":
-      "本地與國際學生共同上課，來自 30 餘國的交換或學位生讓文化多樣性成為課堂的一部分。",
-    "intro.f2.title": "兩年取得雙碩士",
+      "國際經管（imMBA）學生組成除本地生外，尚有亞洲、美洲、歐洲、大洋洲等超過 30 個不同國家的學生前來攻讀學位或交換學習，本地生與國際學生 1:1 合班上課，在菁英師資帶領下，達到在地學習、國際化的學習體驗。",
+    "intro.f2.title": "美國、法國、西班牙跨國雙碩士",
     "intro.f2.body":
-      "碩一在輔大、碩二出國。同時滿足兩校畢業規定，即可取得兩個碩士學位，兼顧時間與預算。",
-    "intro.f3.title": "免學費全球交換",
+      "國際經管（imMBA）與美國密西根大學 Flint 分校（UM-Flint）、法國 KEDGE 高等商學院（KEDGE）和西班牙拉孟大學 IQS 管理學院（IQS）簽署跨國雙碩士學位計畫。凡錄取且符合資格的學生，都有機會以最經濟的時間與預算，最快於兩年內取得兩個碩士學位。",
+    "intro.f3.title": "全球姊妹校免學費出國交換",
     "intro.f3.body":
-      "若不走雙聯，仍可透過國際學生中心參加輔大與夥伴學校的免學費交換。",
+      "無意攻讀雙碩士、但也想到國外體驗學習生活的同學，可以把握輔大全球姊妹校資源，申請姊妹校交換學習計畫。詳情請見輔大國際學生中心。",
     "intro.f4.title": "春秋兩季入學",
     "intro.f4.body":
       "春季申請約每年 10 月中至 12 月底；秋季約 1 月至 6 月。國際學生請使用本站英語招生通道。",
     "partners.label": "雙聯合作學校",
-    "partners.um": "密西根大學 Flint 分校，美國",
-    "partners.kedge": "Kedge 商學院，法國",
-    "partners.iqs": "IQS 管理學院，西班牙",
+    "partners.um": "密西根大學 Flint 分校",
+    "partners.kedge": "KEDGE 高等商學院",
+    "partners.iqs": "Institut Químic de Sarrià IQS",
     "kw.ibm": "國際企業管理",
     "kw.strategy": "策略管理",
     "kw.supply": "供應鏈",
@@ -502,7 +580,7 @@ const translations = {
     "curr.thesis": "論文",
     "curr.absNote":
       "預計口試當學期請於加退選前加選 THESIS。指導教授名單於每年三月下旬與十月上旬公布。",
-    "curr.opt": "選必修 — 六選四（12 學分）",
+    "curr.opt": "選必修：六選四（12 學分）",
     "curr.opt1": "策略管理：全球觀點",
     "curr.opt2": "供應鏈與營運管理：全球觀點",
     "curr.opt3": "行銷管理：國際觀點",
@@ -538,6 +616,49 @@ const translations = {
     "admissions.s4.title": "學雜費與獎學金",
     "admissions.s4.body":
       "國際生每學期學雜費新台幣 123,000 元。符合資格者可選擇本地生優惠學雜費 68,660 元，或校長獎學金每學期 40,600 元（至多四學期），兩者擇一。",
+    "admissions.path": "申請步驟",
+    "notify.now": "現在",
+    "notify.ago2": "2分鐘前",
+    "notify.ago8": "8分鐘前",
+    "notify.n1.name": "輔大 imMBA",
+    "notify.n2.name": "招生辦公室",
+    "notify.n2.title": "國際生與本地生",
+    "notify.n3.name": "imMBA",
+    "notify.n3.title": "一般申請時程",
+    "deadlines.title": "申請截止日期",
+    "deadlines.r1": "第一輪",
+    "deadlines.r2": "第二輪",
+    "deadlines.r3": "第三輪",
+    "deadlines.m1": "10月",
+    "deadlines.d1": "14",
+    "deadlines.m2": "12月",
+    "deadlines.d2": "31",
+    "deadlines.m3": "6月",
+    "deadlines.d3": "30",
+    "env.pageTitle": "學習環境",
+    "env.meta": "輔仁大學國際經營管理碩士（imMBA）的教室、圖書館與校園學習空間。",
+    "env.headline": "學習環境",
+    "env.p1":
+      "輔仁大學擁有得天獨厚的雙捷運線交會，大台北地區交通四通八達，機場捷運線讓探索全世界更便利。",
+    "env.p2":
+      "走進國璽樓(MD)，映入眼簾的是寬敞明亮的人文大廳，以及一粒麥陣陣的咖啡香，讓同學在充實課程和討論學習之餘，能隨時提振精神，獲得滿滿的能量。而位在國璽樓(MD)10-12樓是管理學院的專業教室設備新穎、休息空間舒適，國際經管(imMBA)學習空間也多安排在此。",
+    "env.p3":
+      "可以說在國際經管(imMBA)求學，除了專業的師資陣容，國際多元同儕共同學習之外，還能享有五星級的優質學習環境，雄踞校園制高點，俯瞰美麗的輔大校園。",
+    "env.p4":
+      "國璽樓3、4、5樓是藏書豐富的圖書館，埋頭研究之餘，偶而遠眺窗外，靜心沉思。不容錯過位於5樓新落成的e化「Fun學趣自學中心」，學習創作更有感。",
+    "env.cap.lobby": "國璽樓（MD）人文大廳",
+    "env.cap.class": "國璽樓 10 至 12 樓專業教室",
+    "env.cap.campus": "校園與學習空間",
+    "env.cap.library": "圖書館樓層與自學空間",
+    "env.cap.rooms": "教室與聚會空間",
+    "env.cap.av": "國璽樓（MD）10 樓多功能影音教室",
+    "env.cap.proclass": "國璽樓（MD）10 樓專業教室",
+    "env.cap.discuss": "國璽樓（MD）10 樓小組討論室",
+    "env.cap.wave": "波浪座椅休憩區",
+    "env.cap.circular": "圓形沙發休憩區",
+    "env.cap.orange": "橘色弧形沙發休憩區",
+    "env.cap.ottoman": "彩色組合椅凳",
+    "env.cta": "看看我們的學習環境",
     "faculty.pageTitle": "師資名錄",
     "faculty.meta": "輔仁大學國際經營管理碩士（imMBA）專任與兼任師資。",
     "faculty.headline": "師資名錄",
@@ -555,6 +676,8 @@ const translations = {
     "faculty.eyebrow": "師資陣容",
     "faculty.title": "跨領域、跨國界的學者與實務教師。",
     "faculty.body": "以下為學程專任與兼任師資示例。論文指導教授名單於每年三月與十月公布。",
+    "faculty.cta": "查看師資名錄",
+    "cta.bandTitle": "用 imMBA 掌握你的 MBA 年",
     "fac.yt.role": "副教授 · 學程主任",
     "fac.yt.bio": "政治大學資訊管理博士。資料探勘、人工智慧、機器學習。",
     "fac.ml.role": "講座教授",
@@ -582,6 +705,8 @@ const translations = {
     "guide.card2.title": "論文指導",
     "guide.card2.body":
       "請等候當學期正式名單再聯繫指導教授。加選 THESIS 才能保留該學期申請口試與畢業的權利。",
+    "grad.pageTitle": "畢業規定",
+    "grad.meta": "輔仁大學 imMBA 畢業規定、論文指引與正式表格。",
     "grad.title": "42 學分與論文口試。",
     "grad.body":
       "須完成必修 23 學分（絕對必修 11 學分含論文 6 學分，選必修 12 學分）、選修 19 學分，並通過論文口試。最低畢業學分為 42 學分。",
@@ -610,6 +735,7 @@ const translations = {
     "market.title": "二手書與教材市集",
     "market.body":
       "供 imMBA 英語課程教材與用書流通的學生市集。以下為依核心與焦點課程整理的代表項目。",
+    "market.cta": "進入教材市集",
     "market.item1": "核心教科書與個案教材 · 常見於一年級同學流轉。",
     "market.item2": "新開「國際企業資料分析」課程的軟體筆記與書單。",
     "market.item3": "工作坊講義與產品實務推薦讀物。",
@@ -627,7 +753,7 @@ const translations = {
     "events.e1.p3":
       "一年級同學 Zoe 也分享她的故事。申請時 TOEIC 約 500 多分；在 imMBA 全英語環境中與國際同學學習互動一年後，她考到 805 分！",
     "events.e1.p4":
-      "Zoe 也從自身申請經驗分享實用建議——從準備申請資料到凸顯個人亮點。她的經驗說明：起點不必限制你能走到哪裡。給自己一個機會！",
+      "Zoe 也從自身申請經驗分享實用建議，從準備申請資料到凸顯個人亮點。她的經驗說明：起點不必限制你能走到哪裡。給自己一個機會！",
     "events.e1.p5": "歡迎到 LM208-1 imMBA 辦公室索取《招生指南》！",
     "events.e1.p6": "國際經營管理碩士（imMBA）2027 招生",
     "events.e1.p7": "本地生申請期間｜9/30–10/13",
@@ -646,15 +772,15 @@ const translations = {
     "events.e2.p8": "說明會以英語進行。歡迎轉分享給國際朋友！",
     "events.e2.tags": "#FJCU_imMBA #dual_master_degree",
     "events.e3": "【新課焦點｜AI 輔助數位產品開發】",
-    "events.e3b": "想把商業想法做成可用的數位產品——即使沒有程式經驗？",
-    "events.e3.p1": "想把商業想法做成可用的數位產品——即使沒有程式經驗？",
+    "events.e3b": "想把商業想法做成可用的數位產品，即使沒有程式經驗？",
+    "events.e3.p1": "想把商業想法做成可用的數位產品，即使沒有程式經驗？",
     "events.e3.p2": "AI 正在改變產品開發方式。對商管學生而言，用 AI 把想法變成實用解方，正成為必備能力。",
     "events.e3.p3":
       "本學期輔大 imMBA 新開「AI 輔助數位產品開發」，學生學習產品設計、網站開發與資料管理，並實作一套可用的數位產品。",
     "events.e3.p4": "在 AI 改寫商業世界之際，本課程協助商管學生運用 AI、解決真實問題。",
     "events.e3.tags": "#FJCU_imMBA #dual_master_degree",
     "news.title": "學程最新消息。",
-    "news.n1.title": "2027 春季班，立即申請！！（9/14–10/14）— 本通道僅開放國際學生",
+    "news.n1.title": "2027 春季班，立即申請！！（9/14–10/14）。本通道僅開放國際學生",
     "news.n1.body": "★ 申請時間：9 月 14 日至 10 月 14 日",
     "news.n1.p1": "2027 春季班",
     "news.n1.p2": "★ 申請時間：9 月 14 日至 10 月 14 日",
@@ -688,7 +814,7 @@ const translations = {
     "news.n3.p1": "「AI 輔助數位產品開發」到底在學什麼？",
     "news.n3.p2": "從一個商業想法出發，AI 如何協助開發數位產品？商管學生又能從這門課得到哪些能力？",
     "news.n3.p3": "只要 90 秒，教授介紹這門課，帶你快速認識 AI × 產品的核心概念。",
-    "news.n3.p4": "90 秒——聽聽教授怎麼說。",
+    "news.n3.p4": "90 秒，聽聽教授怎麼說。",
     "news.n3.tags": "#FJCU_imMBA #dual_master_degree",
     "news.n4.title": "【新課焦點｜國際企業資料分析】",
     "news.n4.body": "上週我們談了 AI × 產品。本週來看 AI × 資料，以及資料如何支持更好的商業決策。",
@@ -791,7 +917,7 @@ const applyLang = () => {
   document.documentElement.lang = lang === "zh" ? "zh-TW" : "en";
   document.body.dataset.lang = lang;
   const titleKey = document.body.getAttribute("data-title-key");
-  document.title = titleKey && d[titleKey] ? `${d[titleKey]} — ${d["brand.short"]}` : d["meta.title"];
+  document.title = titleKey && d[titleKey] ? `${d[titleKey]}: ${d["brand.short"]}` : d["meta.title"];
   const descKey = document.body.getAttribute("data-desc-key");
   if (metaDescription) {
     metaDescription.setAttribute("content", (descKey && d[descKey]) || d["meta.description"]);

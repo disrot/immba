@@ -43,7 +43,7 @@ const childFooter = () => `    <footer class="site-footer" id="contact">
               <li><a href="../index.html#intro" data-i18n="nav.about">About</a></li>
               <li><a href="../index.html#admissions" data-i18n="nav.admissions">Admissions</a></li>
               <li><a href="../index.html#curriculum" data-i18n="nav.courses">Courses</a></li>
-              <li><a href="../index.html#faculty" data-i18n="nav.faculty">Faculty</a></li>
+              <li><a href="../faculty.html" data-i18n="nav.faculty">Faculty</a></li>
               <li>
                 <a
                   href="https://www.management.fju.edu.tw/esubweb/immbaengindex/"
