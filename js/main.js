@@ -11,6 +11,8 @@ const translations = {
       "AACSB-accredited MBA in International Management at Fu Jen Catholic University. English-taught, globally ranked, with dual-degree options in the USA, France, and Spain.",
     "skip": "Skip to content",
     "notice.text": "This is a teaching website of Fu Jen Catholic University.",
+    "notice.credit": "— made by Nigel Pang (415416026)",
+    "footer.credit": "— made by Nigel Pang (415416026)",
     "notice.official": "Official imMBA website",
     "notice.collapse": "Collapse main menu",
     "notice.expand": "Expand main menu",
@@ -247,6 +249,8 @@ const translations = {
     "fac.ls.bio": "Ph.D. in Finance, National Chung Cheng University. ESG, green and climate finance.",
     "fac.sh.role": "Part-time Associate Professor",
     "fac.sh.bio": "Ph.D. in Business Administration, FJCU. Human resources, talent and organization development (ATD CPTD).",
+    "guide.pageTitle": "imMBA Guide",
+    "guide.meta": "Course registration, thesis advising, and what to do after you enroll in Fu Jen imMBA.",
     "guide.title": "What to do after you enroll.",
     "guide.body":
       "The imMBA office publishes advisor lists in late March and early October. Register for THESIS before add/drop in the semester you plan to defend. First-year students typically take 9–18 credits per semester; second-year students 8–18, unless it is the final semester or the director approves otherwise.",
@@ -257,10 +261,16 @@ const translations = {
     "guide.card2.body":
       "Wait for the official professor list each term, then contact an advisor. Enrolling in THESIS preserves the right to apply for defense that semester.",
     "grad.pageTitle": "Graduation",
-    "grad.meta": "Graduation requirements, thesis guide, and official forms for Fu Jen imMBA.",
+    "grad.meta": "Graduation requirements, thesis defense, and official forms for Fu Jen imMBA.",
     "grad.title": "42 credits and a thesis defense.",
     "grad.body":
       "Complete 23 required credits (11 absolutely required including a 6-credit thesis, plus 12 optionally required), 19 electives, and the final thesis defense. The minimum for graduation is 42 credits.",
+    "grad.source": "Official Graduation page",
+    "dual.pageTitle": "Dual Degree",
+    "dual.meta":
+      "Official dual master's degree options with University of Michigan-Flint, KEDGE Business School, and IQS School of Management.",
+    "dual.partnersAria": "Partner schools",
+    "dual.source": "Official Dual Degree page",
     "dual.title": "M1 at Fu Jen. M2 in the USA, France, or Spain.",
     "dual.body":
       "Declare your intention to the imMBA office in the first week of the first semester so your course plan can diverge. Apply directly to the partner school in the second semester. Seats are limited; the office recommends students by performance, and the partner makes the final admission decision. Extra full or partial tuition at the partner school applies.",
@@ -466,6 +476,8 @@ const translations = {
       "輔仁大學 AACSB 認證國際經營管理碩士。全英語授課、具全球排名，並提供美國、法國、西班牙雙聯碩士選擇。",
     "skip": "跳至主要內容",
     "notice.text": "本網站為輔仁大學教學網站。",
+    "notice.credit": "— 製作：Nigel Pang (415416026)",
+    "footer.credit": "— 製作：Nigel Pang (415416026)",
     "notice.official": "官方 imMBA 網站",
     "notice.collapse": "收合主選單",
     "notice.expand": "展開主選單",
@@ -696,6 +708,8 @@ const translations = {
     "fac.ls.bio": "中正大學財務博士。ESG、綠色與氣候金融。",
     "fac.sh.role": "兼任副教授",
     "fac.sh.bio": "輔仁大學企業管理博士。人資、人才與組織發展（ATD CPTD）。",
+    "guide.pageTitle": "imMBA 指南",
+    "guide.meta": "輔仁大學 imMBA 入學後選課、論文指導與注意事項。",
     "guide.title": "入學後這樣走。",
     "guide.body":
       "imMBA 辦公室於每年三月下旬與十月上旬公布論文指導教授名單。預計口試當學期請於加退選前加選 THESIS。一年級每學期通常修 9–18 學分、二年級 8–18 學分，最後一學期或經主任同意者除外。",
@@ -706,10 +720,15 @@ const translations = {
     "guide.card2.body":
       "請等候當學期正式名單再聯繫指導教授。加選 THESIS 才能保留該學期申請口試與畢業的權利。",
     "grad.pageTitle": "畢業規定",
-    "grad.meta": "輔仁大學 imMBA 畢業規定、論文指引與正式表格。",
+    "grad.meta": "輔仁大學 imMBA 畢業規定、論文口試與正式表格。",
     "grad.title": "42 學分與論文口試。",
     "grad.body":
       "須完成必修 23 學分（絕對必修 11 學分含論文 6 學分，選必修 12 學分）、選修 19 學分，並通過論文口試。最低畢業學分為 42 學分。",
+    "grad.source": "官方畢業與離校頁面",
+    "dual.pageTitle": "跨國雙碩士",
+    "dual.meta": "輔仁大學 imMBA 與密西根大學 Flint 分校、KEDGE 高等商學院、IQS 管理學院的跨國雙碩士學位。",
+    "dual.partnersAria": "合作學校",
+    "dual.source": "官方跨國雙碩士頁面",
     "dual.title": "碩一在輔大，碩二赴美、法或西班牙。",
     "dual.body":
       "請於入學第一週向辦公室登記雙聯意願，以便碩一課程分流；第二學期逕向合作學校提出申請。名額有限，辦公室依表現推薦，錄取由合作學校決定。合作學校另收全額或部分學費。",

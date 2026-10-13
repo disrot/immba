@@ -44,6 +44,9 @@ const childFooter = () => `    <footer class="site-footer" id="contact">
               <li><a href="../index.html#admissions" data-i18n="nav.admissions">Admissions</a></li>
               <li><a href="../index.html#curriculum" data-i18n="nav.courses">Courses</a></li>
               <li><a href="../faculty.html" data-i18n="nav.faculty">Faculty</a></li>
+              <li><a href="../guide.html" data-i18n="nav.guide">imMBA Guide</a></li>
+              <li><a href="../graduation.html" data-i18n="nav.graduation">Graduation</a></li>
+              <li><a href="../dual-degree.html" data-i18n="nav.dual">Dual Degree</a></li>
               <li>
                 <a
                   href="https://www.management.fju.edu.tw/esubweb/immbaengindex/"
@@ -99,7 +102,7 @@ const childFooter = () => `    <footer class="site-footer" id="contact">
         </div>
       </div>
       <div class="container footer-legal">
-        <p>© <span data-year></span> <span data-i18n="footer.copy">Fu Jen Catholic University. All rights reserved.</span></p>
+        <p>© <span data-year></span> <span data-i18n="footer.copy">Fu Jen Catholic University. All rights reserved.</span> <span class="footer-credit" data-i18n="footer.credit">— made by Nigel Pang (415416026)</span></p>
         <p>
           <a href="https://www.fju.edu.tw/" target="_blank" rel="noopener noreferrer" data-i18n="footer.privacy">Privacy</a>
           ·
@@ -540,7 +543,10 @@ const pageHtml = (page) => {
 
     <div class="notice-bar" data-notice>
       <div class="container notice-inner">
-        <p data-i18n="notice.text">This is a teaching website of Fu Jen Catholic University.</p>
+        <p>
+          <span data-i18n="notice.text">This is a teaching website of Fu Jen Catholic University.</span>
+          <span class="notice-credit" data-i18n="notice.credit">— made by Nigel Pang (415416026)</span>
+        </p>
         <div class="notice-actions">
           <a
             href="https://www.management.fju.edu.tw/esubweb/immbaengindex/"

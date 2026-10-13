@@ -6,7 +6,7 @@
     <title>Graduation: Fu Jen imMBA</title>
     <meta
       name="description"
-      content="Graduation requirements, thesis guide, and official forms for Fu Jen Catholic University’s International MBA (imMBA)."
+      content="Graduation requirements, thesis defense, and official forms for Fu Jen Catholic University’s International MBA (imMBA)."
     />
     <meta name="theme-color" content="#163300" />
     <meta name="color-scheme" content="light" />
@@ -33,7 +33,10 @@
 
     <div class="notice-bar" data-notice>
       <div class="container notice-inner">
-        <p data-i18n="notice.text">This is a teaching website of Fu Jen Catholic University.</p>
+        <p>
+          <span data-i18n="notice.text">This is a teaching website of Fu Jen Catholic University.</span>
+          <span class="notice-credit" data-i18n="notice.credit">— made by Nigel Pang (415416026)</span>
+        </p>
         <div class="notice-actions">
           <a
             href="https://www.management.fju.edu.tw/esubweb/immbaengindex/"
@@ -89,9 +92,9 @@
               </div>
             </div>
             <a href="faculty.html" data-i18n="nav.faculty">Faculty</a>
-            <a href="graduation.html#guide" data-i18n="nav.guide">imMBA Guide</a>
-            <a href="graduation.html" data-i18n="nav.graduation">Graduation</a>
-            <a href="index.html#dual-degree" data-i18n="nav.dual">Dual Degree</a>
+            <a href="guide.html" data-i18n="nav.guide">imMBA Guide</a>
+            <a href="graduation.html" aria-current="page" data-i18n="nav.graduation">Graduation</a>
+            <a href="dual-degree.html" data-i18n="nav.dual">Dual Degree</a>
             <a href="index.html#exchange" data-i18n="nav.exchange">Exchange</a>
             <a href="index.html#announcements" data-i18n="nav.highlights">Highlights</a>
             <a href="https://www.management.fju.edu.tw/" target="_blank" rel="noopener noreferrer" data-i18n="nav.college"
@@ -152,9 +155,9 @@
           <a href="curriculum.html" data-i18n="nav.requirements">Curriculum and Requirements</a>
         </details>
         <a href="faculty.html" data-i18n="nav.faculty">Faculty</a>
-        <a href="graduation.html#guide" data-i18n="nav.guide">imMBA Guide</a>
-        <a href="graduation.html" data-i18n="nav.graduation">Graduation</a>
-        <a href="index.html#dual-degree" data-i18n="nav.dual">Dual Degree</a>
+        <a href="guide.html" data-i18n="nav.guide">imMBA Guide</a>
+        <a href="graduation.html" aria-current="page" data-i18n="nav.graduation">Graduation</a>
+        <a href="dual-degree.html" data-i18n="nav.dual">Dual Degree</a>
         <a href="index.html#exchange" data-i18n="nav.exchange">Exchange</a>
         <a href="index.html#announcements" data-i18n="nav.highlights">Highlights</a>
         <a href="https://www.management.fju.edu.tw/" target="_blank" rel="noopener noreferrer" data-i18n="nav.college"
@@ -173,87 +176,171 @@
     </header>
 
     <main id="main">
-      <section class="credentials" id="graduation">
+      <section class="dir-page" id="graduation">
         <div class="container">
-          <span class="rule" aria-hidden="true"></span>
-          <p class="label" data-i18n="nav.graduation">Graduation</p>
-          <h2 data-i18n="grad.title">42 credits and a thesis defense.</h2>
-          <p data-i18n="grad.body">
-            Complete 23 required credits (11 absolutely required including a 6-credit thesis, plus 12 optionally required),
-            19 electives, and the final thesis defense. The minimum for graduation is 42 credits.
-          </p>
-          <dl class="cred-stats" aria-label="Key facts" data-i18n-attr="aria-label:trust.label">
-            <div>
-              <dt>
-                <span class="stat-count" data-count="30" data-suffix="+" data-duration="1200">0</span>
-              </dt>
-              <dd data-i18n="hero.c2">
-                countries represented, with a local/non-local mix that can reach 1:1
-              </dd>
-            </div>
-            <div>
-              <dt>
-                <span class="stat-count" data-count="42" data-duration="1400">0</span>
-                <span data-i18n="stat.credits">credits</span>
-              </dt>
-              <dd data-i18n="trust.c2">Minimum to graduate, including thesis</dd>
-            </div>
-          </dl>
-          <p id="guide">
-            <span class="label" data-i18n="nav.guide">imMBA Guide</span>
-          </p>
-          <h2 data-i18n="guide.title">What to do after you enroll.</h2>
-          <p data-i18n="guide.body">
-            The imMBA office publishes advisor lists in late March and early October. Register for THESIS before add/drop
-            in the semester you plan to defend. First-year students typically take 9–18 credits per semester; second-year
-            students 8–18, unless it is the final semester or the director approves otherwise.
-          </p>
-          <h3 data-i18n="guide.card1.title">Course registration</h3>
-          <p data-i18n="guide.card1.body">
-            Only graduate-level, English-taught, business-related College of Management courses count toward graduation
-            credits unless the imMBA director approves otherwise.
-          </p>
-          <h3 data-i18n="guide.card2.title">Thesis advising</h3>
-          <p data-i18n="guide.card2.body">
-            Wait for the official professor list each term, then contact an advisor. Enrolling in THESIS preserves the
-            right to apply for defense that semester.
-          </p>
-        </div>
-      </section>
+          <h1 class="dir-headline" data-i18n="grad.pageTitle">Graduation</h1>
+          <div class="dir-rule" aria-hidden="true"></div>
 
-      <section class="resources" id="downloads">
-        <div class="container resource-wrap">
-          <span class="rule" aria-hidden="true"></span>
-          <p class="label" data-i18n="nav.downloads">Downloads</p>
-          <h2 data-i18n="downloads.title">Official forms and brochures.</h2>
-          <ul class="resource-list">
-            <li>
-              <img class="resource-thumb" src="images/logo.jpg" alt="" />
-              <div class="resource-row">
-                <h3 data-i18n="downloads.d2">Graduation Requirements (imMBA)</h3>
-                <a
-                  class="btn btn-ghost resource-action"
-                  href="https://www.management.fju.edu.tw/smarteditupfiles/immbaengindex/GR-ENG-Fall%202023%20(v20221124).pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >PDF</a
-                >
-              </div>
-            </li>
-            <li>
-              <img class="resource-thumb" src="images/logo.jpg" alt="" />
-              <div class="resource-row">
-                <h3 data-i18n="downloads.d3">Course structure and catalog (official site)</h3>
-                <a
-                  class="btn btn-ghost resource-action"
-                  href="https://www.management.fju.edu.tw/esubweb/immbaengindex/class.php"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Link</a
-                >
-              </div>
-            </li>
-          </ul>
+          <div class="grad-official dd-prose" data-dd-lang="en">
+            <h2>Graduation requirements, please read the version that suits you:</h2>
+            <ul class="resource-list">
+              <li>
+                <img class="resource-thumb" src="images/logo.jpg" alt="" />
+                <div class="resource-row">
+                  <h3>Students enrolled in/ from fall 2025</h3>
+                  <a class="btn btn-ghost resource-action" href="https://www.management.fju.edu.tw/smarteditupfiles/immbaengindex/GR-ENG-Fall%202025%20(v2026%2005%2018)(1).pdf" target="_blank" rel="noopener noreferrer">PDF</a>
+                </div>
+              </li>
+              <li>
+                <img class="resource-thumb" src="images/logo.jpg" alt="" />
+                <div class="resource-row">
+                  <h3>Students enrolled in/ from fall 2024</h3>
+                  <a class="btn btn-ghost resource-action" href="https://www.management.fju.edu.tw/smarteditupfiles/immbaengindex/GR-ENG-Fall%202024%20(v2024%200516).pdf" target="_blank" rel="noopener noreferrer">PDF</a>
+                </div>
+              </li>
+              <li>
+                <img class="resource-thumb" src="images/logo.jpg" alt="" />
+                <div class="resource-row">
+                  <h3>Students enrolled in/ from fall 2023</h3>
+                  <a class="btn btn-ghost resource-action" href="https://www.management.fju.edu.tw/smarteditupfiles/immbaengindex/GR-ENG-Fall%202023%20(v20221124).pdf" target="_blank" rel="noopener noreferrer">PDF</a>
+                </div>
+              </li>
+              <li>
+                <img class="resource-thumb" src="images/logo.jpg" alt="" />
+                <div class="resource-row">
+                  <h3>Students enrolled in/ from fall 2021</h3>
+                  <a class="btn btn-ghost resource-action" href="https://www.management.fju.edu.tw/smarteditupfiles/immbaengindex/GR-ENG-Fall%202021%20(v20210429)%20r1.pdf" target="_blank" rel="noopener noreferrer">PDF</a>
+                </div>
+              </li>
+              <li>
+                <img class="resource-thumb" src="images/logo.jpg" alt="" />
+                <div class="resource-row">
+                  <h3>Students enrolled in/ from fall 2018</h3>
+                  <a class="btn btn-ghost resource-action" href="https://www.management.fju.edu.tw/smarteditupfiles/immbaengindex/GR-ENG-Fall%202018%20(v20180719)%20r1.pdf" target="_blank" rel="noopener noreferrer">PDF</a>
+                </div>
+              </li>
+              <li>
+                <img class="resource-thumb" src="images/logo.jpg" alt="" />
+                <div class="resource-row">
+                  <h3>Students enrolled in/ from fall 2017</h3>
+                  <a class="btn btn-ghost resource-action" href="https://www.management.fju.edu.tw/smarteditupfiles/immbaengindex/GR-ENG-Fall%202017%20(v20180719)%20r1.pdf" target="_blank" rel="noopener noreferrer">PDF</a>
+                </div>
+              </li>
+              <li>
+                <img class="resource-thumb" src="images/logo.jpg" alt="" />
+                <div class="resource-row">
+                  <h3>Students enrolled in/ from fall 2014</h3>
+                  <a class="btn btn-ghost resource-action" href="https://www.management.fju.edu.tw/smarteditupfiles/immbaengindex/2014(1).pdf" target="_blank" rel="noopener noreferrer">PDF</a>
+                </div>
+              </li>
+            </ul>
+            <div class="dd-notes">
+              <p class="dd-note">Each semester, the imMBA office will release a list of professors in late March and September for enrolled students to select their thesis advisor. Students are advised to wait patiently for the list.</p>
+              <p class="dd-note">To preserve the right to apply for the thesis defense and graduate, students need to enroll in “THESIS” before add/drop period in the same semester that they (may) plan to do so.</p>
+            </div>
+            <h2>Thesis, defense process and graduation guideline</h2>
+            <ul class="resource-list">
+              <li>
+                <img class="resource-thumb" src="images/logo.jpg" alt="" />
+                <div class="resource-row">
+                  <h3>Overall steps for the thesis defense and graduation</h3>
+                  <a class="btn btn-ghost resource-action" href="https://www.management.fju.edu.tw/smarteditupfiles/immbaengindex/OD%20Process%202026%200709.pdf" target="_blank" rel="noopener noreferrer">PDF</a>
+                </div>
+              </li>
+              <li>
+                <img class="resource-thumb" src="images/logo.jpg" alt="" />
+                <div class="resource-row">
+                  <h3>Thesis resources from FJCU library</h3>
+                  <a class="btn btn-ghost resource-action" href="https://home.lib.fju.edu.tw/TC/essaywriting" target="_blank" rel="noopener noreferrer">Link</a>
+                </div>
+              </li>
+              <li>
+                <img class="resource-thumb" src="images/logo.jpg" alt="" />
+                <div class="resource-row">
+                  <h3>00 Thesis Format</h3>
+                  <a class="btn btn-ghost resource-action" href="https://www.management.fju.edu.tw/smarteditupfiles/immbaengindex/imMBA%20thesis%20format%201210.pdf" target="_blank" rel="noopener noreferrer">PDF</a>
+                </div>
+              </li>
+              <li>
+                <img class="resource-thumb" src="images/logo.jpg" alt="" />
+                <div class="resource-row">
+                  <h3>01 Thesis Final Defense Agreement</h3>
+                  <a class="btn btn-ghost resource-action" href="https://www.management.fju.edu.tw/smarteditupfiles/immbaengindex/01%20OD%20Agreement%202026%200825.pdf" target="_blank" rel="noopener noreferrer">PDF</a>
+                </div>
+              </li>
+              <li>
+                <img class="resource-thumb" src="images/logo.jpg" alt="" />
+                <div class="resource-row">
+                  <h3>02 Thesis Acceptance</h3>
+                  <a class="btn btn-ghost resource-action" href="https://www.management.fju.edu.tw/smarteditupfiles/immbaengindex/02%20Acceptance(1).pdf" target="_blank" rel="noopener noreferrer">PDF</a>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="grad-official dd-prose" data-dd-lang="zh">
+            <h2>論文口試與離校流程</h2>
+            <p>
+              同學必須符合<a href="https://www.management.fju.edu.tw/subweb/immba/class.php?CID=20" target="_blank" rel="noopener noreferrer">修業規則</a>之規定，才具備申請論文口試之資格。每一個學期皆可申請論文口試，Fall的口試截止日為每年的1月31日、Sping的口試截止日為每年的7月31日(實際截止日需要配合當年度的<a href="http://www.secretariat.fju.edu.tw/article.jsp?articleID=8" target="_blank" rel="noopener noreferrer">輔大行事曆</a>)。
+            </p>
+            <p>論文口試前和後皆有必要程序需要充足作業時間，請同學務必依據「論文口試流程與畢業規範」<strong>提前</strong>規劃辦理，以便順利取得輔大MBA學位。</p>
+            <ul class="resource-list">
+              <li>
+                <img class="resource-thumb" src="images/logo.jpg" alt="" />
+                <div class="resource-row">
+                  <h3>論文口試流程與畢業規範</h3>
+                  <a class="btn btn-ghost resource-action" href="https://www.management.fju.edu.tw/smarteditupfiles/immba/OD%20Process%202026%200709.pdf" target="_blank" rel="noopener noreferrer">PDF</a>
+                </div>
+              </li>
+              <li>
+                <img class="resource-thumb" src="images/logo.jpg" alt="" />
+                <div class="resource-row">
+                  <h3>圖書館論文資源</h3>
+                  <a class="btn btn-ghost resource-action" href="https://home.lib.fju.edu.tw/TC/essaywriting" target="_blank" rel="noopener noreferrer">Link</a>
+                </div>
+              </li>
+              <li>
+                <img class="resource-thumb" src="images/logo.jpg" alt="" />
+                <div class="resource-row">
+                  <h3>00論文格式</h3>
+                  <a class="btn btn-ghost resource-action" href="https://www.management.fju.edu.tw/smarteditupfiles/immba/imMBA%20thesis%20format%201210(1).pdf" target="_blank" rel="noopener noreferrer">PDF</a>
+                </div>
+              </li>
+              <li>
+                <img class="resource-thumb" src="images/logo.jpg" alt="" />
+                <div class="resource-row">
+                  <h3>01論文口試同意書</h3>
+                  <a class="btn btn-ghost resource-action" href="https://www.management.fju.edu.tw/smarteditupfiles/immba/01%20OD%20Agreement%202026%200825(3).pdf" target="_blank" rel="noopener noreferrer">PDF</a>
+                </div>
+              </li>
+              <li>
+                <img class="resource-thumb" src="images/logo.jpg" alt="" />
+                <div class="resource-row">
+                  <h3>02論文修改完成證明書</h3>
+                  <a class="btn btn-ghost resource-action" href="https://www.management.fju.edu.tw/smarteditupfiles/immba/02%20Acceptance.pdf" target="_blank" rel="noopener noreferrer">PDF</a>
+                </div>
+              </li>
+            </ul>
+            <h2>修業規則</h2>
+            <p>
+              國際經管(imMBA)最低畢業學分為42學分(含論文6學分)，一般需要規劃4個學期才能完成學業，關於基礎課程、專業必修、專業選修、論文撰寫、英文畢業門檻皆有所規定，為保障自己的學習權益，請同學務必詳讀修業規則並配合辦理。
+              <a href="https://www.management.fju.edu.tw/subweb/immba/class.php?CID=20" target="_blank" rel="noopener noreferrer">更多細部規定</a>
+            </p>
+            <div class="dd-notes">
+              <p class="dd-note">本碩士班每學期分別於3月底及10月初提供教師群名單，供同學自行聯繫並確認指導老師。同學在期間內依據規定辦理即可。</p>
+              <p class="dd-note">同學擬申請論文口試及畢業的當學期，必須於當學期選課期間先加選「論文」乙科，始得於當學期提出論文口試申請。</p>
+            </div>
+          </div>
+
+          <p class="grad-source">
+            <a href="https://www.management.fju.edu.tw/esubweb/immbaengindex/subedit.php?EID=16" target="_blank" rel="noopener noreferrer" data-i18n="grad.source">Official Graduation page</a>
+          </p>
+          <p class="grad-aa">
+            <img src="images/environment/aa-logo.jpg" alt="" width="200" height="71" />
+          </p>
+          <div class="dir-cta">
+            <a class="btn btn-ghost" href="guide.html" data-i18n="nav.guide">imMBA Guide</a>
+          </div>
         </div>
       </section>
     </main>
@@ -292,6 +379,9 @@
               <li><a href="admissions.html" data-i18n="nav.admissions">Admissions</a></li>
               <li><a href="curriculum.html" data-i18n="nav.courses">Courses</a></li>
               <li><a href="faculty.html" data-i18n="nav.faculty">Faculty</a></li>
+              <li><a href="guide.html" data-i18n="nav.guide">imMBA Guide</a></li>
+              <li><a href="graduation.html" data-i18n="nav.graduation">Graduation</a></li>
+              <li><a href="dual-degree.html" data-i18n="nav.dual">Dual Degree</a></li>
               <li>
                 <a
                   href="https://www.management.fju.edu.tw/esubweb/immbaengindex/"
@@ -347,7 +437,7 @@
         </div>
       </div>
       <div class="container footer-legal">
-        <p>© <span data-year></span> <span data-i18n="footer.copy">Fu Jen Catholic University. All rights reserved.</span></p>
+        <p>© <span data-year></span> <span data-i18n="footer.copy">Fu Jen Catholic University. All rights reserved.</span> <span class="footer-credit" data-i18n="footer.credit">— made by Nigel Pang (415416026)</span></p>
         <p>
           <a href="https://www.fju.edu.tw/" target="_blank" rel="noopener noreferrer" data-i18n="footer.privacy">Privacy</a>
           ·
