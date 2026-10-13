@@ -113,6 +113,16 @@
               </select>
             </label>
           </div>
+          <div class="admin-photos">
+            <label>
+              <span data-i18n="admin.photos">Photos</span>
+              <input type="file" name="photos" accept="image/*" multiple />
+            </label>
+            <p class="admin-photos-hint" data-i18n="admin.photosHint">
+              Attach JPEG, PNG, or WebP. Photos appear on the announcement page with both languages.
+            </p>
+            <div class="admin-photo-list" data-admin-photo-list></div>
+          </div>
           <div class="admin-grid">
             <div>
               <label>

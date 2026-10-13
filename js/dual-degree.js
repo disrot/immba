@@ -53,6 +53,15 @@ if (root) {
     desktopDock.addEventListener("change", syncOrientation);
   }
 
+  root.querySelectorAll("[data-dd-jump]").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      const school = link.dataset.ddJump;
+      setSchool(school, { historyMode: "push" });
+      document.getElementById(`dd-panel-${school}`)?.scrollIntoView({ block: "start" });
+    });
+  });
+
   tabs.forEach((tab) => {
     tab.addEventListener("click", () => {
       setSchool(tab.dataset.ddTab, { historyMode: "push" });

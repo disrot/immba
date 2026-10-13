@@ -19,9 +19,54 @@ if (!form || !table) {
   window.location.replace("login.html");
 } else {
   const field = (name) => form.elements.namedItem(name);
+  const photoList = document.querySelector("[data-admin-photo-list]");
+  const MAX_PHOTOS = 8;
+  let photos = [];
 
   const setStatus = (message) => {
     if (statusNode) statusNode.textContent = message;
+  };
+
+  const compressImage = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("read"));
+      reader.onload = () => {
+        const image = new Image();
+        image.onerror = () => reject(new Error("image"));
+        image.onload = () => {
+          const max = 1280;
+          const scale = Math.min(1, max / Math.max(image.width, image.height));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(image.width * scale));
+          canvas.height = Math.max(1, Math.round(image.height * scale));
+          const context = canvas.getContext("2d");
+          context.drawImage(image, 0, 0, canvas.width, canvas.height);
+          resolve({
+            src: canvas.toDataURL("image/jpeg", 0.72),
+            name: file.name || "photo.jpg",
+          });
+        };
+        image.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+  const renderPhotos = () => {
+    if (!photoList) return;
+    if (!photos.length) {
+      photoList.innerHTML = "";
+      return;
+    }
+    photoList.innerHTML = photos
+      .map(
+        (photo, index) => `
+        <figure class="admin-photo-item">
+          <img src="${photo.src}" alt="" />
+          <button type="button" class="btn btn-ghost" data-remove-photo="${index}" data-i18n="admin.removePhoto">Remove</button>
+        </figure>`
+      )
+      .join("");
   };
 
   const readForm = () => ({
@@ -38,6 +83,7 @@ if (!form || !table) {
       zh: field("contentZh").value.trim(),
       en: field("contentEn").value.trim(),
     },
+    photos,
   });
 
   const fillForm = (item) => {
@@ -50,6 +96,9 @@ if (!form || !table) {
     field("titleEn").value = item?.title?.en || "";
     field("contentZh").value = item?.content?.zh || "";
     field("contentEn").value = item?.content?.en || "";
+    if (field("photos")) field("photos").value = "";
+    photos = Array.isArray(item?.photos) ? item.photos.map((photo) => ({ ...photo })) : [];
+    renderPhotos();
     renderPreview();
   };
 
@@ -69,11 +118,13 @@ if (!form || !table) {
         <p class="label">中文</p>
         <h3>${item.title.zh || "—"}</h3>
         ${paragraphs(item.content.zh) || "<p>—</p>"}
+        ${photos.map((photo) => `<img src="${photo.src}" alt="" />`).join("")}
       </div>
       <div class="admin-preview-col">
         <p class="label">English</p>
         <h3>${item.title.en || "—"}</h3>
         ${paragraphs(item.content.en) || "<p>—</p>"}
+        ${photos.map((photo) => `<img src="${photo.src}" alt="" />`).join("")}
       </div>
     `;
   };
@@ -107,6 +158,7 @@ if (!form || !table) {
       status: "published",
       title: { en: "", zh: "" },
       content: { en: "", zh: "" },
+      photos: [],
     });
     field("linkUrl").value = `announcement.html?id=${field("id").value}`;
     setStatus("New bilingual announcement");
@@ -122,9 +174,48 @@ if (!form || !table) {
       return;
     }
     if (!item.linkUrl) item.linkUrl = `announcement.html?id=${item.id}`;
-    upsertNews(item);
-    renderTable();
-    setStatus("Saved. Chinese and English were stored as one record.");
+    try {
+      upsertNews(item);
+      renderTable();
+      setStatus("Saved. Chinese and English were stored as one record.");
+    } catch {
+      setStatus("Could not save photos. Try fewer or smaller images.");
+    }
+  });
+
+  form.addEventListener("change", async (event) => {
+    if (event.target?.name !== "photos") return;
+    const files = [...(event.target.files || [])].filter((file) => file.type.startsWith("image/"));
+    if (!files.length) return;
+    const room = Math.max(0, MAX_PHOTOS - photos.length);
+    if (!room) {
+      setStatus(`You can attach up to ${MAX_PHOTOS} photos.`);
+      event.target.value = "";
+      return;
+    }
+    setStatus("Adding photos…");
+    try {
+      const next = [];
+      for (const file of files.slice(0, room)) {
+        next.push(await compressImage(file));
+      }
+      photos = [...photos, ...next];
+      renderPhotos();
+      renderPreview();
+      setStatus(next.length === 1 ? "Photo attached. Save to publish it." : `${next.length} photos attached. Save to publish them.`);
+    } catch {
+      setStatus("Could not read one of the photos. Try another file.");
+    }
+    event.target.value = "";
+  });
+
+  photoList?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-remove-photo]");
+    if (!button) return;
+    const index = Number(button.getAttribute("data-remove-photo"));
+    photos = photos.filter((_, i) => i !== index);
+    renderPhotos();
+    renderPreview();
   });
 
   table.addEventListener("click", (event) => {

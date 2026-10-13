@@ -25,7 +25,9 @@ export const renderNewsCards = (lang, labels) => {
   list.innerHTML = items
     .map((item) => {
       const title = item.title[lang] || item.title.en || item.title.zh;
+      const cover = item.photos?.[0]?.src;
       return `<a class="news-item news-card" href="${escapeHtml(resolveHref(item))}">
+        ${cover ? `<img class="news-card-photo" src="${escapeHtml(cover)}" alt="" />` : ""}
         <time datetime="${escapeHtml(item.date)}">${escapeHtml(displayDate(item.date))}</time>
         <h3>${escapeHtml(title)}</h3>
         <span class="arrow-link">${escapeHtml(labels.view)}</span>
@@ -49,6 +51,9 @@ export const renderNewsArticle = (lang) => {
     .split(/\n+/)
     .map((line) => line.trim())
     .filter(Boolean);
+  const photos = (item.photos || [])
+    .map((photo) => `<figure class="article-figure"><img src="${escapeHtml(photo.src)}" alt="" /></figure>`)
+    .join("");
   document.title = `${title} — imMBA`;
   article.innerHTML = `
     <a class="article-back" href="index.html#announcements">${escapeHtml(lang === "zh" ? "返回亮點" : "Back to highlights")}</a>
@@ -57,6 +62,7 @@ export const renderNewsArticle = (lang) => {
     <time datetime="${escapeHtml(item.date)}">${escapeHtml(displayDate(item.date))}</time>
     <h1>${escapeHtml(title)}</h1>
     ${paragraphs.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
+    ${photos ? `<div class="article-photos">${photos}</div>` : ""}
     <p class="news-source-ref"><a href="${escapeHtml(item.source || NEWS_SOURCE)}" target="_blank" rel="noopener noreferrer">${escapeHtml(lang === "zh" ? "官方消息" : "Official news")}</a></p>
   `;
 };

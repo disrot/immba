@@ -228,6 +228,11 @@ const normalize = (item, index = 0) => ({
     en: item?.content?.en || "",
     zh: item?.content?.zh || "",
   },
+  photos: Array.isArray(item?.photos)
+    ? item.photos
+        .filter((photo) => photo && typeof photo.src === "string" && photo.src)
+        .map((photo) => ({ src: photo.src, name: photo.name || "" }))
+    : [],
 });
 
 export const loadNews = () => {
@@ -244,7 +249,11 @@ export const loadNews = () => {
 
 export const saveNews = (items) => {
   const next = items.map(normalize);
-  localStorage.setItem(NEWS_STORAGE_KEY, JSON.stringify(next));
+  try {
+    localStorage.setItem(NEWS_STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    throw new Error("storage");
+  }
   return next;
 };
 
@@ -259,8 +268,14 @@ export const getNewsById = (id) => loadNews().find((item) => item.id === id) || 
 
 export const upsertNews = (item) => {
   const list = loadNews();
-  const nextItem = normalize(item);
-  const index = list.findIndex((row) => row.id === nextItem.id);
+  const index = list.findIndex((row) => row.id === String(item?.id || ""));
+  const prev = index >= 0 ? list[index] : {};
+  const nextItem = normalize({
+    ...prev,
+    ...item,
+    title: { ...(prev.title || {}), ...(item?.title || {}) },
+    content: { ...(prev.content || {}), ...(item?.content || {}) },
+  });
   if (index >= 0) list[index] = nextItem;
   else list.push(nextItem);
   return saveNews(list);
