@@ -2,6 +2,7 @@ import {
   autoTranslate,
   deleteNews,
   getNewsById,
+  hydrateNews,
   loadNews,
   restoreDefaultNews,
   upsertNews,
@@ -18,6 +19,8 @@ if (!form || !table) {
 } else if (!isAdminAuthed()) {
   window.location.replace("login.html");
 } else {
+  void (async () => {
+  await hydrateNews();
   const field = (name) => form.elements.namedItem(name);
   const photoList = document.querySelector("[data-admin-photo-list]");
   const MAX_PHOTOS = 8;
@@ -35,7 +38,7 @@ if (!form || !table) {
         const image = new Image();
         image.onerror = () => reject(new Error("image"));
         image.onload = () => {
-          const max = 1280;
+          const max = 960;
           const scale = Math.min(1, max / Math.max(image.width, image.height));
           const canvas = document.createElement("canvas");
           canvas.width = Math.max(1, Math.round(image.width * scale));
@@ -43,7 +46,7 @@ if (!form || !table) {
           const context = canvas.getContext("2d");
           context.drawImage(image, 0, 0, canvas.width, canvas.height);
           resolve({
-            src: canvas.toDataURL("image/jpeg", 0.72),
+            src: canvas.toDataURL("image/jpeg", 0.64),
             name: file.name || "photo.jpg",
           });
         };
@@ -166,7 +169,7 @@ if (!form || !table) {
 
   form.addEventListener("input", renderPreview);
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const item = readForm();
     if (!item.title.zh && !item.title.en) {
@@ -175,11 +178,16 @@ if (!form || !table) {
     }
     if (!item.linkUrl) item.linkUrl = `announcement.html?id=${item.id}`;
     try {
-      upsertNews(item);
+      await upsertNews(item);
       renderTable();
-      setStatus("Saved. Chinese and English were stored as one record.");
+      const open = document.querySelector("[data-admin-open]");
+      if (open) {
+        open.hidden = false;
+        open.setAttribute("href", item.linkUrl);
+      }
+      setStatus("Saved. Open the post on the website to confirm it is live in this browser.");
     } catch {
-      setStatus("Could not save photos. Try fewer or smaller images.");
+      setStatus("Could not save this post. Try fewer photos, then save again.");
     }
   });
 
@@ -218,7 +226,7 @@ if (!form || !table) {
     renderPreview();
   });
 
-  table.addEventListener("click", (event) => {
+  table.addEventListener("click", async (event) => {
     const editId = event.target.closest("[data-edit]")?.getAttribute("data-edit");
     const deleteId = event.target.closest("[data-delete]")?.getAttribute("data-delete");
     if (editId) {
@@ -227,7 +235,7 @@ if (!form || !table) {
       form.scrollIntoView({ behavior: "smooth", block: "start" });
     }
     if (deleteId && window.confirm("Delete this announcement in both languages?")) {
-      deleteNews(deleteId);
+      await deleteNews(deleteId);
       renderTable();
       if (field("id").value === deleteId) resetNew();
       setStatus("Deleted Chinese and English together.");
@@ -236,9 +244,9 @@ if (!form || !table) {
 
   document.querySelector("[data-admin-new]")?.addEventListener("click", resetNew);
 
-  document.querySelector("[data-admin-restore]")?.addEventListener("click", () => {
+  document.querySelector("[data-admin-restore]")?.addEventListener("click", async () => {
     if (!window.confirm("Restore the default announcement list? This replaces the current list.")) return;
-    restoreDefaultNews();
+    await restoreDefaultNews();
     renderTable();
     resetNew();
     setStatus("Default announcement list restored.");
@@ -263,4 +271,5 @@ if (!form || !table) {
 
   renderTable();
   resetNew();
+  })();
 }

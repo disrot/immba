@@ -1,4 +1,6 @@
 import { renderNewsArticle, renderNewsCards } from "./news-ui.js";
+import { hydrateNews } from "./news-store.js";
+import { applyOfficialLinks } from "./official.js";
 import { initGallery, refreshGalleryCaptions } from "./gallery.js";
 import { guardAdminPage, initLoginForm, initLogoGate } from "./auth.js";
 import { initFacultyDirectory } from "./faculty.js";
@@ -436,6 +438,14 @@ const translations = {
     "admin.photos": "Photos",
     "admin.photosHint": "Attach JPEG, PNG, or WebP. Photos appear on the announcement page with both languages.",
     "admin.removePhoto": "Remove",
+    "admin.openPost": "View this post",
+    "official.page": "Official page",
+    "official.rail": "Official pages",
+    "official.ext": "ext",
+    "official.zh": "Chinese official site",
+    "official.collegeEn": "College of Management (English)",
+    "official.local": "Local-student admissions",
+    "official.iscProc": "Exchange procedures",
     "login.title": "Sign in",
     "login.lede": "Sign in to manage announcements. A single click on the logo returns to the home page.",
     "login.user": "Username",
@@ -883,6 +893,14 @@ const translations = {
     "admin.photos": "照片",
     "admin.photosHint": "可附加 JPEG、PNG 或 WebP。照片會隨中英文公告一併顯示。",
     "admin.removePhoto": "移除",
+    "admin.openPost": "查看此則公告",
+    "official.page": "官方頁面",
+    "official.rail": "官方頁面",
+    "official.ext": "外部",
+    "official.zh": "中文官方網站",
+    "official.collegeEn": "管理學院英文網",
+    "official.local": "本國生招生",
+    "official.iscProc": "交換作業",
     "login.title": "登入",
     "login.lede": "登入後即可管理公告。點一下校徽會回到首頁。",
     "login.user": "帳號",
@@ -971,6 +989,7 @@ const applyLang = () => {
   syncCollapseLabel();
   renderNewsCards(lang, { view: d["article.read"], source: d["news.source"] });
   renderNewsArticle(lang);
+  applyOfficialLinks(d);
   refreshGalleryCaptions();
   window.dispatchEvent(new Event("resize"));
   window.dispatchEvent(new CustomEvent("immba:lang"));
@@ -998,7 +1017,7 @@ const syncCollapseLabel = () => {
 initLogoGate();
 initLoginForm();
 guardAdminPage();
-applyLang();
+hydrateNews().finally(() => applyLang());
 
 const setScrolled = () => {
   header?.classList.toggle("is-scrolled", window.scrollY > 8);

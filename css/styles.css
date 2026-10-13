@@ -2355,6 +2355,66 @@ a.news-card {
   resize: vertical;
 }
 
+.admin-save-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.official-twin {
+  display: inline-flex;
+  align-items: center;
+  margin: 0.35rem 0.75rem 0 0;
+  padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
+  border-radius: var(--radius-pill);
+  color: color-mix(in srgb, var(--text) 48%, transparent);
+  font-size: 11px;
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  background: transparent;
+}
+
+.official-twin:hover {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--text) 28%, transparent);
+}
+
+.official-rail a {
+  font-size: var(--size-sm);
+}
+
+body a[href^="http://"]::after,
+body a[href^="https://"]::after {
+  content: "ext";
+  display: inline-block;
+  margin-left: 0.4em;
+  padding: 0 5px;
+  border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--text) 38%, transparent);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+  vertical-align: 0.15em;
+  pointer-events: none;
+}
+
+body[data-lang="zh"] a[href^="http://"]::after,
+body[data-lang="zh"] a[href^="https://"]::after {
+  content: "外部";
+  letter-spacing: 0;
+}
+
+body a[href^="mailto:"]::after,
+body a[href^="tel:"]::after {
+  content: none;
+  display: none;
+}
+
 .admin-photos {
   display: grid;
   gap: var(--space-xs);
@@ -3220,12 +3280,16 @@ a.news-card {
 
   .footer-nav {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: var(--space-md);
   }
 }
 
 @media (min-width: 1024px) {
+  .footer-nav {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
+
   .stat-row {
     display: flex;
     flex-direction: row;

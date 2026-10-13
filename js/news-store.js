@@ -1,6 +1,6 @@
 export const NEWS_STORAGE_KEY = "immba-admin-news-v1";
 
-export const NEWS_SOURCE = "https://www.management.fju.edu.tw/subweb/immba/news.php";
+export const NEWS_SOURCE = "https://www.management.fju.edu.tw/esubweb/immbaengindex/news.php";
 
 const officialDetail = (nid) =>
   `https://www.management.fju.edu.tw/esubweb/immbaengindex/news-detail.php?NID=${nid}`;
@@ -235,24 +235,93 @@ const normalize = (item, index = 0) => ({
     : [],
 });
 
-export const loadNews = () => {
+let cachedNews = null;
+
+const readLocalNews = () => {
   try {
     const raw = localStorage.getItem(NEWS_STORAGE_KEY);
-    if (!raw) return clone(DEFAULT_NEWS).map(normalize);
+    if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || !parsed.length) return clone(DEFAULT_NEWS).map(normalize);
+    if (!Array.isArray(parsed) || !parsed.length) return null;
     return parsed.map(normalize);
   } catch {
-    return clone(DEFAULT_NEWS).map(normalize);
+    return null;
   }
 };
 
-export const saveNews = (items) => {
+const openNewsDb = () =>
+  new Promise((resolve, reject) => {
+    const request = indexedDB.open("immba-admin-news-db", 1);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains("news")) {
+        request.result.createObjectStore("news");
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+
+const readIdbNews = async () => {
+  try {
+    const db = await openNewsDb();
+    return await new Promise((resolve, reject) => {
+      const request = db.transaction("news", "readonly").objectStore("news").get("list");
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(request.error);
+    });
+  } catch {
+    return null;
+  }
+};
+
+const writeIdbNews = async (items) => {
+  const db = await openNewsDb();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction("news", "readwrite");
+    tx.objectStore("news").put(items, "list");
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+};
+
+export const loadNews = () => cachedNews || readLocalNews() || clone(DEFAULT_NEWS).map(normalize);
+
+export const hydrateNews = async () => {
+  const fromIdb = await readIdbNews();
+  if (Array.isArray(fromIdb) && fromIdb.length) {
+    cachedNews = fromIdb.map(normalize);
+    return cachedNews;
+  }
+  cachedNews = readLocalNews() || clone(DEFAULT_NEWS).map(normalize);
+  return cachedNews;
+};
+
+export const saveNews = async (items) => {
   const next = items.map(normalize);
+  cachedNews = next;
+  let stored = false;
+  try {
+    await writeIdbNews(next);
+    stored = true;
+  } catch {
+    /* fall through to localStorage */
+  }
   try {
     localStorage.setItem(NEWS_STORAGE_KEY, JSON.stringify(next));
+    stored = true;
   } catch {
-    throw new Error("storage");
+    try {
+      const slim = next.map((item) => ({
+        ...item,
+        photos: (item.photos || [])
+          .filter((photo) => photo.src && !photo.src.startsWith("data:"))
+          .map((photo) => ({ src: photo.src, name: photo.name || "" })),
+      }));
+      localStorage.setItem(NEWS_STORAGE_KEY, JSON.stringify(slim));
+      stored = stored || slim.some((item) => item.title.en || item.title.zh);
+    } catch {
+      if (!stored) throw new Error("storage");
+    }
   }
   return next;
 };
@@ -266,7 +335,7 @@ export const publishedNews = () =>
 
 export const getNewsById = (id) => loadNews().find((item) => item.id === id) || null;
 
-export const upsertNews = (item) => {
+export const upsertNews = async (item) => {
   const list = loadNews();
   const index = list.findIndex((row) => row.id === String(item?.id || ""));
   const prev = index >= 0 ? list[index] : {};
