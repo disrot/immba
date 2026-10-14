@@ -2,25 +2,15 @@ import { defineConfig } from "vite";
 import { cpSync, existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-/** Copy folders Vite would otherwise skip (JS string URLs are not in the module graph). */
+/** Copy the images tree Vite would otherwise skip (JS string URLs are not in the module graph). */
 const copyStaticImages = () => ({
   name: "copy-static-images",
   writeBundle() {
-    ["gallery", "faculty", "partners", "environment"].forEach((folder) => {
-      const from = resolve("images", folder);
-      const to = resolve("dist/images", folder);
-      if (!existsSync(from)) return;
-      mkdirSync(to, { recursive: true });
-      cpSync(from, to, { recursive: true });
-    });
-    const extra = ["logo.png"];
-    extra.forEach((file) => {
-      const from = resolve("images", file);
-      const to = resolve("dist/images", file);
-      if (!existsSync(from)) return;
-      mkdirSync(resolve("dist/images"), { recursive: true });
-      cpSync(from, to);
-    });
+    const from = resolve("images");
+    const to = resolve("dist/images");
+    if (!existsSync(from)) return;
+    mkdirSync(to, { recursive: true });
+    cpSync(from, to, { recursive: true });
   },
 });
 
