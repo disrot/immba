@@ -26,25 +26,21 @@ const twinLink = (href, label) => {
   return a;
 };
 
-const placeTwin = (host, href, label) => {
-  if (!host || host.querySelector(":scope > .official-twin, .official-twin")) return;
-  host.appendChild(twinLink(href, label));
-};
-
 export const applyOfficialLinks = (dict) => {
   const label = dict["official.page"] || "Official page";
   const file = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+  const isHome = file === "index.html" || file === "";
   const pageUrl = PAGE_OFFICIAL[file];
-  if (pageUrl) {
+  if (pageUrl && !isHome) {
     const heading = document.querySelector("main h1, main .dir-headline, main h2");
-    if (heading && !heading.parentElement?.querySelector(".official-twin")) {
+    if (
+      heading &&
+      !heading.closest(".hero") &&
+      !heading.parentElement?.querySelector(".official-twin")
+    ) {
       heading.insertAdjacentElement("afterend", twinLink(pageUrl, label));
     }
   }
-
-  placeTwin(document.querySelector("#exchange .text-col"), `${BASE}subedit.php?EID=25`, label);
-  placeTwin(document.querySelector("#announcements .container"), `${BASE}subedit.php?EID=36`, label);
-  placeTwin(document.querySelector("#downloads .container"), `${BASE}download.php`, label);
 
   const newsSource = document.querySelector(".news-source-ref a");
   if (newsSource) newsSource.href = `${BASE}news.php`;
