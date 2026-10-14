@@ -216,7 +216,7 @@ const translations = {
     "faculty.pageTitle": "Faculty Directory",
     "faculty.meta":
       "Full-time and part-time faculty of Fu Jen Catholic University’s International MBA (imMBA).",
-    "faculty.headline": "Faculty directory",
+    "faculty.headline": "Faculty",
     "faculty.searchLabel": "Name",
     "faculty.search": "Search by name...",
     "faculty.typeLabel": "Faculty Type",
@@ -281,6 +281,17 @@ const translations = {
     "exchange.body":
       "If you are not on a dual-degree track, Fu Jen’s global tuition-free exchange program is open to imMBA students. Procedures, requirements, deadlines, and school lists are handled by the Fu Jen International Student Center.",
     "exchange.cta": "International Student Center",
+    "exchange.all": "Partner universities",
+    "exchange.pageTitle": "Exchange",
+    "exchange.officialTitle": "Global tuition-free exchange program with partner schools worldwide",
+    "exchange.meta": "Tuition-free exchange with Fu Jen partner schools worldwide, through the International Student Center.",
+    "exchange.p1":
+      "With abundant resources in academic networking, Fu Jen Catholic University has partnered schools globally with a tuition-free exchange program.",
+    "exchange.p2":
+      "Fu Jen imMBA students are encouraged to take this advantage to explore their international perspectives and cross-cultural experiences if they don't plan to join a dual degree program at one of the contracted institutions abroad.",
+    "exchange.p3":
+      "For details about the global tuition-free exchange program in terms of application procedures, requirements, deadline, school information, and so on, please visit Fu Jen International Student Center.",
+    "exchange.partnersLabel": "Featured partners",
     "market.pageTitle": "Marketplace",
     "market.meta": "Student-to-student course packets, textbooks, and materials for Fu Jen imMBA.",
     "market.headline": "Course packets",
@@ -755,6 +766,16 @@ const translations = {
     "exchange.body":
       "未走雙聯者，可使用輔仁大學全球免學費交換。申請流程、資格、期限與學校資訊請洽國際學生中心。",
     "exchange.cta": "國際學生中心",
+    "exchange.all": "夥伴大學",
+    "exchange.pageTitle": "海外交換",
+    "exchange.officialTitle": "與全球夥伴學校的免學費交換計畫",
+    "exchange.meta": "透過國際學生中心，參與輔仁大學與全球夥伴學校的免學費交換。",
+    "exchange.p1": "輔仁大學學術網絡資源豐富，與全球夥伴學校設有免學費交換計畫。",
+    "exchange.p2":
+      "若不計畫前往簽約海外院校修讀雙聯學位，本學程鼓勵同學善用此機會，拓展國際視野與跨文化經驗。",
+    "exchange.p3":
+      "全球免學費交換之申請流程、資格、期限與學校資訊等細節，請洽輔仁大學國際學生中心。",
+    "exchange.partnersLabel": "夥伴學校",
     "market.pageTitle": "教材市集",
     "market.meta": "輔仁大學 imMBA 學生教材、課程包與用書流通市集。",
     "market.headline": "課程教材包",

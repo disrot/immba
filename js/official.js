@@ -13,6 +13,7 @@ const PAGE_OFFICIAL = {
   "dual-degree.html": `${BASE}subedit.php?EID=24`,
   "announcement.html": `${BASE}news.php`,
   "highlights.html": `${BASE}subedit.php?EID=36`,
+  "exchange.html": `${BASE}subedit.php?EID=25`,
 };
 
 const twinLink = (href, label) => {
@@ -47,8 +48,12 @@ export const applyOfficialLinks = (dict) => {
 
   const nested = /\/(announcements|events)\//.test(location.pathname);
   const highlightsHref = nested ? "../highlights.html" : "highlights.html";
+  const exchangeHref = nested ? "../exchange.html" : "exchange.html";
   document.querySelectorAll('a[data-i18n="nav.highlights"]').forEach((link) => {
     link.setAttribute("href", highlightsHref);
+  });
+  document.querySelectorAll('a[data-i18n="nav.exchange"]').forEach((link) => {
+    link.setAttribute("href", exchangeHref);
   });
 
   document.querySelector("[data-official-rail]")?.remove();
