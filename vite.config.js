@@ -13,6 +13,14 @@ const copyStaticImages = () => ({
       mkdirSync(to, { recursive: true });
       cpSync(from, to, { recursive: true });
     });
+    const extra = ["logo.png"];
+    extra.forEach((file) => {
+      const from = resolve("images", file);
+      const to = resolve("dist/images", file);
+      if (!existsSync(from)) return;
+      mkdirSync(resolve("dist/images"), { recursive: true });
+      cpSync(from, to);
+    });
   },
 });
 

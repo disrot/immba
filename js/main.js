@@ -1028,9 +1028,42 @@ const syncCollapseLabel = () => {
   });
 };
 
+const enhanceFooter = () => {
+  const footer = document.querySelector("footer.site-footer");
+  if (!footer || footer.classList.contains("footer-hec")) return;
+  footer.classList.add("footer-hec");
+  const nested = /\/(announcements|events)\//.test(location.pathname);
+  const p = nested ? "../" : "";
+  const visual = document.createElement("div");
+  visual.className = "footer-visual";
+  visual.innerHTML = `
+    <img src="${p}images/campus-glass.jpg" alt="" />
+    <a class="footer-mark" href="${p}index.html">
+      <img src="${p}images/logo.png" alt="" width="96" height="96" />
+      <span>
+        <strong data-i18n="brand.short">imMBA</strong>
+        <small data-i18n="footer.university">Fu Jen Catholic University</small>
+      </span>
+    </a>
+  `;
+  const body = document.createElement("div");
+  body.className = "footer-body";
+  while (footer.firstChild) body.appendChild(footer.firstChild);
+  const badges = document.createElement("div");
+  badges.className = "footer-badges";
+  badges.innerHTML = `
+    <a href="https://www.aacsb.edu/" target="_blank" rel="noopener noreferrer">
+      <img src="${p}images/aacsb.png" alt="AACSB Accredited" width="148" height="40" data-i18n-attr="alt:aacsb.alt" />
+    </a>
+  `;
+  body.appendChild(badges);
+  footer.append(visual, body);
+};
+
 initLogoGate();
 initLoginForm();
 guardAdminPage();
+enhanceFooter();
 hydrateNews().finally(() => applyLang());
 
 const setScrolled = () => {
