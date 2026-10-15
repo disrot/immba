@@ -4,7 +4,7 @@ import { applyOfficialLinks } from "./official.js";
 import { initGallery, refreshGalleryCaptions } from "./gallery.js";
 import { guardAdminPage, initLoginForm, initLogoGate } from "./auth.js";
 import { initFacultyDirectory } from "./faculty.js";
-import { initMarketplace } from "./marketplace.js";
+import { initMarketplace, initListing } from "./marketplace.js";
 
 const translations = {
   en: {
@@ -294,19 +294,23 @@ const translations = {
     "exchange.partnersLabel": "Featured partners",
     "market.pageTitle": "Marketplace",
     "market.meta": "Student-to-student course packets, textbooks, and materials for Fu Jen imMBA.",
-    "market.headline": "Course packets",
+    "market.headline": "Marketplace",
     "market.filter": "Filter by",
-    "market.filterAll": "All products",
-    "market.filterCore": "Core",
-    "market.filterSpot": "Spotlight",
-    "market.filterElective": "Elective",
+    "market.filterAll": "Filter: All",
+    "market.filterCore": "Filter: Core",
+    "market.filterSpot": "Filter: Spotlight",
+    "market.filterElective": "Filter: Elective",
     "market.sort": "Sort by",
-    "market.sortFeatured": "Featured",
-    "market.sortAz": "Alphabetically, A–Z",
-    "market.sortZa": "Alphabetically, Z–A",
-    "market.sortLow": "Price, low to high",
-    "market.sortHigh": "Price, high to low",
+    "market.sortFeatured": "Sort by: Featured",
+    "market.sortAz": "Sort by: A–Z",
+    "market.sortZa": "Sort by: Z–A",
+    "market.sortLow": "Sort by: Price low to high",
+    "market.sortHigh": "Sort by: Price high to low",
     "market.empty": "No packets match these filters.",
+    "market.tabDesc": "Description",
+    "market.tabDetails": "Details",
+    "market.tabPickup": "Pickup",
+    "market.related": "You may also like",
     "market.title": "Books & materials marketplace",
     "market.body":
       "A student-to-student board for course books and materials used in the English-taught imMBA curriculum. Listings below are representative placeholders based on core and spotlight courses.",
@@ -778,19 +782,23 @@ const translations = {
     "exchange.partnersLabel": "夥伴學校",
     "market.pageTitle": "教材市集",
     "market.meta": "輔仁大學 imMBA 學生教材、課程包與用書流通市集。",
-    "market.headline": "課程教材包",
+    "market.headline": "教材市集",
     "market.filter": "篩選",
-    "market.filterAll": "全部商品",
-    "market.filterCore": "核心課程",
-    "market.filterSpot": "焦點課程",
-    "market.filterElective": "選修",
+    "market.filterAll": "篩選：全部",
+    "market.filterCore": "篩選：核心",
+    "market.filterSpot": "篩選：焦點",
+    "market.filterElective": "篩選：選修",
     "market.sort": "排序",
-    "market.sortFeatured": "精選",
-    "market.sortAz": "名稱 A–Z",
-    "market.sortZa": "名稱 Z–A",
-    "market.sortLow": "價格由低到高",
-    "market.sortHigh": "價格由高到低",
+    "market.sortFeatured": "排序：精選",
+    "market.sortAz": "排序：A–Z",
+    "market.sortZa": "排序：Z–A",
+    "market.sortLow": "排序：價格由低到高",
+    "market.sortHigh": "排序：價格由高到低",
     "market.empty": "沒有符合條件的教材。",
+    "market.tabDesc": "說明",
+    "market.tabDetails": "細節",
+    "market.tabPickup": "取件方式",
+    "market.related": "你可能也需要",
     "market.title": "二手書與教材市集",
     "market.body":
       "供 imMBA 英語課程教材與用書流通的學生市集。以下為依核心與焦點課程整理的代表項目。",
@@ -1291,6 +1299,7 @@ const animateCount = (el) => {
 initGallery();
 initFacultyDirectory();
 initMarketplace();
+initListing();
 
 const counters = document.querySelectorAll(".stat-count");
 if (counters.length) {
