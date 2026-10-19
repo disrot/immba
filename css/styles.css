@@ -3157,7 +3157,7 @@ a.news-card {
   text-align: left;
   padding: 0.65rem 0.85rem;
   border-bottom: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 .office-table thead th,
@@ -3243,6 +3243,16 @@ a.news-card {
   gap: var(--space-xs);
 }
 
+.office-page .admin-table {
+  table-layout: auto;
+}
+
+.office-page td.admin-row-actions {
+  width: 1%;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
 .office-page .admin-toolbar {
   gap: 0.5rem;
 }
@@ -3260,6 +3270,8 @@ a.news-card {
 
 .office-page .admin-actions {
   flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .admin-form {

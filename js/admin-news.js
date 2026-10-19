@@ -145,9 +145,11 @@ if (!form || !table) {
           <td>${item.status}</td>
           <td>${item.title.zh || "—"}</td>
           <td>${item.title.en || "—"}</td>
-          <td class="admin-actions">
-            <button type="button" class="btn btn-ghost" data-edit="${item.id}">Edit</button>
-            <button type="button" class="btn btn-ghost" data-delete="${item.id}">Delete</button>
+          <td class="admin-row-actions">
+            <div class="admin-actions">
+              <button type="button" class="btn btn-ghost" data-edit="${item.id}">Edit</button>
+              <button type="button" class="btn btn-ghost" data-delete="${item.id}">Delete</button>
+            </div>
           </td>
         </tr>`
       )
