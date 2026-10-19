@@ -30,8 +30,8 @@ const siblingFromHome = (homeHref, file) => {
 };
 
 export const initLogoGate = () => {
-  const onAdmin = Boolean(document.querySelector("[data-admin-form]"));
-  document.querySelectorAll(".site-header a.logo, .login-top a.logo").forEach((logo) => {
+  const onAdmin = Boolean(document.querySelector("[data-admin-guard], [data-admin-form]"));
+  document.querySelectorAll(".site-header a.logo, .login-top a.logo, .office-rail-logo").forEach((logo) => {
     if (onAdmin) {
       logo.addEventListener("click", (event) => {
         event.preventDefault();
@@ -70,7 +70,7 @@ export const initLoginForm = () => {
   const form = document.querySelector("[data-login-form]");
   if (!form) return;
   if (isAdminAuthed()) {
-    window.location.replace("admin.html");
+    window.location.replace("dashboard.html");
     return;
   }
   form.addEventListener("submit", (event) => {
@@ -80,7 +80,7 @@ export const initLoginForm = () => {
     const remember = Boolean(form.elements.namedItem("remember")?.checked);
     const err = form.querySelector("[data-login-error]");
     if (loginAdmin(user, pass, remember)) {
-      window.location.replace("admin.html");
+      window.location.replace("dashboard.html");
       return;
     }
     if (err) {
@@ -91,7 +91,7 @@ export const initLoginForm = () => {
 };
 
 export const guardAdminPage = () => {
-  if (!document.querySelector("[data-admin-form]")) return;
+  if (!document.querySelector("[data-admin-guard], [data-admin-form]")) return;
   if (!isAdminAuthed()) {
     window.location.replace("login.html");
     return;

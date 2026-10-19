@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard: imMBA</title>
+    <meta name="description" content="imMBA back-office dashboard" />
+    <meta name="theme-color" content="#163300" />
+    <meta name="color-scheme" content="light" />
+    <link rel="icon" href="logo.jpg" type="image/jpeg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="office-page" data-title-key="dash.title">
+    <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
+    <script>
+      if (
+        sessionStorage.getItem("immba-admin-session") !== "1" &&
+        localStorage.getItem("immba-admin-session") !== "1"
+      ) {
+        location.replace("login.html");
+      }
+    </script>
+    <div class="office" data-office data-admin-guard data-admin-dash>
+      <aside class="office-rail" aria-label="Back-office">
+        <a class="logo office-rail-logo" href="index.html#top" data-i18n-attr="aria-label:brand.name" aria-label="Fu Jen Catholic University International MBA (imMBA)">
+          <img class="logo-img" src="images/logo.jpg" alt="" width="40" height="40" />
+        </a>
+        <nav class="office-tabs">
+          <button type="button" class="office-tab" data-office-tab="analytics" aria-current="page">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><polygon points="12,7 14.2,11.2 18.8,12 14.2,12.8 12,17 9.8,12.8 5.2,12 9.8,11.2" fill="currentColor"/></svg>
+            <span data-i18n="office.analytics">Analytics</span>
+          </button>
+          <button type="button" class="office-tab" data-office-tab="people">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 19c1.2-3.2 3.4-4.8 6.5-4.8S17.8 15.8 19 19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span data-i18n="office.people">People</span>
+          </button>
+          <button type="button" class="office-tab" data-office-tab="news">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 9h8M8 13h8M8 17h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span data-i18n="admin.kicker">AdminNews</span>
+          </button>
+          <button type="button" class="office-tab" data-office-tab="compose">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 8.5v7M8.5 12h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span data-i18n="admin.new">New announcement</span>
+          </button>
+        </nav>
+        <button type="button" class="office-tab office-tab-exit" data-admin-logout>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7 8.2A7 7 0 1 0 17 8.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span data-i18n="admin.logout">Sign out</span>
+        </button>
+      </aside>
+      <div class="office-stage">
+        <header class="office-top" data-header>
+          <label class="office-switch">
+            <span class="sr-only" data-i18n="office.area">Area</span>
+            <select data-office-switch>
+              <option value="analytics" data-i18n="office.web">Web Analytics</option>
+              <option value="people" data-i18n="office.people">People</option>
+              <option value="news" data-i18n="admin.kicker">AdminNews</option>
+              <option value="compose" data-i18n="admin.new">New announcement</option>
+            </select>
+          </label>
+          <p class="office-live" data-office-only="analytics"><span data-i18n="dash.live">Live now</span> <strong data-dash-live>0</strong></p>
+          <div class="office-top-actions">
+            <label class="office-range office-equal" data-office-only="analytics">
+              <span class="sr-only" data-i18n="dash.range">Range</span>
+              <select data-dash-range>
+                <option value="today" data-i18n="dash.today">Today</option>
+                <option value="7d" selected data-i18n="dash.week">Last 7 days</option>
+                <option value="all" data-i18n="dash.all">All recorded</option>
+              </select>
+            </label>
+            <button type="button" class="office-chip office-equal" data-dash-clear data-office-only="analytics" data-i18n="dash.clear">Clear data</button>
+            <button type="button" class="lang-toggle office-equal" data-lang-toggle data-i18n="langButton" aria-label="Switch language">中文</button>
+            <a class="office-chip office-chip-lime office-equal" href="index.html" data-i18n="admin.site">View website</a>
+          </div>
+        </header>
+        <main id="main" class="office-main">
+          <section class="office-panel" data-office-panel="analytics">
+            <p class="office-note" data-dash-empty hidden></p>
+            <div class="office-grid">
+              <article class="office-widget office-c8">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="dash.views">Page views</h2>
+                    <p data-i18n="office.total">Total</p>
+                  </div>
+                  <span data-dash-range-label>Last 7 days</span>
+                </header>
+                <strong class="office-hero" data-dash-views>0</strong>
+                <div class="office-svg" data-dash-views-chart></div>
+              </article>
+              <article class="office-widget office-c4">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="dash.visits">Visits</h2>
+                    <p data-i18n="office.total">Total</p>
+                  </div>
+                  <span data-dash-range-label>Last 7 days</span>
+                </header>
+                <strong class="office-hero" data-dash-visits>0</strong>
+                <div class="office-svg" data-dash-visits-chart></div>
+              </article>
+              <article class="office-widget office-c4">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="office.bounce">Bounce rate</h2>
+                    <p data-i18n="office.avg">Average</p>
+                  </div>
+                  <span data-dash-range-label>Last 7 days</span>
+                </header>
+                <strong class="office-hero" data-dash-bounce>0%</strong>
+                <div class="office-svg" data-dash-bounce-chart></div>
+              </article>
+              <article class="office-widget office-c4">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="office.time">Time on site</h2>
+                    <p data-i18n="office.avg">Average</p>
+                  </div>
+                  <span data-dash-range-label>Last 7 days</span>
+                </header>
+                <strong class="office-hero" data-dash-time>00:00</strong>
+                <div class="office-svg" data-dash-time-chart></div>
+              </article>
+              <article class="office-widget office-c4">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="dash.visitors">Visitors</h2>
+                    <p data-i18n="office.total">Total</p>
+                  </div>
+                  <span data-dash-range-label>Last 7 days</span>
+                </header>
+                <strong class="office-hero" data-dash-visitors>0</strong>
+                <div class="office-svg" data-dash-visitors-chart></div>
+              </article>
+              <article class="office-widget office-c8">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="office.map">Country map</h2>
+                    <p data-i18n="office.tznote">From timezone and locale</p>
+                  </div>
+                  <span data-dash-range-label>Last 7 days</span>
+                </header>
+                <div class="office-svg office-map" data-dash-map></div>
+              </article>
+              <article class="office-widget office-c4">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="office.source">Traffic overview</h2>
+                  </div>
+                </header>
+                <div class="office-split-widget">
+                  <div class="office-svg" data-dash-sources></div>
+                  <ol class="office-legend" data-dash-source-legend></ol>
+                </div>
+              </article>
+              <article class="office-widget office-c4">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="office.os">Operating systems</h2>
+                  </div>
+                </header>
+                <div class="office-ranks" data-dash-os></div>
+              </article>
+              <article class="office-widget office-c4">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="office.search">Search engines</h2>
+                  </div>
+                </header>
+                <div class="office-ranks" data-dash-engines></div>
+              </article>
+              <article class="office-widget office-c4">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="office.countries">Country list</h2>
+                  </div>
+                </header>
+                <div class="office-ranks" data-dash-countries></div>
+              </article>
+              <article class="office-widget office-c8">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="office.clicks">Clicks</h2>
+                    <p data-i18n="office.total">Total</p>
+                  </div>
+                  <span data-dash-range-label>Last 7 days</span>
+                </header>
+                <strong class="office-hero" data-dash-clicks>0</strong>
+                <div class="office-svg" data-dash-clicks-chart></div>
+              </article>
+              <article class="office-widget office-c4">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="office.exit">Exit rate</h2>
+                    <p data-i18n="office.avg">Average</p>
+                  </div>
+                  <span data-dash-range-label>Last 7 days</span>
+                </header>
+                <strong class="office-hero" data-dash-exit>0%</strong>
+                <div class="office-svg" data-dash-exit-chart></div>
+              </article>
+              <article class="office-widget office-c4">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="office.devices">Device type</h2>
+                  </div>
+                </header>
+                <div class="office-split-widget">
+                  <div class="office-svg" data-dash-devices></div>
+                  <ol class="office-legend" data-dash-device-legend></ol>
+                </div>
+              </article>
+              <article class="office-widget office-c4">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="office.langw">Language</h2>
+                  </div>
+                </header>
+                <div class="office-split-widget">
+                  <div class="office-svg" data-dash-langs></div>
+                  <ol class="office-legend" data-dash-lang-legend></ol>
+                </div>
+              </article>
+              <article class="office-widget office-c4">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="dash.pages">Pages viewed most</h2>
+                  </div>
+                </header>
+                <div class="office-ranks" data-dash-pages></div>
+              </article>
+              <article class="office-widget office-c4">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="dash.targets">Clicked most</h2>
+                  </div>
+                </header>
+                <div class="office-ranks" data-dash-targets></div>
+              </article>
+              <article class="office-widget office-c4">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="office.returning">Returning visitors</h2>
+                    <p data-i18n="office.total">Total</p>
+                  </div>
+                  <span data-dash-range-label>Last 7 days</span>
+                </header>
+                <strong class="office-hero" data-dash-returning>0</strong>
+                <div class="office-svg" data-dash-returning-chart></div>
+              </article>
+              <article class="office-widget office-c4">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="office.events">Events logged</h2>
+                    <p data-i18n="office.latest">Latest</p>
+                  </div>
+                  <span data-dash-range-label>Last 7 days</span>
+                </header>
+                <strong class="office-hero" data-dash-events>0</strong>
+                <p class="office-metric-note" data-i18n="office.logged">Every view, click, and live ping is logged</p>
+              </article>
+              <article class="office-widget office-c4">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="office.referrers">Referrers</h2>
+                  </div>
+                </header>
+                <div class="office-ranks" data-dash-referrers></div>
+              </article>
+              <article class="office-widget office-c8">
+                <header class="office-card-top">
+                  <div>
+                    <h2 data-i18n="dash.recent">Live activity</h2>
+                    <p data-i18n="office.logged">Every view, click, and live ping is logged</p>
+                  </div>
+                </header>
+                <ol class="office-feed" data-dash-recent></ol>
+              </article>
+            </div>
+          </section>
+          <section class="office-panel" data-office-panel="people" hidden>
+            <div class="office-grid">
+              <article class="office-widget office-span-2">
+                <header class="office-widget-head">
+                  <h2 data-i18n="dash.people">People who clicked the most</h2>
+                </header>
+                <div class="office-table-wrap">
+                  <table class="office-table">
+                    <thead>
+                      <tr>
+                        <th data-i18n="dash.person">Visitor</th>
+                        <th data-i18n="dash.clicks">Clicks</th>
+                        <th data-i18n="dash.last">Last seen</th>
+                      </tr>
+                    </thead>
+                    <tbody data-dash-people></tbody>
+                  </table>
+                </div>
+              </article>
+              <article class="office-widget office-span-2">
+                <header class="office-widget-head">
+                  <h2 data-i18n="dash.recent">Live activity</h2>
+                </header>
+                <ol class="office-feed" data-dash-recent></ol>
+              </article>
+            </div>
+          </section>
+          <section class="office-panel office-news" data-office-panel="news" hidden>
+            <p class="office-lede" data-i18n="admin.listLede">
+              Edit or delete bilingual announcements. Use New announcement in the left rail to compose a post.
+            </p>
+            <p class="admin-status" data-admin-status></p>
+            <div class="admin-toolbar">
+              <button type="button" class="btn btn-ghost office-equal" data-admin-restore data-i18n="admin.restore">Restore defaults</button>
+            </div>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Order</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>中文標題</th>
+                    <th>English title</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody data-admin-table></tbody>
+              </table>
+            </div>
+          </section>
+          <section class="office-panel office-news" data-office-panel="compose" hidden>
+            <p class="office-lede" data-i18n="admin.lede">
+              Create, preview, update, or delete one bilingual record at a time. Saving or deleting always applies to Chinese and English together.
+            </p>
+            <p class="admin-status" data-admin-compose-status></p>
+            <button type="button" class="btn btn-primary" hidden data-admin-new data-i18n="admin.new">New announcement</button>
+            <form class="admin-form" data-admin-form>
+              <input type="hidden" name="id" />
+              <div class="admin-shared">
+                <label>
+                  Date
+                  <input type="date" name="date" required />
+                </label>
+                <label>
+                  Link URL
+                  <input type="text" name="linkUrl" placeholder="announcement.html?id=…" />
+                </label>
+                <label>
+                  Display order
+                  <input type="number" name="order" min="1" step="1" />
+                </label>
+                <label>
+                  Status
+                  <select name="status">
+                    <option value="published">published</option>
+                    <option value="draft">draft</option>
+                  </select>
+                </label>
+              </div>
+              <div class="admin-photos">
+                <label>
+                  <span data-i18n="admin.photos">Photos</span>
+                  <input type="file" name="photos" accept="image/*" multiple />
+                </label>
+                <p class="admin-photos-hint" data-i18n="admin.photosHint">
+                  Attach JPEG, PNG, or WebP. Photos appear on the announcement page with both languages.
+                </p>
+                <div class="admin-photo-list" data-admin-photo-list></div>
+              </div>
+              <div class="admin-grid">
+                <div>
+                  <label>
+                    中文標題
+                    <input type="text" name="titleZh" />
+                  </label>
+                  <label>
+                    中文內容
+                    <textarea name="contentZh"></textarea>
+                  </label>
+                  <button type="button" class="btn btn-ghost" data-translate-en data-i18n="admin.translateEn">
+                    Auto-translate to English
+                  </button>
+                </div>
+                <div>
+                  <label>
+                    English title
+                    <input type="text" name="titleEn" />
+                  </label>
+                  <label>
+                    English content
+                    <textarea name="contentEn"></textarea>
+                  </label>
+                  <button type="button" class="btn btn-ghost" data-translate-zh data-i18n="admin.translateZh">
+                    Auto-translate to Chinese
+                  </button>
+                </div>
+              </div>
+              <p class="label">Preview</p>
+              <div class="admin-preview" data-admin-preview></div>
+              <div class="admin-save-row">
+                <button type="submit" class="btn btn-primary" data-i18n="admin.save">Save both languages</button>
+                <a class="btn btn-ghost" data-admin-open hidden data-i18n="admin.openPost">View this post</a>
+              </div>
+            </form>
+          </section>
+        </main>
+      </div>
+    </div>
+    <script type="module" src="js/main.js?v=office5"></script>
+    <script type="module" src="js/admin-news.js?v=office5"></script>
+  </body>
+</html>

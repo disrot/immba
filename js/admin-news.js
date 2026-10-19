@@ -12,7 +12,7 @@ import { isAdminAuthed } from "./auth.js";
 const form = document.querySelector("[data-admin-form]");
 const table = document.querySelector("[data-admin-table]");
 const preview = document.querySelector("[data-admin-preview]");
-const statusNode = document.querySelector("[data-admin-status]");
+const statusNodes = document.querySelectorAll("[data-admin-status], [data-admin-compose-status]");
 
 if (!form || !table) {
   /* AdminNews markup is only on admin.html */
@@ -27,7 +27,9 @@ if (!form || !table) {
   let photos = [];
 
   const setStatus = (message) => {
-    if (statusNode) statusNode.textContent = message;
+    statusNodes.forEach((node) => {
+      node.textContent = message;
+    });
   };
 
   const compressImage = (file) =>
@@ -232,7 +234,7 @@ if (!form || !table) {
     if (editId) {
       fillForm(getNewsById(editId));
       setStatus("Editing both language versions.");
-      form.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.dispatchEvent(new CustomEvent("immba:office-go", { detail: "compose" }));
     }
     if (deleteId && window.confirm("Delete this announcement in both languages?")) {
       await deleteNews(deleteId);
@@ -270,6 +272,5 @@ if (!form || !table) {
   document.querySelector("[data-translate-zh]")?.addEventListener("click", () => runTranslate("en"));
 
   renderTable();
-  resetNew();
   })();
 }
