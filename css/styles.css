@@ -452,9 +452,10 @@ body.nav-collapsed .header-grid {
   width: calc(var(--space) * 6);
   height: calc(var(--space) * 6);
   object-fit: contain;
-  background: var(--surface-raised);
-  border-radius: var(--radius-sm);
+  background: transparent;
+  border-radius: 0;
   flex-shrink: 0;
+  mix-blend-mode: multiply;
 }
 
 .logo-text {
@@ -3685,9 +3686,10 @@ a.insight-card::after {
 
 .login-card {
   width: min(100%, 26rem);
-  background: var(--surface-raised);
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
   border-radius: 22px;
-  box-shadow: rgba(22, 51, 0, 0.08) 0 18px 40px, rgba(22, 51, 0, 0.04) 0 2px 8px;
+  box-shadow: rgba(22, 51, 0, 0.06) 0 18px 40px, rgba(22, 51, 0, 0.03) 0 2px 8px;
   padding: var(--space-xl) var(--space-lg) var(--space-lg);
   text-align: center;
 }
@@ -3713,8 +3715,9 @@ a.insight-card::after {
   height: 3.5rem;
   translate: -50% -50%;
   object-fit: contain;
-  background: var(--surface-raised);
-  border-radius: var(--radius-pill);
+  background: transparent;
+  border-radius: 0;
+  mix-blend-mode: multiply;
 }
 
 .login-card h1 {

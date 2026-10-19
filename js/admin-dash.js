@@ -56,7 +56,7 @@ const when = (ts) => {
 
 const labelOf = (name) => copy()[name] || name;
 
-const fmt = (value) => Number(value || 0).toLocaleString();
+const fmt = (value) => Math.round(Number(value || 0)).toLocaleString();
 
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
