@@ -2817,6 +2817,7 @@ body a[href^="tel:"]::after {
   position: relative;
   display: block;
   overflow: hidden;
+  width: 100%;
   min-height: 22rem;
   aspect-ratio: 4 / 5;
   border-radius: var(--radius-md);
@@ -2913,7 +2914,7 @@ a.insight-card::after {
 
 .insight-grid-home .insight-card {
   height: auto;
-  min-height: 0;
+  min-height: 22rem;
   aspect-ratio: 4 / 5;
 }
 
@@ -2977,8 +2978,13 @@ a.insight-card::after {
 @media (max-width: 639px) {
   .insight-grid-home {
     grid-template-columns: 1fr;
-    max-width: 22.5rem;
-    margin-inline: auto;
+    width: 100%;
+    max-width: none;
+    margin-inline: 0;
+  }
+
+  .insight-grid-home .insight-card {
+    min-height: 24rem;
   }
 
   .insight-grid-home .insight-copy h3 {
