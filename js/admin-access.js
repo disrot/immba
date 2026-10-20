@@ -1,5 +1,5 @@
-import { isSuperAdmin } from "./auth.js?v=auth3";
-import { rest } from "./supabase.js?v=auth3";
+import { isSuperAdmin } from "./auth.js?v=login9";
+import { rest } from "./supabase.js?v=login9";
 
 const root = document.querySelector("[data-access-admin]");
 if (!root) {
@@ -48,8 +48,17 @@ if (!root) {
       } catch {
         rows = (await rest("profiles?select=id,email,role,created_at&order=created_at.desc")) || [];
       }
+      rows = rows.filter((row) => row.role !== "marketplace" && row.intent !== "marketplace");
+      rows.sort((a, b) => Number(b.role === "pending") - Number(a.role === "pending"));
       paint();
-      if (status) status.textContent = "";
+      if (status) {
+        const pending = rows.filter((row) => row.role === "pending").length;
+        status.textContent = rows.length
+          ? pending
+            ? `${pending} waiting for approval.`
+            : ""
+          : "No accounts yet. New staff registrations appear here as pending.";
+      }
     } catch (error) {
       if (status) status.textContent = error.message || "Could not load accounts. Run schema-auth.sql.";
     }

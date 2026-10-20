@@ -363,7 +363,9 @@ const initOfficeTabs = (root) => {
               ? "admin.faculty"
               : next === "access"
                 ? "access.kicker"
-                : "dash.title";
+                : next === "listings"
+                  ? "office.tabListings"
+                  : "dash.title";
     document.body.setAttribute("data-title-key", titleKey);
     const shown = panels.find((panel) => panel.dataset.officePanel === next);
     kickPanel(shown);

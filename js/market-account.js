@@ -1,4 +1,4 @@
-import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=login7";
+import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=login9";
 import { createListing } from "./listings-store.js?v=auth1";
 
 export const initMarketAccount = () => {
@@ -9,23 +9,18 @@ export const initMarketAccount = () => {
   if (!bar && !desk && !form) return;
 
   const session = currentProfile();
-  const signed = Boolean(session?.access_token);
   const seller = isSellerAuthed();
 
   if (bar && authBox) {
-    bar.hidden = !signed;
-    bar.innerHTML = signed
-      ? `<p>${session.email} · ${session.role}</p>
+    bar.hidden = !seller;
+    bar.innerHTML = seller
+      ? `<p>${session.email}</p>
          <button type="button" class="btn btn-ghost" data-market-out>Sign out</button>`
       : "";
   } else if (bar) {
-    bar.innerHTML = signed
-      ? `<p>${session.email} · ${session.role}</p>
-         ${
-           seller
-             ? `<a class="btn btn-primary" href="market-account.html">Seller desk</a>`
-             : `<a class="btn btn-ghost" href="pending.html">Waiting for access</a>`
-         }
+    bar.innerHTML = seller
+      ? `<p>${session.email}</p>
+         <a class="btn btn-primary" href="market-account.html">Seller desk</a>
          <button type="button" class="btn btn-ghost" data-market-out>Sign out</button>`
       : `<p data-i18n="market.sellHint">Students can register as a marketplace seller to post a listing.</p>
          <a class="btn btn-primary" href="market-account.html" data-i18n="market.sellerIn">Seller sign in</a>`;

@@ -3288,6 +3288,22 @@ a.news-card {
   color: var(--text-muted);
 }
 
+.listing-thumb {
+  display: block;
+  width: 3.2rem;
+  height: 3.2rem;
+  object-fit: cover;
+  border-radius: 0.7rem;
+  background: var(--office-fill, #e7dcc8);
+}
+
+.office-page .admin-table td small {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--office-muted, var(--text-muted));
+  font-weight: 400;
+}
+
 @media (max-width: 900px) {
   .office {
     grid-template-columns: 1fr;

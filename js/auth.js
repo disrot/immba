@@ -1,4 +1,4 @@
-import { authApi, getAuthSession, isCloud, rest, saveAuthSession } from "./supabase.js?v=liquid2";
+import { authApi, getAuthSession, isCloud, rest, saveAuthSession } from "./supabase.js?v=login9";
 
 const SESSION_KEY = "immba-admin-session";
 const SESSION_OK = "1";
@@ -24,8 +24,10 @@ export const isAdminAuthed = () => {
 export const isSuperAdmin = () => getAuthSession()?.role === "super_admin" || isLocalAdmin();
 
 export const isSellerAuthed = () => {
-  const role = getAuthSession()?.role;
-  return role === "marketplace" || role === "admin" || role === "super_admin";
+  const session = getAuthSession();
+  const role = session?.role;
+  const intent = session?.intent || session?.user?.user_metadata?.intent;
+  return role === "marketplace" || intent === "marketplace" || role === "admin" || role === "super_admin";
 };
 
 export const loginAdmin = (user, pass, remember) => {
@@ -46,24 +48,65 @@ export const logoutAdmin = () => {
   saveAuthSession(null);
 };
 
+const clearLocalOffice = () => {
+  sessionStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(SESSION_KEY);
+};
+
 const loadProfile = async (session) => {
+  clearLocalOffice();
   const token = session.access_token;
-  let role = "pending";
+  const metaIntent = session.user?.user_metadata?.intent === "marketplace" ? "marketplace" : "staff";
+  let intent = metaIntent;
+  let role = intent === "marketplace" ? "marketplace" : "pending";
   let email = session.user?.email || "";
+  const readOwn = () => rest(`profiles?id=eq.${session.user.id}&select=*`, { token });
+  let rows = [];
   try {
-    const rows = await rest(`profiles?id=eq.${session.user.id}&select=*`);
-    if (rows?.[0]) {
-      role = rows[0].role;
-      email = rows[0].email || email;
-    }
+    rows = (await readOwn()) || [];
   } catch {
-    role = session.user?.user_metadata?.intent === "marketplace" ? "marketplace" : "pending";
+    rows = [];
+  }
+  if (!rows[0] && session.user?.id) {
+    try {
+      await rest("profiles", {
+        method: "POST",
+        token,
+        body: {
+          id: session.user.id,
+          email,
+          role,
+          intent,
+          display_name: session.user?.user_metadata?.display_name || "",
+        },
+      });
+      rows = (await readOwn()) || [];
+    } catch {
+      /* Trigger may already have created the row, or schema-auth.sql is missing. */
+    }
+  }
+  if (rows[0]) {
+    intent = rows[0].intent === "marketplace" || metaIntent === "marketplace" ? "marketplace" : rows[0].intent || intent;
+    role = intent === "marketplace" ? "marketplace" : rows[0].role;
+    email = rows[0].email || email;
+    if (intent === "marketplace" && rows[0].role !== "marketplace") {
+      try {
+        await rest(`profiles?id=eq.${session.user.id}`, {
+          method: "PATCH",
+          token,
+          body: { role: "marketplace", intent: "marketplace" },
+        });
+      } catch {
+        /* Desk access still follows metadata intent even if the patch is blocked. */
+      }
+    }
   }
   const next = {
     access_token: token,
     refresh_token: session.refresh_token,
     user: session.user,
     role,
+    intent,
     email,
   };
   saveAuthSession(next);
@@ -71,7 +114,7 @@ const loadProfile = async (session) => {
 };
 
 export const signUpAccount = async ({ email, password, intent, displayName }) => {
-  const redirectTo = intent === "marketplace" ? `${SITE()}market-account.html` : `${SITE()}login.html`;
+  const redirectTo = intent === "marketplace" ? `${SITE()}market-account.html` : `${SITE()}pending.html`;
   return authApi(`signup?redirect_to=${encodeURIComponent(redirectTo)}`, {
     body: {
       email,
@@ -108,8 +151,9 @@ export const consumeAuthHash = async () => {
 
 export const routeAfterAuth = (session) => {
   const role = session?.role;
+  const intent = session?.intent || session?.user?.user_metadata?.intent;
   if (role === "admin" || role === "super_admin") return "dashboard.html";
-  if (role === "marketplace") return "market-account.html";
+  if (role === "marketplace" || intent === "marketplace") return "market-account.html";
   if (role === "rejected") return "login.html";
   return "pending.html";
 };
@@ -259,9 +303,11 @@ export const initLoginForm = () => {
   const existing = getAuthSession();
   if (existing?.access_token && !location.hash.includes("access_token")) {
     const dest = routeAfterAuth(existing);
-    if (sellerForm && dest === "market-account.html") {
-      /* stay on the seller child page after sign-in */
-    } else if (!sellerForm || dest !== "market-account.html") {
+    if (sellerForm) {
+      if (dest === "market-account.html") {
+        /* stay — sellers already have the desk on this page */
+      }
+    } else {
       window.location.replace(dest);
       return;
     }
@@ -312,11 +358,19 @@ export const initLoginForm = () => {
             return;
           }
           const result = await signUpAccount({ email, password: pass, intent, displayName });
+          if (intent === "marketplace") {
+            if (result.access_token) {
+              location.replace("market-account.html");
+              return;
+            }
+            showLoginError(form, "Check your email, then sign in. Sellers can post right away — no approval.");
+            return;
+          }
           if (result.access_token) {
             location.replace(routeAfterAuth(getAuthSession()));
             return;
           }
-          showLoginError(form, "Check your email to verify this address, then sign in.");
+          location.replace(`pending.html?email=${encodeURIComponent(email)}`);
           return;
         }
         const session = await signInAccount(email, pass);
@@ -331,10 +385,24 @@ export const initLoginForm = () => {
 export const initPendingPage = () => {
   const root = document.querySelector("[data-pending]");
   if (!root) return;
-  const session = getAuthSession();
-  const email = session?.email || "";
   const slot = root.querySelector("[data-pending-email]");
-  if (slot) slot.textContent = email;
+  const paintEmail = (value) => {
+    if (slot) slot.textContent = value || new URLSearchParams(location.search).get("email") || "";
+  };
+  paintEmail(getAuthSession()?.email);
+  void consumeAuthHash().then((session) => {
+    if (session?.recovery) {
+      location.replace("login.html");
+      return;
+    }
+    const current = session || getAuthSession();
+    const dest = current?.access_token ? routeAfterAuth(current) : "";
+    if (dest && dest !== "pending.html") {
+      location.replace(dest);
+      return;
+    }
+    paintEmail(current?.email);
+  });
   root.querySelector("[data-pending-switch]")?.addEventListener("click", () => {
     logoutAdmin();
     location.href = "login.html";
@@ -348,7 +416,8 @@ export const initPendingPage = () => {
 export const guardAdminPage = () => {
   if (!document.querySelector("[data-admin-guard], [data-admin-form]")) return;
   if (!isAdminAuthed()) {
-    window.location.replace("login.html");
+    const dest = getAuthSession()?.access_token ? routeAfterAuth(getAuthSession()) : "login.html";
+    window.location.replace(dest === "dashboard.html" ? "login.html" : dest);
     return;
   }
   document.querySelector("[data-admin-logout]")?.addEventListener("click", () => {

@@ -94,10 +94,10 @@ export const authApi = async (path, { method = "POST", body, token } = {}) => {
   return data;
 };
 
-export const rest = async (path, { method = "GET", body, headers: extra, anon = false } = {}) => {
+export const rest = async (path, { method = "GET", body, headers: extra, anon = false, token: tokenArg } = {}) => {
   const { url, key } = getSupabase();
   if (!url || !key) throw new Error("Supabase is not connected");
-  const token = (!anon && getAuthSession()?.access_token) || key;
+  const token = tokenArg || (!anon && getAuthSession()?.access_token) || key;
   const res = await fetch(`${url}/rest/v1/${path}`, {
     method,
     headers: {

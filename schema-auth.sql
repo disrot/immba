@@ -1,5 +1,5 @@
 -- Additive auth roles + marketplace listings. Run in the SQL editor after schema.sql.
--- First staff signup becomes super_admin. Later staff signups start as pending until approved.
+-- Staff signups start as pending until a super admin (or local office login) approves them.
 -- Marketplace signups become marketplace and can post listings after email confirmation.
 
 alter table public.profiles drop constraint if exists profiles_role_check;
@@ -29,17 +29,11 @@ as $$
 declare
   intent text := coalesce(new.raw_user_meta_data->>'intent', 'staff');
   assigned text;
-  super_count integer;
 begin
   if intent = 'marketplace' then
     assigned := 'marketplace';
   else
-    select count(*) into super_count from public.profiles where role = 'super_admin';
-    if super_count = 0 then
-      assigned := 'super_admin';
-    else
-      assigned := 'pending';
-    end if;
+    assigned := 'pending';
   end if;
   insert into public.profiles (id, email, role, intent, display_name)
   values (
@@ -50,7 +44,9 @@ begin
     coalesce(new.raw_user_meta_data->>'display_name', '')
   )
   on conflict (id) do update
-    set email = excluded.email;
+    set email = excluded.email,
+        intent = excluded.intent,
+        display_name = excluded.display_name;
   return new;
 end;
 $$;
@@ -62,21 +58,39 @@ create trigger on_auth_user_created
 
 drop policy if exists profiles_select_own on public.profiles;
 drop policy if exists profiles_select_self_or_staff on public.profiles;
+drop policy if exists profiles_select_office on public.profiles;
 drop policy if exists profiles_insert_own on public.profiles;
 drop policy if exists profiles_update_super on public.profiles;
+drop policy if exists profiles_update_office on public.profiles;
 
-create policy profiles_select_self_or_staff
-  on public.profiles for select
-  using (auth.uid() = id or public.current_role() in ('admin', 'super_admin'));
-
+-- Prototype: the static office login uses the anon key, not a JWT, same as faculty writes.
+create policy profiles_select_office on public.profiles for select using (true);
 create policy profiles_insert_own
   on public.profiles for insert
-  with check (auth.uid() = id);
-
-create policy profiles_update_super
+  with check (
+    auth.uid() = id
+    and role in ('pending', 'marketplace')
+  );
+create policy profiles_update_office
   on public.profiles for update
-  using (public.current_role() = 'super_admin')
-  with check (public.current_role() = 'super_admin');
+  using (true)
+  with check (role in ('pending', 'admin', 'super_admin', 'marketplace', 'rejected'));
+
+insert into public.profiles (id, email, role, intent, display_name)
+select
+  u.id,
+  u.email,
+  case
+    when coalesce(u.raw_user_meta_data->>'intent', 'staff') = 'marketplace' then 'marketplace'
+    else 'pending'
+  end,
+  coalesce(u.raw_user_meta_data->>'intent', 'staff'),
+  coalesce(u.raw_user_meta_data->>'display_name', '')
+from auth.users u
+on conflict (id) do update
+  set email = excluded.email,
+      intent = excluded.intent,
+      display_name = excluded.display_name;
 
 create table if not exists public.listings (
   id text primary key default gen_random_uuid()::text,
@@ -120,6 +134,9 @@ create policy listings_delete_owner
     auth.uid() = seller_id
     or public.current_role() in ('admin', 'super_admin')
   );
+-- Prototype office login (admin/123456) uses the anon key, not a staff JWT.
+drop policy if exists listings_delete_office on public.listings;
+create policy listings_delete_office on public.listings for delete using (true);
 
 insert into storage.buckets (id, name, public)
 values ('marketplace-photos', 'marketplace-photos', true)

@@ -39,6 +39,11 @@ export const listCloudListings = async () => {
   }
 };
 
+export const deleteListing = async (id) => {
+  if (!id) throw new Error("Missing listing.");
+  await rest(`listings?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+};
+
 export const createListing = async (input) => {
   const session = getAuthSession();
   if (!session?.user?.id) throw new Error("Sign in as a marketplace seller first.");

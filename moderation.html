@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moderation: imMBA</title>
+    <script>
+      if (
+        sessionStorage.getItem("immba-admin-session") !== "1" &&
+        localStorage.getItem("immba-admin-session") !== "1" &&
+        localStorage.getItem("immba-office-ok") !== "1"
+      ) {
+        location.replace("login.html");
+      } else {
+        location.replace("dashboard.html#listings");
+      }
+    </script>
+  </head>
+  <body></body>
+</html>

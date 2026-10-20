@@ -2,12 +2,12 @@ import { renderNewsArticle, renderNewsCards } from "./news-ui.js";
 import { hydrateNews } from "./news-store.js";
 import { applyOfficialLinks } from "./official.js";
 import { initGallery, refreshGalleryCaptions } from "./gallery.js";
-import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage } from "./auth.js?v=login7";
+import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage } from "./auth.js?v=login9";
 import { initFacultyDirectory } from "./faculty.js?v=dirh4";
 import { initMarketplace, initListing } from "./marketplace.js?v=auth1";
 import { initMarketAccount } from "./market-account.js?v=login7";
 import { initAnalytics } from "./analytics.js";
-import { initAdminDash } from "./admin-dash.js?v=liquid2";
+import { initAdminDash } from "./admin-dash.js?v=mod1";
 
 const translations = {
   en: {
@@ -567,12 +567,15 @@ const translations = {
     "login.name": "Display name",
     "login.checkEmail": "Check your email to verify this address.",
     "pending.title": "Waiting for approval",
-    "pending.lede": "Your email is registered. A super admin must approve staff before they can open the back office.",
+    "pending.lede": "Your email is registered. Verify it if asked, then wait \u2014 a super admin must approve staff before they can open the back office.",
     "pending.switch": "Switch account",
     "pending.seller": "Seller sign in",
     "office.tabFaculty": "Faculty",
+    "office.tabListings": "Listings",
     "office.tabNews": "News",
     "office.tabCompose": "Compose",
+    "admin.listings": "Moderation",
+    "listings.lede": "Review Marketplace listings. Open a post to check it, or remove it from the shop.",
     "admin.facultyAdvanced": "Advanced connection",
     "access.kicker": "Access",
     "access.lede": "Approve pending staff into admin, or reject them. Super admin can also promote an admin.",
@@ -1141,12 +1144,15 @@ const translations = {
     "login.name": "顯示名稱",
     "login.checkEmail": "請到信箱完成驗證，再回來登入。",
     "pending.title": "等待核准",
-    "pending.lede": "帳號已註冊。職員需先經 super admin 核准才能進後台。",
+    "pending.lede": "帳號已註冊。如需請先驗證電子郵件，再等候 super admin 核准後台權限。",
     "pending.switch": "切換帳號",
     "pending.seller": "賣方登入",
     "office.tabFaculty": "師資",
+    "office.tabListings": "刊登",
     "office.tabNews": "公告",
     "office.tabCompose": "撰寫",
+    "admin.listings": "市集審核",
+    "listings.lede": "檢視市集刊登。可開啟商品確認內容，或從市集移除。",
     "admin.facultyAdvanced": "進階連線",
     "access.kicker": "權限",
     "access.lede": "將 pending 核准為 admin，或拒絕。super admin 也可再晉升 admin。",
