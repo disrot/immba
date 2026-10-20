@@ -6,8 +6,8 @@ import {
   loadNews,
   restoreDefaultNews,
   upsertNews,
-} from "./news-store.js";
-import { isAdminAuthed } from "./auth.js";
+} from "./news-store.js?v=news1";
+import { isAdminAuthed } from "./auth.js?v=notice4";
 
 const form = document.querySelector("[data-admin-form]");
 const table = document.querySelector("[data-admin-table]");
@@ -189,7 +189,7 @@ if (!form || !table) {
         open.hidden = false;
         open.setAttribute("href", item.linkUrl);
       }
-      setStatus("Saved. Open the post on the website to confirm it is live in this browser.");
+      setStatus("Saved. This post is live for every office login.");
     } catch {
       setStatus("Could not save this post. Try fewer photos, then save again.");
     }

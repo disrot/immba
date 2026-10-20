@@ -1,4 +1,4 @@
-import { NEWS_SOURCE, getNewsById, publishedNews } from "./news-store.js";
+import { NEWS_SOURCE, getNewsById, publishedNews } from "./news-store.js?v=news1";
 
 const FALLBACK_COVERS = [
   "images/campus-glass.jpg",

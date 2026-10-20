@@ -1,3 +1,5 @@
+import { isCloud, rest, uploadNewsPhoto } from "./supabase.js?v=news1";
+
 export const NEWS_STORAGE_KEY = "immba-admin-news-v1";
 
 export const NEWS_SOURCE = "https://www.management.fju.edu.tw/esubweb/immbaengindex/news.php";
@@ -237,6 +239,116 @@ const normalize = (item, index = 0) => ({
 
 let cachedNews = null;
 
+const toRow = (item) => ({
+  id: item.id,
+  date: item.date,
+  link_url: item.linkUrl || "",
+  sort_order: Number(item.order) || 0,
+  status: item.status === "draft" ? "draft" : "published",
+  source: item.source || NEWS_SOURCE,
+  official_url: item.officialUrl || "",
+  title_en: item.title?.en || "",
+  title_zh: item.title?.zh || "",
+  content_en: item.content?.en || "",
+  content_zh: item.content?.zh || "",
+  photos: item.photos || [],
+  updated_at: new Date().toISOString(),
+});
+
+const fromRow = (row, index = 0) =>
+  normalize({
+    id: row.id,
+    date: row.date,
+    linkUrl: row.link_url,
+    order: row.sort_order,
+    status: row.status,
+    source: row.source,
+    officialUrl: row.official_url,
+    title: { en: row.title_en, zh: row.title_zh },
+    content: { en: row.content_en, zh: row.content_zh },
+    photos: Array.isArray(row.photos) ? row.photos : [],
+  }, index);
+
+const cloudNews = (path, options = {}) => rest(path, { ...options, anon: true });
+
+const listCloudNews = async () => {
+  const rows = await cloudNews("news?select=*&order=sort_order.asc,date.desc");
+  return Array.isArray(rows) ? rows.map(fromRow) : [];
+};
+
+const dataUrlToFile = (src, name) => {
+  const match = String(src).match(/^data:([^;]+);base64,(.+)$/);
+  if (!match) return null;
+  const bytes = Uint8Array.from(atob(match[2]), (char) => char.charCodeAt(0));
+  return new File([bytes], name || "photo.jpg", { type: match[1] || "image/jpeg" });
+};
+
+const publishPhotos = async (item) => {
+  const photos = [];
+  for (const photo of item.photos || []) {
+    if (!photo?.src) continue;
+    if (!String(photo.src).startsWith("data:")) {
+      photos.push({ src: photo.src, name: photo.name || "" });
+      continue;
+    }
+    try {
+      const file = dataUrlToFile(photo.src, photo.name);
+      const src = file ? await uploadNewsPhoto(file, `${item.id}-${Date.now()}-${photo.name || "photo.jpg"}`) : photo.src;
+      photos.push({ src, name: photo.name || "" });
+    } catch {
+      photos.push({ src: photo.src, name: photo.name || "" });
+    }
+  }
+  return { ...item, photos };
+};
+
+const writeLocalNews = async (items) => {
+  try {
+    await writeIdbNews(items);
+  } catch {
+    /* IndexedDB can be blocked in private windows */
+  }
+  try {
+    localStorage.setItem(NEWS_STORAGE_KEY, JSON.stringify(items));
+  } catch {
+    try {
+      const slim = items.map((item) => ({
+        ...item,
+        photos: (item.photos || [])
+          .filter((photo) => photo.src && !photo.src.startsWith("data:"))
+          .map((photo) => ({ src: photo.src, name: photo.name || "" })),
+      }));
+      localStorage.setItem(NEWS_STORAGE_KEY, JSON.stringify(slim));
+    } catch {
+      /* cache is optional when cloud is the source of truth */
+    }
+  }
+};
+
+const writeCloudNews = async (items) => {
+  const published = [];
+  for (const item of items) {
+    published.push(await publishPhotos(item));
+  }
+  const existing = await listCloudNews();
+  const keep = new Set(published.map((item) => item.id));
+  for (const row of existing) {
+    if (!keep.has(row.id)) {
+      await cloudNews(`news?id=eq.${encodeURIComponent(row.id)}`, { method: "DELETE" });
+    }
+  }
+  for (const item of published) {
+    const payload = toRow(item);
+    const found = existing.find((row) => row.id === item.id);
+    if (found) {
+      await cloudNews(`news?id=eq.${encodeURIComponent(item.id)}`, { method: "PATCH", body: payload });
+    } else {
+      await cloudNews("news", { method: "POST", body: payload });
+    }
+  }
+  return published;
+};
+
 const readLocalNews = () => {
   try {
     const raw = localStorage.getItem(NEWS_STORAGE_KEY);
@@ -288,41 +400,42 @@ export const loadNews = () => cachedNews || readLocalNews() || clone(DEFAULT_NEW
 
 export const hydrateNews = async () => {
   const fromIdb = await readIdbNews();
-  if (Array.isArray(fromIdb) && fromIdb.length) {
-    cachedNews = fromIdb.map(normalize);
+  const local = Array.isArray(fromIdb) && fromIdb.length ? fromIdb.map(normalize) : readLocalNews();
+  if (isCloud()) {
+    try {
+      let rows = await listCloudNews();
+      if (!rows.length) {
+        const seed = local?.length ? local : clone(DEFAULT_NEWS).map(normalize);
+        rows = await writeCloudNews(seed);
+      } else if (local?.length) {
+        const ids = new Set(rows.map((item) => item.id));
+        const extras = local.filter((item) => !ids.has(item.id));
+        if (extras.length) {
+          rows = await writeCloudNews([...rows, ...extras]);
+        }
+      }
+      cachedNews = rows.map(normalize);
+      await writeLocalNews(cachedNews);
+      return cachedNews;
+    } catch (error) {
+      console.warn("news cloud list failed", error);
+    }
+  }
+  if (Array.isArray(local) && local.length) {
+    cachedNews = local.map(normalize);
     return cachedNews;
   }
-  cachedNews = readLocalNews() || clone(DEFAULT_NEWS).map(normalize);
+  cachedNews = clone(DEFAULT_NEWS).map(normalize);
   return cachedNews;
 };
 
 export const saveNews = async (items) => {
-  const next = items.map(normalize);
+  let next = items.map(normalize);
+  if (isCloud()) {
+    next = await writeCloudNews(next);
+  }
   cachedNews = next;
-  let stored = false;
-  try {
-    await writeIdbNews(next);
-    stored = true;
-  } catch {
-    /* fall through to localStorage */
-  }
-  try {
-    localStorage.setItem(NEWS_STORAGE_KEY, JSON.stringify(next));
-    stored = true;
-  } catch {
-    try {
-      const slim = next.map((item) => ({
-        ...item,
-        photos: (item.photos || [])
-          .filter((photo) => photo.src && !photo.src.startsWith("data:"))
-          .map((photo) => ({ src: photo.src, name: photo.name || "" })),
-      }));
-      localStorage.setItem(NEWS_STORAGE_KEY, JSON.stringify(slim));
-      stored = stored || slim.some((item) => item.title.en || item.title.zh);
-    } catch {
-      if (!stored) throw new Error("storage");
-    }
-  }
+  await writeLocalNews(next);
   return next;
 };
 

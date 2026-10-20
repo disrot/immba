@@ -141,6 +141,28 @@ export const uploadFacultyPhoto = async (file, filename) => {
   return `${url}/storage/v1/object/public/faculty-photos/${path}`;
 };
 
+export const uploadNewsPhoto = async (file, filename) => {
+  const { url, key } = getSupabase();
+  if (!url || !key) throw new Error("Supabase is not connected");
+  const safe = String(filename || file.name || `photo-${Date.now()}.jpg`).replace(/[^\w.\-]+/g, "-");
+  const path = `news/${safe}`;
+  const res = await fetch(`${url}/storage/v1/object/news-photos/${path}`, {
+    method: "POST",
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      "Content-Type": file.type || "image/jpeg",
+      "x-upsert": "true",
+    },
+    body: file,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || res.statusText);
+  }
+  return `${url}/storage/v1/object/public/news-photos/${path}`;
+};
+
 export const uploadMarketPhoto = async (file, filename) => {
   const { url, key } = getSupabase();
   if (!url || !key) throw new Error("Supabase is not connected");

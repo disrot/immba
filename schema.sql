@@ -2,6 +2,7 @@
 -- After this: Storage → create a public bucket named faculty-photos if the insert below is blocked.
 -- Then set Vercel env VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY, or paste them in AdminFaculty.
 -- After the faculty table exists, also run schema-auth.sql for register, roles, and marketplace listings.
+-- Then run schema-news.sql so announcements sync across browsers like Faculty.
 
 create extension if not exists pgcrypto;
 
