@@ -1,10 +1,16 @@
-import { facultyPhotoSrc, listFaculty } from "./faculty-store.js?v=auth3";
+import { facultyPhotoSrc, listFaculty } from "./faculty-store.js?v=dirh4";
 
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 const currentLang = () => (document.body?.dataset.lang === "zh" ? "zh" : "en");
 
 const t = (en, zh) => (currentLang() === "zh" ? zh : en);
+
+const fieldTokens = (person) =>
+  String(person[currentLang()]?.specialties || person.en?.specialties || "")
+    .split(/[,，、;/|]+/)
+    .map((item) => item.trim())
+    .filter((item) => item.length > 1 && item.length < 42);
 
 export const initFacultyDirectory = () => {
   const root = document.querySelector("[data-faculty-directory]");
@@ -65,15 +71,20 @@ export const initFacultyDirectory = () => {
         const mail = person.email
           ? `<p class="dir-card-contact"><span>${t("E-mail", "電子郵件")}</span> <a href="mailto:${person.email}">${person.email}</a></p>`
           : "";
+        const chips = fieldTokens(person)
+          .map((token) => `<span class="dir-card-chip">${token}</span>`)
+          .join("");
         return `<article class="dir-card">
           <div class="dir-card-photo">
             <img src="${facultyPhotoSrc(person.photo)}" alt="${person.name}" width="400" height="400" />
           </div>
-          <h2>${person.name}</h2>
-          <p class="dir-card-title">${copy.role}</p>
-          <p class="dir-card-spec">${copy.specialties}</p>
-          <p class="dir-card-edu"><span>${t("Education", "學歷")}</span> ${copy.education}</p>
-          ${tel}${mail}${website}
+          <div class="dir-card-body">
+            <h2>${person.name}</h2>
+            <p class="dir-card-title">${copy.role}</p>
+            <p class="dir-card-edu"><span>${t("Education", "學歷")}</span> ${copy.education}</p>
+            ${tel}${mail}${website}
+            ${chips ? `<div class="dir-card-chips">${chips}</div>` : ""}
+          </div>
         </article>`;
       })
       .join("");

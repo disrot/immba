@@ -5,11 +5,12 @@ import {
   deleteFaculty,
   facultyPhotoSrc,
   listFacultyRows,
+  previewReorder,
   reorderFaculty,
   seedLocalFaculty,
   uploadPhoto,
   upsertFaculty,
-} from "./faculty-store.js?v=auth3";
+} from "./faculty-store.js?v=order1";
 
 const root = document.querySelector("[data-faculty-admin]");
 
@@ -25,6 +26,7 @@ if (!root) {
     const connect = root.querySelector("[data-faculty-connect]");
     const field = (name) => form.elements.namedItem(name);
     let rows = [];
+    let busy = false;
 
     const setStatus = (message) => {
       if (status) status.textContent = message;
@@ -96,15 +98,15 @@ if (!root) {
     const render = () => {
       table.innerHTML = rows
         .map(
-          (row) => `<tr>
+          (row, index) => `<tr>
             <td>${row.sort_order}</td>
             <td><img class="faculty-admin-thumb" src="${facultyPhotoSrc(row.image_url)}" alt="" width="48" height="48" /></td>
             <td>${row.name}</td>
             <td>${row.title}</td>
             <td>${row.category}</td>
             <td class="admin-row-actions"><div class="admin-actions">
-              <button type="button" class="btn btn-ghost" data-faculty-up="${row.id}">Up</button>
-              <button type="button" class="btn btn-ghost" data-faculty-down="${row.id}">Down</button>
+              <button type="button" class="btn btn-ghost" data-faculty-up="${row.id}"${index === 0 ? " disabled" : ""}>Up</button>
+              <button type="button" class="btn btn-ghost" data-faculty-down="${row.id}"${index === rows.length - 1 ? " disabled" : ""}>Down</button>
               <button type="button" class="btn btn-ghost" data-faculty-edit="${row.id}">Edit</button>
               <button type="button" class="btn btn-ghost" data-faculty-delete="${row.id}">Delete</button>
             </div></td>
@@ -144,6 +146,7 @@ if (!root) {
     });
 
     table?.addEventListener("click", async (event) => {
+      if (busy) return;
       const edit = event.target.closest("[data-faculty-edit]");
       const remove = event.target.closest("[data-faculty-delete]");
       const up = event.target.closest("[data-faculty-up]");
@@ -167,12 +170,26 @@ if (!root) {
       }
       if (up || down) {
         const id = (up || down).getAttribute(up ? "data-faculty-up" : "data-faculty-down");
+        const direction = up ? "up" : "down";
+        const preview = previewReorder(rows, id, direction);
+        if (!preview.moved) {
+          setStatus(direction === "up" ? "Already at the top." : "Already at the bottom.");
+          return;
+        }
+        rows = preview.rows;
+        render();
+        setStatus("Saving order…");
+        busy = true;
         try {
-          rows = await reorderFaculty(id, up ? "up" : "down");
+          rows = await reorderFaculty(id, direction);
           render();
           setStatus("Order saved in Supabase. The public Faculty page uses the same sort_order.");
         } catch (error) {
+          rows = await listFacultyRows();
+          render();
           setStatus(error.message || "Reorder failed.");
+        } finally {
+          busy = false;
         }
       }
     });

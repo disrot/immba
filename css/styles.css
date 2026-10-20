@@ -1928,12 +1928,80 @@ body[data-lang="zh"] .keyword-scroll-row {
   border-radius: var(--radius-sm);
 }
 
+[data-faculty-directory] {
+  background: #fff;
+}
+
+[data-faculty-directory] .dir-grid {
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+[data-faculty-directory] .dir-card {
+  position: relative;
+  scroll-margin-top: 7.5rem;
+  grid-template-columns: 8.75rem minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0 1.2rem;
+  padding: 0.9rem 1.05rem 0.9rem 0.9rem;
+  overflow: hidden;
+  background: #fff;
+  box-shadow:
+    0 1px 0 rgba(22, 51, 0, 0.04),
+    0 10px 24px rgba(22, 51, 0, 0.08),
+    0 24px 44px rgba(22, 51, 0, 0.05);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+[data-faculty-directory] .dir-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 1px 0 rgba(22, 51, 0, 0.04),
+    0 16px 32px rgba(22, 51, 0, 0.1),
+    0 32px 56px rgba(22, 51, 0, 0.08);
+}
+
+[data-faculty-directory] .dir-card-body {
+  display: grid;
+  align-content: start;
+  gap: 0.32rem;
+  min-width: 0;
+  padding: 0.2rem 0.15rem 0.2rem 0;
+}
+
+.dir-card-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.45rem;
+}
+
+.dir-card-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.85rem;
+  padding: 0 0.7rem;
+  border-radius: 999px;
+  background: #eef5e8;
+  color: var(--text);
+  font-size: 0.78rem;
+  box-shadow: 0 2px 6px rgba(22, 51, 0, 0.06);
+}
+
 .dir-card-photo {
   position: relative;
   aspect-ratio: 1;
   overflow: hidden;
   margin-bottom: var(--space-sm);
   background: var(--surface-sunken);
+}
+
+[data-faculty-directory] .dir-card-photo {
+  width: 8.75rem;
+  margin: 0;
+  aspect-ratio: 1;
+  border-radius: 16px;
+  box-shadow: 0 8px 18px rgba(22, 51, 0, 0.1);
 }
 
 .dir-card-photo::before {
@@ -1996,11 +2064,37 @@ body[data-lang="zh"] .keyword-scroll-row {
   .dir-grid {
     grid-template-columns: 1fr 1fr;
   }
+
+  [data-faculty-directory] .dir-grid {
+    grid-template-columns: 1fr;
+  }
+
+  [data-faculty-directory] .dir-card {
+    grid-template-columns: 12rem minmax(0, 1fr);
+    gap: 0 1.5rem;
+    padding: 1.1rem 1.35rem 1.1rem 1.1rem;
+  }
+
+  [data-faculty-directory] .dir-card-photo {
+    width: 12rem;
+  }
 }
 
 @media (min-width: 1024px) {
   .dir-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  [data-faculty-directory] .dir-grid {
+    grid-template-columns: 1fr;
+  }
+
+  [data-faculty-directory] .dir-card {
+    grid-template-columns: 14rem minmax(0, 1fr);
+  }
+
+  [data-faculty-directory] .dir-card-photo {
+    width: 14rem;
   }
 }
 
@@ -6441,10 +6535,24 @@ body[data-lang="zh"] [data-dd-lang="en"] {
 }
 
 .login-page .login-card {
+  position: relative;
   background: var(--office-card);
   border: 0;
-  border-radius: 18px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  border-radius: 28px;
+  box-shadow: 0 10px 28px rgba(22, 51, 0, 0.08);
+  padding: 2.1rem 1.7rem 1.7rem;
+  animation: login-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes login-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .login-page .login-ring {
@@ -6462,6 +6570,173 @@ body[data-lang="zh"] [data-dd-lang="en"] {
   mix-blend-mode: normal;
 }
 
+.login-page .login-card h1 {
+  margin-bottom: 0.35rem;
+  letter-spacing: -0.03em;
+}
+
+.login-page .login-lede {
+  margin: 0 0 0.45rem;
+}
+
+.login-aside {
+  margin: 0 0 1.15rem;
+  color: var(--office-muted);
+  font-size: 0.88rem;
+}
+
+.login-aside a {
+  color: var(--office-ink);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.login-aside a:hover {
+  text-decoration: underline;
+}
+
+.login-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.18rem;
+  margin: 0 0 1.15rem;
+  padding: 0.22rem;
+  background: var(--office-fill);
+  border-radius: 980px;
+}
+
+.login-switch button {
+  border: 0;
+  background: transparent;
+  color: var(--office-muted);
+  font: inherit;
+  min-height: 2.45rem;
+  border-radius: 980px;
+  cursor: pointer;
+  transition: background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.login-switch button[aria-current="true"] {
+  background: #fff;
+  color: var(--office-ink);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(22, 51, 0, 0.08);
+}
+
+.login-page .login-card[data-mode="reset"] .login-switch,
+.login-page .login-card[data-mode="newpass"] .login-switch,
+.login-page .login-card[data-mode="reset"] .login-aside,
+.login-page .login-card[data-mode="newpass"] .login-aside {
+  display: none;
+}
+
+.login-page .login-form {
+  gap: 0;
+}
+
+.login-page .login-field,
+.login-page .login-collapse:not(.is-off),
+.login-page .login-submit {
+  margin-bottom: 0.8rem;
+}
+
+.login-collapse {
+  max-height: 8rem;
+  opacity: 1;
+  overflow: hidden;
+  transition: max-height 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease;
+}
+
+.login-collapse.is-off {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+  margin: 0;
+}
+
+.login-collapse-inner {
+  overflow: hidden;
+}
+
+.login-aux {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0.15rem 0 0.15rem;
+}
+
+.login-page .login-keep {
+  justify-content: flex-start;
+  margin: 0;
+  gap: 0.55rem;
+}
+
+.login-page .login-keep input {
+  appearance: none;
+  width: 2.35rem;
+  height: 1.38rem;
+  border: 0;
+  border-radius: 999px;
+  background: #d8cfc0;
+  position: relative;
+  transition: background 0.25s ease;
+}
+
+.login-page .login-keep input::after {
+  content: "";
+  position: absolute;
+  top: 0.12rem;
+  left: 0.12rem;
+  width: 1.14rem;
+  height: 1.14rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.login-page .login-keep input:checked {
+  background: var(--office-ink);
+}
+
+.login-page .login-keep input:checked::after {
+  transform: translateX(0.96rem);
+}
+
+.login-forgot,
+.login-back {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--office-ink);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.login-back {
+  display: block;
+  width: 100%;
+  margin-top: 0.65rem;
+  text-align: center;
+}
+
+.login-page .login-field input {
+  height: 3rem;
+  border-radius: 14px;
+  border-color: transparent;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(22, 51, 0, 0.1);
+  transition: box-shadow 0.22s ease, transform 0.22s ease;
+}
+
+.login-page .login-field input:focus {
+  transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1.5px var(--office-ink), 0 8px 20px rgba(22, 51, 0, 0.08);
+}
+
 .login-page .login-modes button[aria-current="true"] {
   background: var(--office-ink);
   color: #fff;
@@ -6471,6 +6746,27 @@ body[data-lang="zh"] [data-dd-lang="en"] {
   background: var(--office-blue);
   border: 0;
   border-radius: 980px;
+  min-height: 3rem;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.login-page .login-submit:hover {
+  filter: brightness(1.08);
+}
+
+.login-page .login-submit:active {
+  transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-page .login-card,
+  .login-switch button,
+  .login-collapse,
+  .login-page .login-field input,
+  .login-page .login-submit {
+    animation: none;
+    transition: none;
+  }
 }
 
 @media (max-width: 900px) {

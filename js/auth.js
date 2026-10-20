@@ -165,23 +165,67 @@ const showLoginError = (form, message) => {
   err.textContent = message || err.getAttribute("data-error-text") || err.textContent;
 };
 
+const loginCopy = (mode) => {
+  const zh = document.body?.dataset.lang === "zh";
+  const pack = {
+    signin: {
+      title: zh ? "登入" : "Sign in",
+      lede: zh ? "繼續進入後台。" : "Continue to the back office.",
+      submit: zh ? "登入" : "Sign in",
+    },
+    register: {
+      title: zh ? "建立帳號" : "Create account",
+      lede: zh ? "建立職員帳號，需經 super admin 核准。" : "Create a staff account. A super admin approves access.",
+      submit: zh ? "建立帳號" : "Create account",
+    },
+    reset: {
+      title: zh ? "忘記密碼" : "Forgot password",
+      lede: zh ? "輸入電子郵件，我們會寄重設連結。" : "Enter your email and we’ll send a reset link.",
+      submit: zh ? "寄送重設連結" : "Send reset link",
+    },
+    newpass: {
+      title: zh ? "新密碼" : "New password",
+      lede: zh ? "請設定新密碼，然後繼續。" : "Choose a new password, then continue.",
+      submit: zh ? "儲存密碼" : "Save password",
+    },
+  };
+  return pack[mode] || pack.signin;
+};
+
 export const initLoginForm = () => {
   const form = document.querySelector("[data-login-form]");
   if (!form) return;
 
+  const card = document.querySelector("[data-login-card]") || form.closest(".login-card");
   const modeButtons = [...document.querySelectorAll("[data-login-mode]")];
+  const tabButtons = [...document.querySelectorAll("[data-login-switch] [data-login-mode], .login-modes [data-login-mode]")];
   const applyMode = (mode) => {
     form.dataset.mode = mode;
-    modeButtons.forEach((btn) => {
+    if (card) card.dataset.mode = mode;
+    tabButtons.forEach((btn) => {
       if (btn.dataset.loginMode === mode) btn.setAttribute("aria-current", "true");
       else btn.removeAttribute("aria-current");
     });
     form.querySelectorAll("[data-for-mode]").forEach((node) => {
-      const modes = node.dataset.forMode.split(/\s+/);
-      node.hidden = !modes.includes(mode);
+      const on = node.dataset.forMode.split(/\s+/).includes(mode);
+      node.classList.toggle("is-off", !on);
+      if (!node.classList.contains("login-collapse")) node.hidden = !on;
+      node.querySelectorAll("input, select, textarea").forEach((el) => {
+        el.disabled = !on;
+      });
     });
+    const copy = loginCopy(mode);
+    const title = document.querySelector("[data-login-title]");
+    const lede = document.querySelector("[data-login-lede]");
+    const submit = form.querySelector("[data-login-submit]") || form.querySelector(".login-submit");
+    if (title) title.textContent = copy.title;
+    if (lede) lede.textContent = copy.lede;
+    if (submit) submit.textContent = copy.submit;
+    const err = form.querySelector("[data-login-error]");
+    if (err && mode !== "newpass") err.hidden = true;
   };
   modeButtons.forEach((btn) => btn.addEventListener("click", () => applyMode(btn.dataset.loginMode)));
+  window.addEventListener("immba:lang", () => applyMode(form.dataset.mode || "signin"));
   applyMode("signin");
 
   void consumeAuthHash().then((session) => {

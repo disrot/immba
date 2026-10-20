@@ -159,32 +159,36 @@ export const deleteFaculty = async (id) => {
   return writeCache((await listFacultyRows()).filter((row) => row.id !== id));
 };
 
-export const reorderFaculty = async (id, direction) => {
-  const rows = await listFacultyRows();
-  const index = rows.findIndex((row) => row.id === id);
+const patchSort = (id, sort_order) =>
+  cloudFaculty(`faculty?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: { sort_order, updated_at: new Date().toISOString() },
+  });
+
+export const previewReorder = (rows, id, direction) => {
+  const next = sortRows(rows).map((row) => ({ ...row }));
+  const index = next.findIndex((row) => row.id === id);
   const swap = direction === "up" ? index - 1 : index + 1;
-  if (index < 0 || swap < 0 || swap >= rows.length) return rows;
-  const a = rows[index];
-  const b = rows[swap];
-  const orderA = a.sort_order;
-  a.sort_order = b.sort_order;
-  b.sort_order = orderA;
-  if (a.sort_order === b.sort_order) {
-    a.sort_order = index + 1;
-    b.sort_order = swap + 1;
-  }
+  if (index < 0 || swap < 0 || swap >= next.length) return { rows: next, moved: false };
+  [next[index], next[swap]] = [next[swap], next[index]];
+  next.forEach((row, i) => {
+    row.sort_order = i + 1;
+  });
+  return { rows: next, moved: true };
+};
+
+export const reorderFaculty = async (id, direction) => {
+  const current = await listFacultyRows();
+  const { rows, moved } = previewReorder(current, id, direction);
+  if (!moved) return rows;
   if (isCloud()) {
-    await cloudFaculty(`faculty?id=eq.${encodeURIComponent(a.id)}`, {
-      method: "PATCH",
-      body: { sort_order: a.sort_order, updated_at: new Date().toISOString() },
-    });
-    await cloudFaculty(`faculty?id=eq.${encodeURIComponent(b.id)}`, {
-      method: "PATCH",
-      body: { sort_order: b.sort_order, updated_at: new Date().toISOString() },
-    });
+    const before = new Map(current.map((row) => [row.id, Number(row.sort_order)]));
+    const changed = rows.filter((row) => before.get(row.id) !== Number(row.sort_order));
+    if (changed[0]) await patchSort(changed[0].id, 10000);
+    await Promise.all(changed.map((row) => patchSort(row.id, row.sort_order)));
     return listCloudFaculty();
   }
-  return writeCache(sortRows(rows));
+  return writeCache(rows);
 };
 
 export const seedLocalFaculty = async () => {

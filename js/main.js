@@ -2,8 +2,8 @@ import { renderNewsArticle, renderNewsCards } from "./news-ui.js";
 import { hydrateNews } from "./news-store.js";
 import { applyOfficialLinks } from "./official.js";
 import { initGallery, refreshGalleryCaptions } from "./gallery.js";
-import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage } from "./auth.js?v=liquid2";
-import { initFacultyDirectory } from "./faculty.js?v=auth3";
+import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage } from "./auth.js?v=login5";
+import { initFacultyDirectory } from "./faculty.js?v=dirh4";
 import { initMarketplace, initListing } from "./marketplace.js?v=auth1";
 import { initMarketAccount } from "./market-account.js?v=auth3";
 import { initAnalytics } from "./analytics.js";
@@ -231,6 +231,13 @@ const translations = {
     "faculty.typeParttime": "Part-time",
     "faculty.lastName": "Last Name",
     "faculty.empty": "No faculty match these filters.",
+    "faculty.quote": "The classroom is where Fu Jen meets the world.",
+    "faculty.fields": "Research fields",
+    "faculty.statScholars": "Scholars",
+    "faculty.statFulltime": "Full-time",
+    "faculty.statAdjunct": "Adjunct",
+    "faculty.statFields": "Fields",
+    "faculty.fieldAll": "All fields",
     "faculty.eyebrow": "Faculty",
     "faculty.title": "Scholars and practitioners who teach across borders.",
     "faculty.body":
@@ -531,7 +538,19 @@ const translations = {
     "official.iscProc": "Exchange procedures",
     "login.title": "Sign in",
     "login.lede": "Sign in to manage announcements. A single click on the logo returns to the home page.",
-    "login.staffLede": "Staff and super admin only. Marketplace sellers use the Marketplace seller page.",
+    "login.staffLede": "Continue to the back office.",
+    "login.marketHint": "Selling on Marketplace?",
+    "login.marketLink": "Seller sign in",
+    "login.forgot": "Forgot password?",
+    "login.back": "Back to sign in",
+    "login.registerTitle": "Create account",
+    "login.resetTitle": "Forgot password",
+    "login.newPassTitle": "New password",
+    "login.sendReset": "Send reset link",
+    "login.savePass": "Save password",
+    "login.registerLede": "Create a staff account. A super admin approves access.",
+    "login.resetLede": "Enter your email and we’ll send a reset link.",
+    "login.newPassLede": "Choose a new password, then continue.",
     "login.user": "Email or local admin username",
     "login.pass": "Password",
     "login.submit": "Sign in",
@@ -801,6 +820,13 @@ const translations = {
     "faculty.typeParttime": "兼任",
     "faculty.lastName": "姓氏",
     "faculty.empty": "沒有符合條件的師資。",
+    "faculty.quote": "課堂，是輔仁與世界相遇的地方。",
+    "faculty.fields": "研究領域",
+    "faculty.statScholars": "師資",
+    "faculty.statFulltime": "專任",
+    "faculty.statAdjunct": "兼任",
+    "faculty.statFields": "領域",
+    "faculty.fieldAll": "全部領域",
     "faculty.eyebrow": "師資陣容",
     "faculty.title": "跨領域、跨國界的學者與實務教師。",
     "faculty.body": "以下為學程專任與兼任師資示例。論文指導教授名單於每年三月與十月公布。",
@@ -1084,7 +1110,19 @@ const translations = {
     "official.iscProc": "交換作業",
     "login.title": "登入",
     "login.lede": "登入後即可管理公告。點一下校徽會回到首頁。",
-    "login.staffLede": "僅限職員與 super admin。市集賣方請到教材市集的賣方頁。",
+    "login.staffLede": "繼續進入後台。",
+    "login.marketHint": "在市集上架？",
+    "login.marketLink": "賣方登入",
+    "login.forgot": "忘記密碼？",
+    "login.back": "回到登入",
+    "login.registerTitle": "建立帳號",
+    "login.resetTitle": "忘記密碼",
+    "login.newPassTitle": "新密碼",
+    "login.sendReset": "寄送重設連結",
+    "login.savePass": "儲存密碼",
+    "login.registerLede": "建立職員帳號，需經 super admin 核准。",
+    "login.resetLede": "輸入電子郵件，我們會寄重設連結。",
+    "login.newPassLede": "請設定新密碼，然後繼續。",
     "login.user": "電子郵件或本機管理員帳號",
     "login.pass": "密碼",
     "login.submit": "登入",
