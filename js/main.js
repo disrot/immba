@@ -2,10 +2,10 @@ import { renderNewsArticle, renderNewsCards } from "./news-ui.js";
 import { hydrateNews } from "./news-store.js";
 import { applyOfficialLinks } from "./official.js";
 import { initGallery, refreshGalleryCaptions } from "./gallery.js";
-import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage } from "./auth.js?v=login6";
+import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage } from "./auth.js?v=login7";
 import { initFacultyDirectory } from "./faculty.js?v=dirh4";
 import { initMarketplace, initListing } from "./marketplace.js?v=auth1";
-import { initMarketAccount } from "./market-account.js?v=login6";
+import { initMarketAccount } from "./market-account.js?v=login7";
 import { initAnalytics } from "./analytics.js";
 import { initAdminDash } from "./admin-dash.js?v=liquid2";
 
@@ -542,8 +542,6 @@ const translations = {
     "login.sellerLede": "Continue to post a listing.",
     "login.marketHint": "Selling on Marketplace?",
     "login.marketLink": "Seller sign in",
-    "login.staffHint": "Staff or super admin?",
-    "login.staffLink": "Back office sign in",
     "login.email": "Email",
     "login.forgot": "Forgot password?",
     "login.back": "Back to sign in",
@@ -1118,8 +1116,6 @@ const translations = {
     "login.sellerLede": "繼續刊登教材。",
     "login.marketHint": "在市集上架？",
     "login.marketLink": "賣方登入",
-    "login.staffHint": "職員或 super admin？",
-    "login.staffLink": "後台登入",
     "login.email": "電子郵件",
     "login.forgot": "忘記密碼？",
     "login.back": "回到登入",
