@@ -6,7 +6,7 @@ import {
   loadNews,
   restoreDefaultNews,
   upsertNews,
-} from "./news-store.js?v=news1";
+} from "./news-store.js?v=news2";
 import { isAdminAuthed } from "./auth.js?v=notice4";
 
 const form = document.querySelector("[data-admin-form]");

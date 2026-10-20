@@ -1,5 +1,5 @@
 import { renderNewsArticle, renderNewsCards } from "./news-ui.js";
-import { hydrateNews } from "./news-store.js?v=news1";
+import { hydrateNews } from "./news-store.js?v=news2";
 import { applyOfficialLinks } from "./official.js";
 import { initGallery, refreshGalleryCaptions } from "./gallery.js";
 import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage } from "./auth.js?v=notice4";

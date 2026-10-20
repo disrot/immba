@@ -1,4 +1,4 @@
-import { isCloud, rest, uploadNewsPhoto } from "./supabase.js?v=news1";
+import { isCloud, rest, uploadNewsPhoto } from "./supabase.js?v=news2";
 
 export const NEWS_STORAGE_KEY = "immba-admin-news-v1";
 
@@ -251,7 +251,7 @@ const toRow = (item) => ({
   title_zh: item.title?.zh || "",
   content_en: item.content?.en || "",
   content_zh: item.content?.zh || "",
-  photos: item.photos || [],
+  photos: (item.photos || []).filter((photo) => photo.src && !String(photo.src).startsWith("data:")),
   updated_at: new Date().toISOString(),
 });
 
@@ -296,7 +296,7 @@ const publishPhotos = async (item) => {
       const src = file ? await uploadNewsPhoto(file, `${item.id}-${Date.now()}-${photo.name || "photo.jpg"}`) : photo.src;
       photos.push({ src, name: photo.name || "" });
     } catch {
-      photos.push({ src: photo.src, name: photo.name || "" });
+      /* Keep data URLs off the cloud row so a large photo cannot block the post. */
     }
   }
   return { ...item, photos };
@@ -396,36 +396,68 @@ const writeIdbNews = async (items) => {
   });
 };
 
-export const loadNews = () => cachedNews || readLocalNews() || clone(DEFAULT_NEWS).map(normalize);
+export const loadNews = () =>
+  (Array.isArray(cachedNews) && cachedNews.length && cachedNews) ||
+  readLocalNews() ||
+  clone(DEFAULT_NEWS).map(normalize);
+
+const fallbackNews = (local) =>
+  (Array.isArray(local) && local.length ? local : clone(DEFAULT_NEWS)).map(normalize);
+
+const upsertCloudRow = async (item) => {
+  const published = await publishPhotos(item);
+  const payload = {
+    ...toRow(published),
+    photos: (published.photos || []).filter((photo) => photo.src && !String(photo.src).startsWith("data:")),
+  };
+  const existing = await cloudNews(`news?id=eq.${encodeURIComponent(published.id)}&select=id`);
+  if (existing?.length) {
+    await cloudNews(`news?id=eq.${encodeURIComponent(published.id)}`, { method: "PATCH", body: payload });
+  } else {
+    await cloudNews("news", { method: "POST", body: payload });
+  }
+  return fromRow(payload);
+};
 
 export const hydrateNews = async () => {
   const fromIdb = await readIdbNews();
   const local = Array.isArray(fromIdb) && fromIdb.length ? fromIdb.map(normalize) : readLocalNews();
+  const office = Boolean(document.querySelector("[data-office], [data-admin-form]"));
   if (isCloud()) {
     try {
       let rows = await listCloudNews();
       if (!rows.length) {
-        const seed = local?.length ? local : clone(DEFAULT_NEWS).map(normalize);
-        rows = await writeCloudNews(seed);
+        const seed = fallbackNews(local);
+        if (office) {
+          try {
+            rows = await writeCloudNews(seed);
+          } catch (error) {
+            console.warn("news cloud seed failed", error);
+            rows = seed;
+          }
+        } else {
+          rows = seed;
+        }
       } else if (local?.length) {
         const ids = new Set(rows.map((item) => item.id));
-        const extras = local.filter((item) => !ids.has(item.id));
-        if (extras.length) {
-          rows = await writeCloudNews([...rows, ...extras]);
+        for (const item of local.filter((row) => !ids.has(row.id))) {
+          try {
+            rows.push(await upsertCloudRow(item));
+          } catch (error) {
+            console.warn("news extra upload failed", item.id, error);
+          }
         }
       }
-      cachedNews = rows.map(normalize);
-      await writeLocalNews(cachedNews);
-      return cachedNews;
+      if (rows.length) {
+        cachedNews = rows.map(normalize);
+        await writeLocalNews(cachedNews);
+        return cachedNews;
+      }
     } catch (error) {
       console.warn("news cloud list failed", error);
     }
   }
-  if (Array.isArray(local) && local.length) {
-    cachedNews = local.map(normalize);
-    return cachedNews;
-  }
-  cachedNews = clone(DEFAULT_NEWS).map(normalize);
+  cachedNews = fallbackNews(local);
   return cachedNews;
 };
 
