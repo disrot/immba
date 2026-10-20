@@ -6306,7 +6306,7 @@ body[data-lang="zh"] [data-dd-lang="en"] {
 }
 
 .office-main {
-  padding: 1.25rem 1.5rem 2.5rem;
+  padding: 1.5rem 2rem 2.75rem;
 }
 
 .office-lede,
@@ -6352,6 +6352,21 @@ body[data-lang="zh"] [data-dd-lang="en"] {
   border: 0;
   border-radius: 18px;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.office-page .office-news {
+  padding: 1.6rem 1.85rem 1.85rem;
+}
+
+.office-page .office-news > .admin-table-wrap {
+  background: #efe6d6;
+  box-shadow: none;
+}
+
+.office-page .office-news > .admin-form {
+  background: transparent;
+  box-shadow: none;
+  padding: 0.25rem 0 0;
 }
 
 .office-page .admin-table th {
