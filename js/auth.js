@@ -24,10 +24,12 @@ export const isAdminAuthed = () => {
 export const isSuperAdmin = () => getAuthSession()?.role === "super_admin" || isLocalAdmin();
 
 export const isSellerAuthed = () => {
+  if (isLocalAdmin()) return false;
   const session = getAuthSession();
   const role = session?.role;
+  if (role === "admin" || role === "super_admin" || role === "pending" || role === "rejected") return false;
   const intent = session?.intent || session?.user?.user_metadata?.intent;
-  return role === "marketplace" || intent === "marketplace" || role === "admin" || role === "super_admin";
+  return role === "marketplace" || intent === "marketplace";
 };
 
 export const loginAdmin = (user, pass, remember) => {
@@ -114,7 +116,7 @@ const loadProfile = async (session) => {
 };
 
 export const signUpAccount = async ({ email, password, intent, displayName }) => {
-  const redirectTo = intent === "marketplace" ? `${SITE()}market-account.html` : `${SITE()}pending.html`;
+  const redirectTo = intent === "marketplace" ? `${SITE()}marketplace.html` : `${SITE()}pending.html`;
   return authApi(`signup?redirect_to=${encodeURIComponent(redirectTo)}`, {
     body: {
       email,
@@ -154,7 +156,7 @@ export const routeAfterAuth = (session) => {
   const intent = session?.intent || session?.user?.user_metadata?.intent;
   if (role === "admin" || role === "super_admin") return "dashboard.html";
   if (role === "marketplace" || intent === "marketplace") return "marketplace.html";
-  if (role === "rejected") return "login.html";
+  if (role === "rejected") return "pending.html";
   return "pending.html";
 };
 
@@ -388,6 +390,20 @@ export const initPendingPage = () => {
     if (slot) slot.textContent = value || new URLSearchParams(location.search).get("email") || "";
   };
   paintEmail(getAuthSession()?.email);
+  const paintCopy = () => {
+    const zh = document.body?.dataset.lang === "zh";
+    const rejected = getAuthSession()?.role === "rejected";
+    const title = root.querySelector("[data-i18n='pending.title']");
+    const lede = root.querySelector("[data-i18n='pending.lede']");
+    if (rejected && title) title.textContent = zh ? "未核准" : "Access was not approved";
+    if (rejected && lede) {
+      lede.textContent = zh
+        ? "這個職員帳號未獲核准，無法進入後台。請切換帳號，或聯絡 super admin。"
+        : "This staff account was not approved, so the back office stays closed. Switch account or contact a super admin.";
+    }
+  };
+  paintCopy();
+  window.addEventListener("immba:lang", paintCopy);
   void consumeAuthHash().then((session) => {
     if (session?.recovery) {
       location.replace("login.html");
@@ -400,6 +416,7 @@ export const initPendingPage = () => {
       return;
     }
     paintEmail(current?.email);
+    paintCopy();
   });
   root.querySelector("[data-pending-switch]")?.addEventListener("click", () => {
     logoutAdmin();
@@ -422,9 +439,5 @@ export const guardAdminPage = () => {
     logoutAdmin();
     window.location.href = "login.html";
   });
-  document.querySelectorAll('a[data-i18n="admin.site"]').forEach((link) => {
-    link.addEventListener("click", () => {
-      logoutAdmin();
-    });
-  });
+  /* Keep the office session when staff open the public site to check it. */
 };

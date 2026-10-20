@@ -1,4 +1,4 @@
-import { isSuperAdmin } from "./auth.js?v=login9";
+import { isSuperAdmin } from "./auth.js?v=notice4";
 import { rest } from "./supabase.js?v=login9";
 
 const root = document.querySelector("[data-access-admin]");
@@ -15,14 +15,29 @@ if (!root) {
   const status = root.querySelector("[data-access-status]");
   let rows = [];
 
+  const roleLabel = (role) => {
+    const zh = document.body?.dataset.lang === "zh";
+    if (role === "pending") return zh ? "等候核准" : "Waiting";
+    if (role === "admin") return zh ? "管理員" : "Admin";
+    if (role === "super_admin") return zh ? "超級管理員" : "Super admin";
+    if (role === "rejected") return zh ? "未核准" : "Not approved";
+    return role || "";
+  };
+
+  const intentLabel = (intent) => {
+    const zh = document.body?.dataset.lang === "zh";
+    if (intent === "marketplace") return zh ? "市集賣方" : "Seller";
+    return zh ? "職員" : "Staff";
+  };
+
   const paint = () => {
     if (!table) return;
     table.innerHTML = rows
       .map(
         (row) => `<tr>
           <td>${row.email || ""}</td>
-          <td>${row.role}</td>
-          <td>${row.intent || ""}</td>
+          <td>${roleLabel(row.role)}</td>
+          <td>${intentLabel(row.intent)}</td>
           <td class="admin-row-actions"><div class="admin-actions">
             ${
               row.role === "pending"
@@ -56,7 +71,7 @@ if (!root) {
         status.textContent = rows.length
           ? pending
             ? `${pending} waiting for approval.`
-            : ""
+            : "No staff waiting. Approved office accounts are listed below."
           : "No accounts yet. New staff registrations appear here as pending.";
       }
     } catch (error) {

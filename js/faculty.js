@@ -25,6 +25,8 @@ export const initFacultyDirectory = () => {
   let letter = "all";
   let people = [];
 
+  if (!letters || !grid) return;
+
   letters.innerHTML = ["all", ...LETTERS]
     .map(
       (value) =>
@@ -88,7 +90,7 @@ export const initFacultyDirectory = () => {
         </article>`;
       })
       .join("");
-    empty.hidden = list.length > 0;
+    if (empty) empty.hidden = list.length > 0;
   };
 
   letters.addEventListener("click", (event) => {

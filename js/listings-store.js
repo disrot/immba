@@ -91,7 +91,9 @@ export const deleteListing = removeListing;
 
 export const createListing = async (input) => {
   const session = getAuthSession();
-  if (!session?.user?.id) throw new Error("Sign in as a marketplace seller first.");
+  if (!session?.user?.id || (session.role !== "marketplace" && session.intent !== "marketplace")) {
+    throw new Error("Sign in as a marketplace seller first.");
+  }
   let image_url = input.image_url || "";
   if (input.file) {
     try {

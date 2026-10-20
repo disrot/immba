@@ -1,5 +1,5 @@
-import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=notice2";
-import { ackRemovedNotices, createListing, listRemovedNotices } from "./listings-store.js?v=notice1";
+import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=notice4";
+import { ackRemovedNotices, createListing, listRemovedNotices } from "./listings-store.js?v=notice3";
 
 const esc = (value) =>
   String(value ?? "")
@@ -18,7 +18,6 @@ export const initMarketAccount = () => {
   const session = currentProfile();
   const seller = isSellerAuthed();
   const zh = () => document.body?.dataset.lang === "zh";
-  const onDesk = Boolean(authBox);
 
   if (bar && authBox) {
     bar.hidden = !seller;
@@ -70,11 +69,11 @@ export const initMarketAccount = () => {
       ? "後台已從市集下架你的刊登。"
       : "The office removed a listing of yours from Marketplace.";
     slot.innerHTML = `<div class="market-bell-wrap" data-market-bell>
-      <button type="button" class="market-bell" aria-expanded="${onDesk ? "false" : "true"}" aria-label="${zh() ? "通知" : "Notifications"}">
+      <button type="button" class="market-bell" aria-expanded="false" aria-label="${zh() ? "通知" : "Notifications"}">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a5 5 0 0 0-5 5v2.2c0 .8-.3 1.6-.9 2.2L5 15h14l-1.1-1.6a3.2 3.2 0 0 1-.9-2.2V9a5 5 0 0 0-5-5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 17.2a2.5 2.5 0 0 0 5 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
         <span class="market-bell-dot">${n > 9 ? "9+" : n}</span>
       </button>
-      <div class="market-bell-panel"${onDesk ? " hidden" : ""}>
+      <div class="market-bell-panel" hidden>
         <p>${lede}</p>
         <ul>${items}</ul>
         <button type="button" class="btn btn-ghost" data-market-ack>${zh() ? "知道了" : "Got it"}</button>

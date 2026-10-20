@@ -1,6 +1,6 @@
-import { isAdminAuthed } from "./auth.js?v=login9";
+import { isAdminAuthed } from "./auth.js?v=notice4";
 import { rest } from "./supabase.js?v=notice1";
-import { removeListing } from "./listings-store.js?v=notice1";
+import { removeListing } from "./listings-store.js?v=notice3";
 
 const root = document.querySelector("[data-listings-admin]");
 if (!root) {
@@ -22,7 +22,12 @@ if (!root) {
   const paint = () => {
     if (!table) return;
     if (!rows.length) {
-      table.innerHTML = `<tr><td colspan="6">No listings yet. Seller posts from Marketplace appear here.</td></tr>`;
+      const zh = document.body?.dataset.lang === "zh";
+      table.innerHTML = `<tr><td colspan="6">${
+        zh
+          ? "尚無同學刊登。前台市集上的課程教材是學程展示，不會出現在這裡。"
+          : "No student seller posts yet. Course packets on the public shop are program listings, not seller posts."
+      }</td></tr>`;
       return;
     }
     table.innerHTML = rows

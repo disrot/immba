@@ -94,9 +94,9 @@
               <option value="analytics" data-i18n="office.web">Web Analytics</option>
               <option value="people" data-i18n="office.people">People</option>
               <option value="access" data-i18n="access.kicker">Access</option>
-              <option value="listings" data-i18n="admin.listings">Moderation</option>
-              <option value="faculty" data-i18n="admin.faculty">AdminFaculty</option>
-              <option value="news" data-i18n="admin.kicker">AdminNews</option>
+              <option value="listings" data-i18n="office.tabListings">Listings</option>
+              <option value="faculty" data-i18n="office.tabFaculty">Faculty</option>
+              <option value="news" data-i18n="office.tabNews">News</option>
               <option value="compose" data-i18n="admin.new">New announcement</option>
             </select>
           </label>
@@ -356,9 +356,9 @@
               <table class="admin-table">
                 <thead>
                   <tr>
-                    <th>email</th>
-                    <th>role</th>
-                    <th>intent</th>
+                    <th data-i18n="access.thEmail">Email</th>
+                    <th data-i18n="access.thRole">Role</th>
+                    <th data-i18n="access.thType">Account</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -368,7 +368,7 @@
           </section>
           <section class="office-panel office-news" data-office-panel="listings" hidden data-listings-admin>
             <p class="office-lede" data-i18n="listings.lede">
-              Review Marketplace listings. Open a post to check it, or remove it from the shop.
+              Student seller posts appear here. Course packets on the public shop are program listings. Open a post to check it, or remove it from the shop.
             </p>
             <p class="admin-status" data-listings-status></p>
             <div class="admin-table-wrap">
@@ -376,10 +376,10 @@
                 <thead>
                   <tr>
                     <th></th>
-                    <th>title</th>
-                    <th>seller</th>
-                    <th>price</th>
-                    <th>kind</th>
+                    <th data-i18n="listings.thTitle">Title</th>
+                    <th data-i18n="listings.thSeller">Seller</th>
+                    <th data-i18n="listings.thPrice">Price</th>
+                    <th data-i18n="listings.thKind">Kind</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -586,10 +586,10 @@
         </main>
       </div>
     </div>
-    <script type="module" src="js/main.js?v=mod1"></script>
+    <script type="module" src="js/main.js?v=notice4"></script>
     <script type="module" src="js/admin-news.js?v=office6"></script>
     <script type="module" src="js/admin-faculty.js?v=order1"></script>
-    <script type="module" src="js/admin-access.js?v=login9"></script>
-    <script type="module" src="js/admin-listings.js?v=notice1"></script>
+    <script type="module" src="js/admin-access.js?v=notice4"></script>
+    <script type="module" src="js/admin-listings.js?v=notice4"></script>
   </body>
 </html>

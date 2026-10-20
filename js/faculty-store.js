@@ -100,7 +100,7 @@ export const listFacultyRows = async () => {
       console.warn("faculty cloud list failed", error);
       const cached = readCache();
       if (cached) return sortRows(cached);
-      return [];
+      return sortRows(localRows());
     }
   }
   return sortRows(readCache() || localRows());
