@@ -1,6 +1,6 @@
 import { isAdminAuthed } from "./auth.js?v=login9";
-import { rest } from "./supabase.js?v=login9";
-import { deleteListing } from "./listings-store.js?v=mod1";
+import { rest } from "./supabase.js?v=notice1";
+import { removeListing } from "./listings-store.js?v=notice1";
 
 const root = document.querySelector("[data-listings-admin]");
 if (!root) {
@@ -57,7 +57,9 @@ if (!root) {
       } catch {
         emails = {};
       }
-      rows = listings.map((row) => ({ ...row, seller_email: emails[row.seller_id] || "" }));
+      rows = listings
+        .filter((row) => !row.removed)
+        .map((row) => ({ ...row, seller_email: emails[row.seller_id] || "" }));
       paint();
       if (status) {
         status.textContent = rows.length ? `${rows.length} on Marketplace.` : "";
@@ -73,7 +75,7 @@ if (!root) {
     const id = btn.getAttribute("data-listing-remove");
     if (!id || !window.confirm("Remove this listing from Marketplace?")) return;
     try {
-      await deleteListing(id);
+      await removeListing(id);
       await reload();
     } catch (error) {
       if (status) status.textContent = error.message || "Could not remove listing.";

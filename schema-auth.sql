@@ -108,6 +108,10 @@ create table if not exists public.listings (
   created_at timestamptz not null default now()
 );
 
+alter table public.listings add column if not exists removed boolean not null default false;
+alter table public.listings add column if not exists removed_at timestamptz;
+alter table public.listings add column if not exists seller_seen boolean not null default true;
+
 alter table public.listings enable row level security;
 
 drop policy if exists listings_select_public on public.listings;
@@ -137,6 +141,8 @@ create policy listings_delete_owner
 -- Prototype office login (admin/123456) uses the anon key, not a staff JWT.
 drop policy if exists listings_delete_office on public.listings;
 create policy listings_delete_office on public.listings for delete using (true);
+drop policy if exists listings_update_office on public.listings;
+create policy listings_update_office on public.listings for update using (true) with check (true);
 
 insert into storage.buckets (id, name, public)
 values ('marketplace-photos', 'marketplace-photos', true)

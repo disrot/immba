@@ -1,4 +1,4 @@
-import { listCloudListings } from "./listings-store.js?v=auth1";
+import { listCloudListings } from "./listings-store.js?v=notice1";
 
 export const PACKETS = [
   {

@@ -1,4 +1,4 @@
-import { getAuthSession, isCloud, rest, uploadMarketPhoto } from "./supabase.js?v=auth3";
+import { getAuthSession, isCloud, rest, uploadMarketPhoto } from "./supabase.js?v=notice1";
 
 const toItem = (row) => ({
   id: row.id,
@@ -10,6 +10,8 @@ const toItem = (row) => ({
   tag: row.tag || "elective",
   kind: row.kind || "book",
   sold: Boolean(row.sold),
+  removed: Boolean(row.removed),
+  sellerSeen: row.seller_seen !== false,
   sellerId: row.seller_id,
   en: {
     title: row.title,
@@ -32,17 +34,60 @@ const toItem = (row) => ({
 export const listCloudListings = async () => {
   if (!isCloud()) return [];
   try {
-    const rows = await rest("listings?select=*&order=created_at.desc");
-    return Array.isArray(rows) ? rows.map(toItem) : [];
+    let rows;
+    try {
+      rows = await rest("listings?removed=eq.false&select=*&order=created_at.desc");
+    } catch {
+      rows = await rest("listings?select=*&order=created_at.desc");
+    }
+    return Array.isArray(rows) ? rows.filter((row) => !row.removed).map(toItem) : [];
   } catch {
     return [];
   }
 };
 
-export const deleteListing = async (id) => {
-  if (!id) throw new Error("Missing listing.");
-  await rest(`listings?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+export const listRemovedNotices = async () => {
+  const uid = getAuthSession()?.user?.id;
+  if (!isCloud() || !uid) return [];
+  try {
+    const rows = await rest(
+      `listings?seller_id=eq.${uid}&removed=eq.true&seller_seen=eq.false&select=id,title,title_zh,removed_at&order=removed_at.desc`
+    );
+    return Array.isArray(rows) ? rows : [];
+  } catch {
+    return [];
+  }
 };
+
+export const ackRemovedNotices = async (ids) => {
+  if (!ids?.length) return;
+  await Promise.all(
+    ids.map((id) =>
+      rest(`listings?id=eq.${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        body: { seller_seen: true },
+      })
+    )
+  );
+};
+
+export const removeListing = async (id) => {
+  if (!id) throw new Error("Missing listing.");
+  try {
+    await rest(`listings?id=eq.${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: {
+        removed: true,
+        seller_seen: false,
+        removed_at: new Date().toISOString(),
+      },
+    });
+  } catch {
+    await rest(`listings?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+  }
+};
+
+export const deleteListing = removeListing;
 
 export const createListing = async (input) => {
   const session = getAuthSession();
@@ -72,6 +117,8 @@ export const createListing = async (input) => {
     tag: input.tag || "elective",
     image_url,
     sold: false,
+    removed: false,
+    seller_seen: true,
   };
   const saved = await rest("listings", { method: "POST", body: row });
   return (saved || [row]).map?.(toItem)?.[0] || toItem({ ...row, id: `tmp-${Date.now()}` });

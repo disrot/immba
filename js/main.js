@@ -2,10 +2,10 @@ import { renderNewsArticle, renderNewsCards } from "./news-ui.js";
 import { hydrateNews } from "./news-store.js";
 import { applyOfficialLinks } from "./official.js";
 import { initGallery, refreshGalleryCaptions } from "./gallery.js";
-import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage } from "./auth.js?v=login9";
+import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage } from "./auth.js?v=notice2";
 import { initFacultyDirectory } from "./faculty.js?v=dirh4";
-import { initMarketplace, initListing } from "./marketplace.js?v=auth1";
-import { initMarketAccount } from "./market-account.js?v=login7";
+import { initMarketplace, initListing } from "./marketplace.js?v=notice1";
+import { initMarketAccount } from "./market-account.js?v=notice2";
 import { initAnalytics } from "./analytics.js";
 import { initAdminDash } from "./admin-dash.js?v=mod1";
 
@@ -331,6 +331,9 @@ const translations = {
     "market.accountLede": "Sign in to post a listing.",
     "market.sellerIn": "Seller sign in",
     "market.desk": "Seller desk",
+    "market.backShop": "Back to Marketplace",
+    "market.posted": "Listing posted. Use Back to Marketplace to see it in the shop.",
+    "market.removedNotice": "The office removed a listing of yours. It is no longer on Marketplace.",
     "market.item1": "Core textbook and case pack · typically circulated between first-year cohorts.",
     "market.item2": "Software notes and reading list for the new analytics spotlight course.",
     "market.item3": "Workshop handouts and recommended product-practice readings.",
@@ -922,6 +925,9 @@ const translations = {
     "market.accountLede": "登入後即可刊登教材。",
     "market.sellerIn": "賣方登入",
     "market.desk": "賣方工作台",
+    "market.backShop": "返回教材市集",
+    "market.posted": "已刊登。可用「返回教材市集」查看。",
+    "market.removedNotice": "後台已將你的一則刊登下架，市集上已看不到。",
     "market.item1": "核心教科書與個案教材 · 常見於一年級同學流轉。",
     "market.item2": "新開「國際企業資料分析」課程的軟體筆記與書單。",
     "market.item3": "工作坊講義與產品實務推薦讀物。",

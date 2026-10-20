@@ -153,7 +153,7 @@ export const routeAfterAuth = (session) => {
   const role = session?.role;
   const intent = session?.intent || session?.user?.user_metadata?.intent;
   if (role === "admin" || role === "super_admin") return "dashboard.html";
-  if (role === "marketplace" || intent === "marketplace") return "market-account.html";
+  if (role === "marketplace" || intent === "marketplace") return "marketplace.html";
   if (role === "rejected") return "login.html";
   return "pending.html";
 };
@@ -304,9 +304,7 @@ export const initLoginForm = () => {
   if (existing?.access_token && !location.hash.includes("access_token")) {
     const dest = routeAfterAuth(existing);
     if (sellerForm) {
-      if (dest === "market-account.html") {
-        /* stay — sellers already have the desk on this page */
-      }
+      /* stay on the desk so a signed-in seller can still post */
     } else {
       window.location.replace(dest);
       return;
@@ -360,7 +358,7 @@ export const initLoginForm = () => {
           const result = await signUpAccount({ email, password: pass, intent, displayName });
           if (intent === "marketplace") {
             if (result.access_token) {
-              location.replace("market-account.html");
+              location.replace("marketplace.html");
               return;
             }
             showLoginError(form, "Check your email, then sign in. Sellers can post right away — no approval.");
