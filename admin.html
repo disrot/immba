@@ -7,7 +7,8 @@
     <script>
       if (
         sessionStorage.getItem("immba-admin-session") !== "1" &&
-        localStorage.getItem("immba-admin-session") !== "1"
+        localStorage.getItem("immba-admin-session") !== "1" &&
+        localStorage.getItem("immba-office-ok") !== "1"
       ) {
         location.replace("login.html");
       } else {

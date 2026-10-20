@@ -1,5 +1,5 @@
-import { isAdminAuthed } from "./auth.js";
-import { getSupabase, saveSupabaseConnection } from "./supabase.js";
+import { isAdminAuthed } from "./auth.js?v=auth3";
+import { getSupabase, saveSupabaseConnection } from "./supabase.js?v=auth3";
 import {
   cloudStatus,
   deleteFaculty,
@@ -9,7 +9,7 @@ import {
   seedLocalFaculty,
   uploadPhoto,
   upsertFaculty,
-} from "./faculty-store.js";
+} from "./faculty-store.js?v=auth3";
 
 const root = document.querySelector("[data-faculty-admin]");
 
@@ -159,7 +159,7 @@ if (!root) {
           rows = await deleteFaculty(id);
           render();
           if (field("id").value === id) fill(null);
-          setStatus("Deleted.");
+          setStatus("Deleted in Supabase. The public Faculty page will drop this person on refresh.");
         } catch (error) {
           setStatus(error.message || "Delete failed.");
         }
@@ -170,7 +170,7 @@ if (!root) {
         try {
           rows = await reorderFaculty(id, up ? "up" : "down");
           render();
-          setStatus("Order saved. Faculty page uses the same sort_order.");
+          setStatus("Order saved in Supabase. The public Faculty page uses the same sort_order.");
         } catch (error) {
           setStatus(error.message || "Reorder failed.");
         }
@@ -191,7 +191,7 @@ if (!root) {
         render();
         fill(rows.find((item) => item.id === row.id || item.name === row.name) || row);
         field("photo").value = "";
-        setStatus("Saved. Open Faculty on the public site to confirm the sync.");
+        setStatus("Saved in Supabase. The public Faculty page reads this same table.");
       } catch (error) {
         setStatus(error.message || "Save failed.");
       }

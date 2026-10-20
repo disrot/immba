@@ -2,11 +2,12 @@ import { renderNewsArticle, renderNewsCards } from "./news-ui.js";
 import { hydrateNews } from "./news-store.js";
 import { applyOfficialLinks } from "./official.js";
 import { initGallery, refreshGalleryCaptions } from "./gallery.js";
-import { guardAdminPage, initLoginForm, initLogoGate } from "./auth.js";
-import { initFacultyDirectory } from "./faculty.js";
-import { initMarketplace, initListing } from "./marketplace.js";
+import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage } from "./auth.js?v=liquid2";
+import { initFacultyDirectory } from "./faculty.js?v=auth3";
+import { initMarketplace, initListing } from "./marketplace.js?v=auth1";
+import { initMarketAccount } from "./market-account.js?v=auth3";
 import { initAnalytics } from "./analytics.js";
-import { initAdminDash } from "./admin-dash.js";
+import { initAdminDash } from "./admin-dash.js?v=liquid2";
 
 const translations = {
   en: {
@@ -317,6 +318,12 @@ const translations = {
     "market.body":
       "A student-to-student board for course books and materials used in the English-taught imMBA curriculum. Listings below are representative placeholders based on core and spotlight courses.",
     "market.cta": "Browse the marketplace",
+    "market.sellHint": "Students can register as a marketplace seller to post a listing.",
+    "market.accountTitle": "Seller account",
+    "market.accountMeta": "Register, verify email, sign in, or reset a password to post a marketplace listing.",
+    "market.accountLede": "Register, verify your email, sign in, or reset a password. Staff and super admin sign in from the back office, not here.",
+    "market.sellerIn": "Seller sign in",
+    "market.desk": "Seller desk",
     "market.item1": "Core textbook and case pack · typically circulated between first-year cohorts.",
     "market.item2": "Software notes and reading list for the new analytics spotlight course.",
     "market.item3": "Workshop handouts and recommended product-practice readings.",
@@ -524,11 +531,30 @@ const translations = {
     "official.iscProc": "Exchange procedures",
     "login.title": "Sign in",
     "login.lede": "Sign in to manage announcements. A single click on the logo returns to the home page.",
-    "login.user": "Username",
+    "login.staffLede": "Staff and super admin only. Marketplace sellers use the Marketplace seller page.",
+    "login.user": "Email or local admin username",
     "login.pass": "Password",
     "login.submit": "Sign in",
     "login.keep": "Keep me signed in",
-    "login.error": "Username or password is incorrect.",
+    "login.error": "Email or password is incorrect.",
+    "login.register": "Register",
+    "login.reset": "Reset password",
+    "login.verify": "Email verification",
+    "login.intent": "Account type",
+    "login.staff": "Staff (back office)",
+    "login.market": "Marketplace seller",
+    "login.name": "Display name",
+    "login.checkEmail": "Check your email to verify this address.",
+    "pending.title": "Waiting for approval",
+    "pending.lede": "Your email is registered. A super admin must approve staff before they can open the back office.",
+    "pending.switch": "Switch account",
+    "pending.seller": "Seller sign in",
+    "office.tabFaculty": "Faculty",
+    "office.tabNews": "News",
+    "office.tabCompose": "Compose",
+    "admin.facultyAdvanced": "Advanced connection",
+    "access.kicker": "Access",
+    "access.lede": "Approve pending staff into admin, or reject them. Super admin can also promote an admin.",
     "nav.admin": "AdminNews",
     "article.event": "Event",
     "downloads.title": "Official forms and brochures.",
@@ -859,6 +885,12 @@ const translations = {
     "market.body":
       "供 imMBA 英語課程教材與用書流通的學生市集。以下為依核心與焦點課程整理的代表項目。",
     "market.cta": "進入教材市集",
+    "market.sellHint": "同學可註冊為市集賣方後刊登教材。",
+    "market.accountTitle": "賣方帳號",
+    "market.accountMeta": "註冊、驗證信箱、登入或重設密碼後即可刊登教材。",
+    "market.accountLede": "在此註冊、驗證信箱、登入或重設密碼。職員與 super admin 請走後台登入，不要在這裡註冊。",
+    "market.sellerIn": "賣方登入",
+    "market.desk": "賣方工作台",
     "market.item1": "核心教科書與個案教材 · 常見於一年級同學流轉。",
     "market.item2": "新開「國際企業資料分析」課程的軟體筆記與書單。",
     "market.item3": "工作坊講義與產品實務推薦讀物。",
@@ -1052,11 +1084,30 @@ const translations = {
     "official.iscProc": "交換作業",
     "login.title": "登入",
     "login.lede": "登入後即可管理公告。點一下校徽會回到首頁。",
-    "login.user": "帳號",
+    "login.staffLede": "僅限職員與 super admin。市集賣方請到教材市集的賣方頁。",
+    "login.user": "電子郵件或本機管理員帳號",
     "login.pass": "密碼",
     "login.submit": "登入",
     "login.keep": "保持登入",
-    "login.error": "帳號或密碼不正確。",
+    "login.error": "電子郵件或密碼不正確。",
+    "login.register": "註冊",
+    "login.reset": "重設密碼",
+    "login.verify": "電子郵件驗證",
+    "login.intent": "帳號類型",
+    "login.staff": "職員（後台）",
+    "login.market": "市集賣方",
+    "login.name": "顯示名稱",
+    "login.checkEmail": "請到信箱完成驗證，再回來登入。",
+    "pending.title": "等待核准",
+    "pending.lede": "帳號已註冊。職員需先經 super admin 核准才能進後台。",
+    "pending.switch": "切換帳號",
+    "pending.seller": "賣方登入",
+    "office.tabFaculty": "師資",
+    "office.tabNews": "公告",
+    "office.tabCompose": "撰寫",
+    "admin.facultyAdvanced": "進階連線",
+    "access.kicker": "權限",
+    "access.lede": "將 pending 核准為 admin，或拒絕。super admin 也可再晉升 admin。",
     "nav.admin": "AdminNews",
     "article.event": "活動",
     "downloads.title": "官方表件與簡章。",
@@ -1201,9 +1252,11 @@ const enhanceFooter = () => {
 
 initLogoGate();
 initLoginForm();
+initPendingPage();
 guardAdminPage();
 initAnalytics();
 initAdminDash();
+initMarketAccount();
 enhanceFooter();
 hydrateNews().finally(() => applyLang());
 
@@ -1254,10 +1307,25 @@ const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)
 const heroMedia = document.querySelector(".hero-media");
 const heroVideo = document.querySelector("[data-hero-video]");
 if (heroMedia && heroVideo && !prefersReducedMotion) {
-  const showVideo = () => heroMedia.classList.add("is-video");
-  heroVideo.addEventListener("canplay", showVideo, { once: true });
-  heroVideo.play().then(showVideo).catch(() => {
-    heroMedia.classList.remove("is-video");
+  const showVideo = () => {
+    if (!heroVideo.paused) heroMedia.classList.add("is-video");
+  };
+  const tryPlay = () => {
+    const attempt = heroVideo.play();
+    if (attempt && typeof attempt.then === "function") {
+      attempt.then(showVideo).catch(() => {});
+    }
+  };
+  heroVideo.muted = true;
+  heroVideo.setAttribute("playsinline", "");
+  heroVideo.addEventListener("canplay", tryPlay);
+  heroVideo.addEventListener("playing", showVideo);
+  tryPlay();
+  const unlock = () => tryPlay();
+  document.addEventListener("touchstart", unlock, { once: true, passive: true });
+  document.addEventListener("click", unlock, { once: true });
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) tryPlay();
   });
 }
 

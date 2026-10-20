@@ -1,17 +1,39 @@
+import { authApi, getAuthSession, isCloud, rest, saveAuthSession } from "./supabase.js?v=liquid2";
+
 const SESSION_KEY = "immba-admin-session";
 const SESSION_OK = "1";
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "123456";
 const DOUBLE_CLICK_MS = 320;
+const OFFICE_OK = "immba-office-ok";
 
-export const isAdminAuthed = () =>
+const SITE = () => `${location.origin}${location.pathname.replace(/[^/]+$/, "")}`;
+const HERE = () => `${location.origin}${location.pathname}`;
+
+export const isLocalAdmin = () =>
   sessionStorage.getItem(SESSION_KEY) === SESSION_OK || localStorage.getItem(SESSION_KEY) === SESSION_OK;
+
+export const currentProfile = () => getAuthSession();
+
+export const isAdminAuthed = () => {
+  if (isLocalAdmin()) return true;
+  const role = getAuthSession()?.role;
+  return role === "admin" || role === "super_admin";
+};
+
+export const isSuperAdmin = () => getAuthSession()?.role === "super_admin" || isLocalAdmin();
+
+export const isSellerAuthed = () => {
+  const role = getAuthSession()?.role;
+  return role === "marketplace" || role === "admin" || role === "super_admin";
+};
 
 export const loginAdmin = (user, pass, remember) => {
   if (user === ADMIN_USER && pass === ADMIN_PASS) {
     logoutAdmin();
     const store = remember ? localStorage : sessionStorage;
     store.setItem(SESSION_KEY, SESSION_OK);
+    localStorage.setItem(OFFICE_OK, "1");
     return true;
   }
   return false;
@@ -20,6 +42,76 @@ export const loginAdmin = (user, pass, remember) => {
 export const logoutAdmin = () => {
   sessionStorage.removeItem(SESSION_KEY);
   localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(OFFICE_OK);
+  saveAuthSession(null);
+};
+
+const loadProfile = async (session) => {
+  const token = session.access_token;
+  let role = "pending";
+  let email = session.user?.email || "";
+  try {
+    const rows = await rest(`profiles?id=eq.${session.user.id}&select=*`);
+    if (rows?.[0]) {
+      role = rows[0].role;
+      email = rows[0].email || email;
+    }
+  } catch {
+    role = session.user?.user_metadata?.intent === "marketplace" ? "marketplace" : "pending";
+  }
+  const next = {
+    access_token: token,
+    refresh_token: session.refresh_token,
+    user: session.user,
+    role,
+    email,
+  };
+  saveAuthSession(next);
+  return next;
+};
+
+export const signUpAccount = async ({ email, password, intent, displayName }) => {
+  const redirectTo = intent === "marketplace" ? `${SITE()}market-account.html` : `${SITE()}login.html`;
+  return authApi(`signup?redirect_to=${encodeURIComponent(redirectTo)}`, {
+    body: {
+      email,
+      password,
+      data: { intent, display_name: displayName || "" },
+    },
+  }).then(async (data) => {
+    if (data.access_token && data.user) {
+      await loadProfile(data);
+    }
+    return { ...data, redirectTo };
+  });
+};
+
+export const signInAccount = async (email, password) => {
+  const data = await authApi("token?grant_type=password", { body: { email, password } });
+  return loadProfile(data);
+};
+
+export const resetPassword = async (email, redirectTo = HERE()) =>
+  authApi(`recover?redirect_to=${encodeURIComponent(redirectTo)}`, { body: { email } });
+
+export const consumeAuthHash = async () => {
+  const hash = new URLSearchParams(location.hash.replace(/^#/, ""));
+  const token = hash.get("access_token");
+  const refresh = hash.get("refresh_token");
+  if (!token) return null;
+  history.replaceState(null, "", location.pathname + location.search);
+  const user = await authApi("user", { method: "GET", token });
+  const session = await loadProfile({ access_token: token, refresh_token: refresh, user });
+  session.recovery = hash.get("type") === "recovery";
+  return session;
+};
+
+export const routeAfterAuth = (session) => {
+  const role = session?.role;
+  if (role === "admin" || role === "super_admin") return "dashboard.html";
+  if (role === "marketplace") return "market-account.html";
+  if (role === "rejected") return "login.html";
+  return "pending.html";
 };
 
 const siblingFromHome = (homeHref, file) => {
@@ -66,27 +158,133 @@ export const initLogoGate = () => {
   });
 };
 
+const showLoginError = (form, message) => {
+  const err = form.querySelector("[data-login-error]");
+  if (!err) return;
+  err.hidden = false;
+  err.textContent = message || err.getAttribute("data-error-text") || err.textContent;
+};
+
 export const initLoginForm = () => {
   const form = document.querySelector("[data-login-form]");
   if (!form) return;
-  if (isAdminAuthed()) {
+
+  const modeButtons = [...document.querySelectorAll("[data-login-mode]")];
+  const applyMode = (mode) => {
+    form.dataset.mode = mode;
+    modeButtons.forEach((btn) => {
+      if (btn.dataset.loginMode === mode) btn.setAttribute("aria-current", "true");
+      else btn.removeAttribute("aria-current");
+    });
+    form.querySelectorAll("[data-for-mode]").forEach((node) => {
+      const modes = node.dataset.forMode.split(/\s+/);
+      node.hidden = !modes.includes(mode);
+    });
+  };
+  modeButtons.forEach((btn) => btn.addEventListener("click", () => applyMode(btn.dataset.loginMode)));
+  applyMode("signin");
+
+  void consumeAuthHash().then((session) => {
+    if (session?.recovery) {
+      applyMode("newpass");
+      showLoginError(form, "Choose a new password, then submit.");
+      return;
+    }
+    if (session) location.replace(routeAfterAuth(session));
+  });
+
+  const sellerForm = form.dataset.intent === "marketplace";
+
+  if (isLocalAdmin() && !sellerForm) {
     window.location.replace("dashboard.html");
     return;
   }
+  const existing = getAuthSession();
+  if (existing?.access_token && !location.hash.includes("access_token")) {
+    const dest = routeAfterAuth(existing);
+    if (sellerForm && dest === "market-account.html") {
+      /* stay on the seller child page after sign-in */
+    } else if (!sellerForm || dest !== "market-account.html") {
+      window.location.replace(dest);
+      return;
+    }
+  }
+
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    const user = String(form.elements.namedItem("username")?.value || "").trim();
+    const mode = form.dataset.mode || "signin";
+    const email = String(form.elements.namedItem("email")?.value || form.elements.namedItem("username")?.value || "").trim();
     const pass = String(form.elements.namedItem("password")?.value || "");
     const remember = Boolean(form.elements.namedItem("remember")?.checked);
-    const err = form.querySelector("[data-login-error]");
-    if (loginAdmin(user, pass, remember)) {
+    const intent = String(form.dataset.intent || form.elements.namedItem("intent")?.value || "staff");
+    const displayName = String(form.elements.namedItem("displayName")?.value || "").trim();
+
+    if (mode === "signin" && loginAdmin(email, pass, remember)) {
       window.location.replace("dashboard.html");
       return;
     }
-    if (err) {
-      err.hidden = false;
-      err.textContent = err.getAttribute("data-error-text") || err.textContent;
+
+    if (!isCloud()) {
+      showLoginError(form, "Connect Supabase to register, verify email, or reset a password.");
+      return;
     }
+
+    void (async () => {
+      try {
+        if (mode === "newpass") {
+          if (!pass) {
+            showLoginError(form, "Password is required.");
+            return;
+          }
+          await authApi("user", {
+            method: "PUT",
+            token: getAuthSession()?.access_token,
+            body: { password: pass },
+          });
+          location.replace(routeAfterAuth(getAuthSession()));
+          return;
+        }
+        if (mode === "reset") {
+          await resetPassword(email, HERE());
+          showLoginError(form, "Check your email to reset your password.");
+          return;
+        }
+        if (mode === "register") {
+          if (!pass) {
+            showLoginError(form, "Password is required to create an account.");
+            return;
+          }
+          const result = await signUpAccount({ email, password: pass, intent, displayName });
+          if (result.access_token) {
+            location.replace(routeAfterAuth(getAuthSession()));
+            return;
+          }
+          showLoginError(form, "Check your email to verify this address, then sign in.");
+          return;
+        }
+        const session = await signInAccount(email, pass);
+        location.replace(routeAfterAuth(session));
+      } catch (error) {
+        showLoginError(form, error.message || "Could not complete that request.");
+      }
+    })();
+  });
+};
+
+export const initPendingPage = () => {
+  const root = document.querySelector("[data-pending]");
+  if (!root) return;
+  const session = getAuthSession();
+  const email = session?.email || "";
+  const slot = root.querySelector("[data-pending-email]");
+  if (slot) slot.textContent = email;
+  root.querySelector("[data-pending-switch]")?.addEventListener("click", () => {
+    logoutAdmin();
+    location.href = "login.html";
+  });
+  root.querySelector("[data-pending-seller]")?.addEventListener("click", () => {
+    logoutAdmin();
+    location.href = "market-account.html";
   });
 };
 

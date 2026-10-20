@@ -1,6 +1,7 @@
 -- imMBA assignment #6 — run this in the Supabase SQL editor of project immba-backend.
 -- After this: Storage → create a public bucket named faculty-photos if the insert below is blocked.
 -- Then set Vercel env VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY, or paste them in AdminFaculty.
+-- After the faculty table exists, also run schema-auth.sql for register, roles, and marketplace listings.
 
 create extension if not exists pgcrypto;
 
@@ -47,7 +48,7 @@ create policy faculty_delete_public on public.faculty for delete using (true);
 create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   email text,
-  role text not null default 'pending' check (role in ('pending', 'admin', 'super_admin')),
+  role text not null default 'pending' check (role in ('pending', 'admin', 'super_admin', 'marketplace', 'rejected')),
   created_at timestamptz not null default now()
 );
 

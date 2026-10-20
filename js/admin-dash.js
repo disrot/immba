@@ -1,7 +1,7 @@
 import { summarizeAnalytics, clearAnalytics, shortVisitor } from "./analytics.js";
 import { worldMapSvg } from "./world-map.js";
 
-const COLORS = ["#9fe870", "#75d646", "#163300", "#8fb57a", "#3d4a36"];
+const COLORS = ["#163300", "#8c6a3a", "#5c5346", "#c4a574", "#3d4a36"];
 
 const esc = (value) =>
   String(value ?? "")
@@ -289,6 +289,53 @@ const initOfficeTabs = (root) => {
   const switcher = root.querySelector("[data-office-switch]");
   const panels = [...root.querySelectorAll("[data-office-panel]")];
   const limited = [...root.querySelectorAll("[data-office-only]")];
+  const tabRail = root.querySelector("[data-office-tabs]");
+  const bubble = root.querySelector("[data-office-bubble]");
+  let bubbleTimer = 0;
+
+  const placeBubble = (instant) => {
+    if (!tabRail || !bubble) return;
+    const active = tabs.find((tab) => tab.getAttribute("aria-current") === "page" && !tab.hidden);
+    if (!active) {
+      bubble.style.opacity = "0";
+      return;
+    }
+    const rail = tabRail.getBoundingClientRect();
+    const box = active.getBoundingClientRect();
+    const x = box.left - rail.left + tabRail.scrollLeft;
+    const y = box.top - rail.top + tabRail.scrollTop;
+    const prevX = Number(bubble.dataset.x ?? x);
+    const prevY = Number(bubble.dataset.y ?? y);
+    const dx = x - prevX;
+    const dy = y - prevY;
+    const first = bubble.dataset.x == null;
+    const dist = Math.hypot(dx, dy);
+    const stretch = Math.min(1.42, 1 + dist / 240);
+    const vertical = Math.abs(dy) >= Math.abs(dx);
+    bubble.style.opacity = "1";
+    bubble.style.setProperty("--x", `${x}px`);
+    bubble.style.setProperty("--y", `${y}px`);
+    bubble.style.setProperty("--w", `${box.width}px`);
+    bubble.style.setProperty("--h", `${box.height}px`);
+    bubble.style.setProperty("--sx", vertical ? String(1 / Math.sqrt(stretch)) : String(stretch));
+    bubble.style.setProperty("--sy", vertical ? String(stretch) : String(1 / Math.sqrt(stretch)));
+    bubble.dataset.x = String(x);
+    bubble.dataset.y = String(y);
+    if (instant || first || reducedMotion() || dist < 2) {
+      bubble.classList.remove("is-morphing");
+      bubble.style.setProperty("--sx", "1");
+      bubble.style.setProperty("--sy", "1");
+      return;
+    }
+    bubble.classList.add("is-morphing");
+    window.clearTimeout(bubbleTimer);
+    bubbleTimer = window.setTimeout(() => {
+      bubble.style.setProperty("--sx", "1");
+      bubble.style.setProperty("--sy", "1");
+      bubble.classList.remove("is-morphing");
+    }, 520);
+  };
+
   const apply = (id) => {
     const next = panels.some((panel) => panel.dataset.officePanel === id) ? id : "analytics";
     panels.forEach((panel) => {
@@ -314,10 +361,13 @@ const initOfficeTabs = (root) => {
             ? "admin.new"
             : next === "faculty"
               ? "admin.faculty"
-              : "dash.title";
+              : next === "access"
+                ? "access.kicker"
+                : "dash.title";
     document.body.setAttribute("data-title-key", titleKey);
     const shown = panels.find((panel) => panel.dataset.officePanel === next);
     kickPanel(shown);
+    requestAnimationFrame(() => placeBubble(false));
   };
   tabs.forEach((tab) =>
     tab.addEventListener("click", () => {
@@ -331,7 +381,10 @@ const initOfficeTabs = (root) => {
   });
   window.addEventListener("immba:office-go", (event) => apply(event.detail));
   window.addEventListener("hashchange", () => apply(location.hash.replace("#", "")));
+  window.addEventListener("resize", () => placeBubble(true));
+  window.addEventListener("immba:lang", () => requestAnimationFrame(() => placeBubble(true)));
   apply(location.hash.replace("#", "") || "analytics");
+  requestAnimationFrame(() => placeBubble(true));
 };
 
 let booted = false;

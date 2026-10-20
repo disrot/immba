@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Waiting for approval: imMBA</title>
+    <meta name="theme-color" content="#163300" />
+    <link rel="icon" href="images/logo.png" type="image/png" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="office-page pending-page" data-title-key="pending.title" data-pending>
+    <header class="login-top" data-header>
+      <a class="logo login-brand" href="index.html#top">
+        <img class="logo-img" src="images/logo.png" alt="" width="32" height="32" />
+        <span class="logo-text"><strong data-i18n="brand.short">imMBA</strong></span>
+      </a>
+      <button type="button" class="lang-toggle" data-lang-toggle data-i18n="langButton">中文</button>
+    </header>
+    <main id="main" class="login-stage">
+      <section class="login-card pending-card">
+        <h1 data-i18n="pending.title">Waiting for approval</h1>
+        <p class="pending-email" data-pending-email></p>
+        <p data-i18n="pending.lede">
+          Your email is registered. A super admin must approve staff before they can open the back office.
+        </p>
+        <div class="pending-actions">
+          <button type="button" class="btn btn-primary" data-pending-switch data-i18n="pending.switch">
+            Switch account
+          </button>
+          <button type="button" class="btn btn-ghost" data-pending-seller data-i18n="pending.seller">
+            Seller sign in
+          </button>
+          <a class="btn btn-ghost" href="index.html" data-i18n="admin.site">View website</a>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="js/main.js?v=liquid2"></script>
+  </body>
+</html>

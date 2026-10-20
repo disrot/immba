@@ -1,3 +1,5 @@
+import { listCloudListings } from "./listings-store.js?v=auth1";
+
 export const PACKETS = [
   {
     id: "ibm",
@@ -349,7 +351,9 @@ const currentLang = () => (document.body?.dataset.lang === "zh" ? "zh" : "en");
 const money = (n) =>
   currentLang() === "zh" ? `NT$${n.toLocaleString("zh-TW")}` : `NT$${n.toLocaleString("en-US")}`;
 
-const packetById = (id) => PACKETS.find((item) => item.id === id);
+let extraCache = [];
+
+const packetById = (id) => extraCache.find((item) => item.id === id) || PACKETS.find((item) => item.id === id);
 
 const cardHTML = (item) => {
   const copy = item[currentLang()];
@@ -378,11 +382,14 @@ export const initMarketplace = () => {
   const count = root.querySelector("[data-shop-count]");
   const grid = root.querySelector("[data-shop-grid]");
   const empty = root.querySelector("[data-shop-empty]");
+  let extra = [];
+
+  const catalog = () => [...extra, ...PACKETS];
 
   const render = () => {
     const tag = filter?.value || "all";
     const order = sort?.value || "featured";
-    let list = PACKETS.filter((item) => tag === "all" || item.tag === tag);
+    let list = catalog().filter((item) => tag === "all" || item.tag === tag);
 
     if (order === "az") {
       list = [...list].sort((a, b) => a[currentLang()].title.localeCompare(b[currentLang()].title));
@@ -406,6 +413,16 @@ export const initMarketplace = () => {
   filter?.addEventListener("change", render);
   sort?.addEventListener("change", render);
   window.addEventListener("immba:lang", render);
+  window.addEventListener("immba:listings", () => {
+    void listCloudListings().then((rows) => {
+      extra = extraCache = rows;
+      render();
+    });
+  });
+  void listCloudListings().then((rows) => {
+    extra = extraCache = rows;
+    render();
+  });
   render();
 };
 
@@ -415,7 +432,6 @@ export const initListing = () => {
   root.dataset.bound = "1";
 
   const params = new URLSearchParams(window.location.search);
-  const item = packetById(params.get("id") || "");
   const crumb = root.querySelector("[data-pdp-crumb]");
   const gallery = root.querySelector("[data-pdp-gallery]");
   const info = root.querySelector("[data-pdp-info]");
@@ -424,17 +440,10 @@ export const initListing = () => {
   const relatedGrid = root.querySelector("[data-pdp-related-grid]");
   const tabs = [...root.querySelectorAll("[data-pdp-tab]")];
 
-  if (!item) {
-    if (info) {
-      info.innerHTML = `<h1 class="pdp-title">${currentLang() === "zh" ? "找不到此教材" : "Listing not found"}</h1>
-        <p><a href="marketplace.html">${currentLang() === "zh" ? "返回教材市集" : "Back to Marketplace"}</a></p>`;
-    }
-    return;
-  }
-
+  let item = packetById(params.get("id") || "");
   let qty = 1;
   let tab = "desc";
-  let activeSrc = item.gallery[0] || item.image;
+  let activeSrc = item?.gallery?.[0] || item?.image || "";
 
   const setTitle = () => {
     const copy = item[currentLang()];
@@ -552,7 +561,7 @@ export const initListing = () => {
       return;
     }
     const delta = event.target.closest("[data-qty]");
-    if (delta && !item.sold) {
+    if (delta && item && !item.sold) {
       qty = Math.min(3, Math.max(1, qty + Number(delta.getAttribute("data-qty"))));
       render();
       return;
@@ -573,5 +582,24 @@ export const initListing = () => {
   });
 
   window.addEventListener("immba:lang", render);
-  render();
+  const missing = () => {
+    if (info) {
+      info.innerHTML = `<h1 class="pdp-title">${currentLang() === "zh" ? "找不到此教材" : "Listing not found"}</h1>
+        <p><a href="marketplace.html">${currentLang() === "zh" ? "返回教材市集" : "Back to Marketplace"}</a></p>`;
+    }
+  };
+  const start = (record) => {
+    item = record;
+    activeSrc = item.gallery[0] || item.image;
+    render();
+  };
+  if (item) start(item);
+  else {
+    void listCloudListings().then((rows) => {
+      extraCache = rows;
+      const found = packetById(params.get("id") || "");
+      if (found) start(found);
+      else missing();
+    });
+  }
 };

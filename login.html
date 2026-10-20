@@ -53,20 +53,30 @@
           <img src="images/logo.png?v=clear" alt="" width="56" height="56" />
         </div>
         <h1 data-i18n="login.title">Sign in</h1>
-        <form class="login-form" data-login-form>
-          <label class="login-field">
-            <span class="sr-only" data-i18n="login.user">Username</span>
-            <input type="text" name="username" autocomplete="username" required data-i18n-attr="placeholder:login.user" placeholder="Username" />
+        <p class="login-lede" data-i18n="login.staffLede">Staff and super admin only. Marketplace sellers use the Marketplace seller page.</p>
+        <div class="login-modes">
+          <button type="button" data-login-mode="signin" aria-current="true" data-i18n="login.submit">Sign in</button>
+          <button type="button" data-login-mode="register" data-i18n="login.register">Register</button>
+          <button type="button" data-login-mode="reset" data-i18n="login.reset">Reset password</button>
+        </div>
+        <form class="login-form" data-login-form data-mode="signin" data-intent="staff">
+          <label class="login-field" data-for-mode="register">
+            <span class="sr-only" data-i18n="login.name">Display name</span>
+            <input type="text" name="displayName" autocomplete="name" data-i18n-attr="placeholder:login.name" placeholder="Display name" />
           </label>
           <label class="login-field">
+            <span class="sr-only" data-i18n="login.user">Email or local admin username</span>
+            <input type="text" name="email" autocomplete="username" required data-i18n-attr="placeholder:login.user" placeholder="Email or local admin username" />
+          </label>
+          <label class="login-field" data-for-mode="signin register newpass">
             <span class="sr-only" data-i18n="login.pass">Password</span>
-            <input type="password" name="password" autocomplete="current-password" required data-i18n-attr="placeholder:login.pass" placeholder="Password" />
+            <input type="password" name="password" autocomplete="current-password" data-i18n-attr="placeholder:login.pass" placeholder="Password" />
           </label>
-          <label class="login-keep">
+          <label class="login-keep" data-for-mode="signin">
             <input type="checkbox" name="remember" />
             <span data-i18n="login.keep">Keep me signed in</span>
           </label>
-          <p class="login-error" data-login-error data-i18n="login.error" hidden>Username or password is incorrect.</p>
+          <p class="login-error" data-login-error data-i18n="login.error" hidden>Email or password is incorrect.</p>
           <button type="submit" class="btn btn-primary login-submit" data-i18n="login.submit">Sign in</button>
         </form>
       </section>
@@ -80,7 +90,7 @@
       </p>
       <p>© <span data-year></span> <span data-i18n="footer.copy">Fu Jen Catholic University. All rights reserved.</span> <span class="footer-credit" data-i18n="footer.credit">— made by Nigel Pang (415416026)</span></p>
     </footer>
-    <script type="module" src="js/main.js"></script>
-    <script type="module" src="js/back-top.js"></script>
+    <script type="module" src="js/main.js?v=liquid2"></script>
+    <script type="module" src="js/back-top.js?v=auth1"></script>
   </body>
 </html>

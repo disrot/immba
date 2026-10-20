@@ -1,4 +1,4 @@
-import { facultyPhotoSrc, listFaculty } from "./faculty-store.js";
+import { facultyPhotoSrc, listFaculty } from "./faculty-store.js?v=auth3";
 
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
@@ -93,8 +93,16 @@ export const initFacultyDirectory = () => {
   search?.addEventListener("input", render);
   typeSelect?.addEventListener("change", render);
   window.addEventListener("immba:lang", render);
-  void listFaculty().then((records) => {
-    people = records;
-    render();
+  const load = () =>
+    listFaculty().then((records) => {
+      people = records;
+      render();
+    });
+  void load();
+  window.addEventListener("pageshow", () => {
+    void load();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") void load();
   });
 };

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard: imMBA</title>
     <meta name="description" content="imMBA back-office dashboard" />
-    <meta name="theme-color" content="#163300" />
+    <meta name="theme-color" content="#f5f5f7" />
     <meta name="color-scheme" content="light" />
     <link rel="icon" href="images/logo.png" type="image/png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -21,7 +21,8 @@
     <script>
       if (
         sessionStorage.getItem("immba-admin-session") !== "1" &&
-        localStorage.getItem("immba-admin-session") !== "1"
+        localStorage.getItem("immba-admin-session") !== "1" &&
+        localStorage.getItem("immba-office-ok") !== "1"
       ) {
         location.replace("login.html");
       }
@@ -31,7 +32,8 @@
         <a class="logo office-rail-logo" href="index.html#top" data-i18n-attr="aria-label:brand.name" aria-label="Fu Jen Catholic University International MBA (imMBA)">
           <img class="logo-img" src="images/logo.png" alt="" width="40" height="40" />
         </a>
-        <nav class="office-tabs">
+        <nav class="office-tabs" data-office-tabs>
+          <span class="office-tab-bubble" data-office-bubble aria-hidden="true"></span>
           <button type="button" class="office-tab" data-office-tab="analytics" aria-current="page">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><polygon points="12,7 14.2,11.2 18.8,12 14.2,12.8 12,17 9.8,12.8 5.2,12 9.8,11.2" fill="currentColor"/></svg>
             <span data-i18n="office.analytics">Analytics</span>
@@ -40,17 +42,21 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 19c1.2-3.2 3.4-4.8 6.5-4.8S17.8 15.8 19 19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
             <span data-i18n="office.people">People</span>
           </button>
+          <button type="button" class="office-tab" data-office-tab="access">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 19c1.2-3.2 3.4-4.8 6.5-4.8S17.8 15.8 19 19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M16 8l2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span data-i18n="access.kicker">Access</span>
+          </button>
           <button type="button" class="office-tab" data-office-tab="faculty">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="12" height="16" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="9" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8.2 17c.8-1.8 2-2.7 3.8-2.7s3 0.9 3.8 2.7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-            <span data-i18n="admin.faculty">AdminFaculty</span>
+            <span data-i18n="office.tabFaculty">Faculty</span>
           </button>
           <button type="button" class="office-tab" data-office-tab="news">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 9h8M8 13h8M8 17h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-            <span data-i18n="admin.kicker">AdminNews</span>
+            <span data-i18n="office.tabNews">News</span>
           </button>
           <button type="button" class="office-tab" data-office-tab="compose">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 8.5v7M8.5 12h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            <span data-i18n="admin.new">New announcement</span>
+            <span data-i18n="office.tabCompose">Compose</span>
           </button>
         </nav>
         <button type="button" class="office-tab office-tab-exit" data-admin-logout>
@@ -65,6 +71,7 @@
             <select data-office-switch>
               <option value="analytics" data-i18n="office.web">Web Analytics</option>
               <option value="people" data-i18n="office.people">People</option>
+              <option value="access" data-i18n="access.kicker">Access</option>
               <option value="faculty" data-i18n="admin.faculty">AdminFaculty</option>
               <option value="news" data-i18n="admin.kicker">AdminNews</option>
               <option value="compose" data-i18n="admin.new">New announcement</option>
@@ -317,23 +324,45 @@
               </article>
             </div>
           </section>
+          <section class="office-panel office-news" data-office-panel="access" hidden data-access-admin>
+            <p class="office-lede" data-i18n="access.lede">
+              Approve pending staff into admin, or reject them. Super admin can also promote an admin.
+            </p>
+            <p class="admin-status" data-access-status></p>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>email</th>
+                    <th>role</th>
+                    <th>intent</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody data-access-table></tbody>
+              </table>
+            </div>
+          </section>
           <section class="office-panel office-news" data-office-panel="faculty" hidden data-faculty-admin>
             <p class="office-lede" data-i18n="admin.facultyLede">
               Create, edit, reorder, and photograph faculty. Records sync to the public Faculty page through Supabase when connected.
             </p>
             <p class="admin-status" data-faculty-status></p>
             <p class="faculty-cloud" data-faculty-cloud></p>
-            <form class="admin-shared faculty-connect" data-faculty-connect>
-              <label>
-                VITE_SUPABASE_URL
-                <input type="url" name="url" placeholder="https://xxxx.supabase.co" autocomplete="off" />
-              </label>
-              <label>
-                VITE_SUPABASE_ANON_KEY
-                <input type="password" name="key" placeholder="anon public key" autocomplete="off" />
-              </label>
-              <button type="submit" class="btn btn-ghost office-equal" data-i18n="admin.facultyConnect">Save connection</button>
-            </form>
+            <details class="faculty-advanced">
+              <summary data-i18n="admin.facultyAdvanced">Advanced connection</summary>
+              <form class="admin-shared faculty-connect" data-faculty-connect>
+                <label>
+                  Project URL
+                  <input type="url" name="url" placeholder="https://xxxx.supabase.co" autocomplete="off" />
+                </label>
+                <label>
+                  Anon key
+                  <input type="password" name="key" placeholder="anon public key" autocomplete="off" />
+                </label>
+                <button type="submit" class="btn btn-ghost" data-i18n="admin.facultyConnect">Save connection</button>
+              </form>
+            </details>
             <div class="admin-toolbar">
               <button type="button" class="btn btn-primary office-equal" data-faculty-new data-i18n="admin.facultyNew">New faculty</button>
               <button type="button" class="btn btn-ghost office-equal" data-faculty-seed data-i18n="admin.facultySeed">Seed from local prototype</button>
@@ -513,8 +542,9 @@
         </main>
       </div>
     </div>
-    <script type="module" src="js/main.js?v=office6"></script>
+    <script type="module" src="js/main.js?v=liquid2"></script>
     <script type="module" src="js/admin-news.js?v=office6"></script>
-    <script type="module" src="js/admin-faculty.js?v=office6"></script>
+    <script type="module" src="js/admin-faculty.js?v=auth3"></script>
+    <script type="module" src="js/admin-access.js?v=auth3"></script>
   </body>
 </html>

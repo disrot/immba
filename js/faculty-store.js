@@ -1,5 +1,5 @@
 import { LOCAL_FACULTY } from "./faculty-data.js";
-import { getSupabase, isCloud, rest, uploadFacultyPhoto } from "./supabase.js";
+import { getSupabase, isCloud, rest, uploadFacultyPhoto } from "./supabase.js?v=auth3";
 
 const CACHE = "immba-faculty-rows";
 
@@ -84,13 +84,23 @@ const writeCache = (rows) => {
 const sortRows = (rows) =>
   [...rows].sort((a, b) => (a.sort_order - b.sort_order) || String(a.name).localeCompare(String(b.name)));
 
+const cloudFaculty = (path, options = {}) => rest(path, { ...options, anon: true });
+
+const listCloudFaculty = async () => {
+  const rows = await cloudFaculty("faculty?select=*&order=sort_order.asc,name.asc");
+  if (!Array.isArray(rows)) throw new Error("Supabase faculty table did not return a list.");
+  return writeCache(sortRows(rows));
+};
+
 export const listFacultyRows = async () => {
   if (isCloud()) {
     try {
-      const rows = await rest("faculty?select=*&order=sort_order.asc,name.asc");
-      if (Array.isArray(rows) && rows.length) return writeCache(sortRows(rows));
+      return await listCloudFaculty();
     } catch (error) {
       console.warn("faculty cloud list failed", error);
+      const cached = readCache();
+      if (cached) return sortRows(cached);
+      return [];
     }
   }
   return sortRows(readCache() || localRows());
@@ -117,6 +127,7 @@ const payload = (row) => ({
   education_zh: row.education_zh || "",
   research_fields_zh: row.research_fields_zh || "",
   department_zh: row.department_zh || "",
+  updated_at: new Date().toISOString(),
 });
 
 export const upsertFaculty = async (row) => {
@@ -125,13 +136,13 @@ export const upsertFaculty = async (row) => {
     id: row.id || `f-${Date.now()}`,
   });
   if (isCloud()) {
-    const existing = await rest(`faculty?id=eq.${encodeURIComponent(next.id)}&select=id`);
+    const existing = await cloudFaculty(`faculty?id=eq.${encodeURIComponent(next.id)}&select=id`);
     if (existing?.length) {
-      await rest(`faculty?id=eq.${encodeURIComponent(next.id)}`, { method: "PATCH", body: next });
+      await cloudFaculty(`faculty?id=eq.${encodeURIComponent(next.id)}`, { method: "PATCH", body: next });
     } else {
-      await rest("faculty", { method: "POST", body: next });
+      await cloudFaculty("faculty", { method: "POST", body: next });
     }
-    return listFacultyRows();
+    return listCloudFaculty();
   }
   const rows = await listFacultyRows();
   const index = rows.findIndex((item) => item.id === next.id);
@@ -142,8 +153,8 @@ export const upsertFaculty = async (row) => {
 
 export const deleteFaculty = async (id) => {
   if (isCloud()) {
-    await rest(`faculty?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
-    return listFacultyRows();
+    await cloudFaculty(`faculty?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+    return listCloudFaculty();
   }
   return writeCache((await listFacultyRows()).filter((row) => row.id !== id));
 };
@@ -163,9 +174,15 @@ export const reorderFaculty = async (id, direction) => {
     b.sort_order = swap + 1;
   }
   if (isCloud()) {
-    await rest(`faculty?id=eq.${encodeURIComponent(a.id)}`, { method: "PATCH", body: { sort_order: a.sort_order } });
-    await rest(`faculty?id=eq.${encodeURIComponent(b.id)}`, { method: "PATCH", body: { sort_order: b.sort_order } });
-    return listFacultyRows();
+    await cloudFaculty(`faculty?id=eq.${encodeURIComponent(a.id)}`, {
+      method: "PATCH",
+      body: { sort_order: a.sort_order, updated_at: new Date().toISOString() },
+    });
+    await cloudFaculty(`faculty?id=eq.${encodeURIComponent(b.id)}`, {
+      method: "PATCH",
+      body: { sort_order: b.sort_order, updated_at: new Date().toISOString() },
+    });
+    return listCloudFaculty();
   }
   return writeCache(sortRows(rows));
 };
