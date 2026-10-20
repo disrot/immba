@@ -3274,6 +3274,33 @@ a.news-card {
   justify-content: flex-end;
 }
 
+.faculty-connect {
+  align-items: end;
+  margin: 0 0 var(--space);
+  grid-template-columns: 1fr 1fr auto;
+}
+
+.faculty-cloud {
+  margin: 0 0 var(--space-sm);
+  font-size: var(--size-sm);
+  color: color-mix(in srgb, var(--text) 72%, transparent);
+}
+
+.faculty-admin-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: var(--surface-sunken);
+}
+
+.faculty-admin-preview {
+  max-width: 160px;
+  max-height: 160px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
 .admin-form {
   display: grid;
   gap: var(--space-md);
@@ -3818,7 +3845,8 @@ a.insight-card::after {
 @media (max-width: 900px) {
   .admin-grid,
   .admin-preview,
-  .admin-shared {
+  .admin-shared,
+  .faculty-connect {
     grid-template-columns: 1fr;
   }
 }

@@ -40,6 +40,10 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 19c1.2-3.2 3.4-4.8 6.5-4.8S17.8 15.8 19 19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
             <span data-i18n="office.people">People</span>
           </button>
+          <button type="button" class="office-tab" data-office-tab="faculty">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="12" height="16" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="9" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8.2 17c.8-1.8 2-2.7 3.8-2.7s3 0.9 3.8 2.7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span data-i18n="admin.faculty">AdminFaculty</span>
+          </button>
           <button type="button" class="office-tab" data-office-tab="news">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 9h8M8 13h8M8 17h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             <span data-i18n="admin.kicker">AdminNews</span>
@@ -61,6 +65,7 @@
             <select data-office-switch>
               <option value="analytics" data-i18n="office.web">Web Analytics</option>
               <option value="people" data-i18n="office.people">People</option>
+              <option value="faculty" data-i18n="admin.faculty">AdminFaculty</option>
               <option value="news" data-i18n="admin.kicker">AdminNews</option>
               <option value="compose" data-i18n="admin.new">New announcement</option>
             </select>
@@ -312,6 +317,100 @@
               </article>
             </div>
           </section>
+          <section class="office-panel office-news" data-office-panel="faculty" hidden data-faculty-admin>
+            <p class="office-lede" data-i18n="admin.facultyLede">
+              Create, edit, reorder, and photograph faculty. Records sync to the public Faculty page through Supabase when connected.
+            </p>
+            <p class="admin-status" data-faculty-status></p>
+            <p class="faculty-cloud" data-faculty-cloud></p>
+            <form class="admin-shared faculty-connect" data-faculty-connect>
+              <label>
+                VITE_SUPABASE_URL
+                <input type="url" name="url" placeholder="https://xxxx.supabase.co" autocomplete="off" />
+              </label>
+              <label>
+                VITE_SUPABASE_ANON_KEY
+                <input type="password" name="key" placeholder="anon public key" autocomplete="off" />
+              </label>
+              <button type="submit" class="btn btn-ghost office-equal" data-i18n="admin.facultyConnect">Save connection</button>
+            </form>
+            <div class="admin-toolbar">
+              <button type="button" class="btn btn-primary office-equal" data-faculty-new data-i18n="admin.facultyNew">New faculty</button>
+              <button type="button" class="btn btn-ghost office-equal" data-faculty-seed data-i18n="admin.facultySeed">Seed from local prototype</button>
+              <a class="btn btn-ghost office-equal" href="faculty.html" target="_blank" rel="noopener noreferrer">Faculty page</a>
+            </div>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>sort_order</th>
+                    <th></th>
+                    <th>name</th>
+                    <th>title</th>
+                    <th>category</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody data-faculty-table></tbody>
+              </table>
+            </div>
+            <form class="admin-form" data-faculty-form>
+              <input type="hidden" name="id" />
+              <div class="admin-shared">
+                <label>name<input type="text" name="name" required /></label>
+                <label>last_name<input type="text" name="last_name" /></label>
+                <label>
+                  category
+                  <select name="category">
+                    <option value="fulltime">fulltime</option>
+                    <option value="adjunct">adjunct</option>
+                  </select>
+                </label>
+                <label>
+                  rank
+                  <select name="rank">
+                    <option value="chair">chair</option>
+                    <option value="professor">professor</option>
+                    <option value="associate">associate</option>
+                    <option value="assistant">assistant</option>
+                    <option value="parttime">parttime</option>
+                  </select>
+                </label>
+              </div>
+              <div class="admin-shared">
+                <label>title<input type="text" name="title" /></label>
+                <label>title_zh<input type="text" name="title_zh" /></label>
+                <label>department<input type="text" name="department" /></label>
+                <label>department_zh<input type="text" name="department_zh" /></label>
+              </div>
+              <div class="admin-grid">
+                <label>education<textarea name="education" rows="3"></textarea></label>
+                <label>education_zh<textarea name="education_zh" rows="3"></textarea></label>
+                <label>research_fields<textarea name="research_fields" rows="3"></textarea></label>
+                <label>research_fields_zh<textarea name="research_fields_zh" rows="3"></textarea></label>
+              </div>
+              <div class="admin-shared">
+                <label>email<input type="email" name="email" /></label>
+                <label>phone<input type="text" name="phone" /></label>
+                <label>website<input type="url" name="website" /></label>
+                <label>sort_order<input type="number" name="sort_order" min="1" step="1" /></label>
+              </div>
+              <div class="admin-photos">
+                <label>
+                  image_url
+                  <input type="text" name="image_url" placeholder="https://… or images/faculty/…" />
+                </label>
+                <label>
+                  Photo file
+                  <input type="file" name="photo" accept="image/*" />
+                </label>
+                <img class="faculty-admin-preview" data-faculty-preview alt="" hidden />
+              </div>
+              <div class="admin-save-row">
+                <button type="submit" class="btn btn-primary" data-i18n="admin.save">Save both languages</button>
+              </div>
+            </form>
+          </section>
           <section class="office-panel office-news" data-office-panel="news" hidden>
             <p class="office-lede" data-i18n="admin.listLede">
               Edit or delete bilingual announcements. Use New announcement in the left rail to compose a post.
@@ -414,7 +513,8 @@
         </main>
       </div>
     </div>
-    <script type="module" src="js/main.js?v=office5"></script>
-    <script type="module" src="js/admin-news.js?v=office5"></script>
+    <script type="module" src="js/main.js?v=office6"></script>
+    <script type="module" src="js/admin-news.js?v=office6"></script>
+    <script type="module" src="js/admin-faculty.js?v=office6"></script>
   </body>
 </html>

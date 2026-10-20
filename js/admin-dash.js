@@ -306,7 +306,15 @@ const initOfficeTabs = (root) => {
       history.replaceState(null, "", `#${next}`);
     }
     const titleKey =
-      next === "news" ? "admin.title" : next === "people" ? "office.people" : next === "compose" ? "admin.new" : "dash.title";
+      next === "news"
+        ? "admin.title"
+        : next === "people"
+          ? "office.people"
+          : next === "compose"
+            ? "admin.new"
+            : next === "faculty"
+              ? "admin.faculty"
+              : "dash.title";
     document.body.setAttribute("data-title-key", titleKey);
     const shown = panels.find((panel) => panel.dataset.officePanel === next);
     kickPanel(shown);

@@ -4,3 +4,6 @@ dist
 .tools
 .vite
 *.log
+.env
+.env.local
+.env.*.local
