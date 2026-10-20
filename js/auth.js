@@ -165,17 +165,30 @@ const showLoginError = (form, message) => {
   err.textContent = message || err.getAttribute("data-error-text") || err.textContent;
 };
 
-const loginCopy = (mode) => {
+const loginCopy = (mode, intent = "staff") => {
   const zh = document.body?.dataset.lang === "zh";
+  const seller = intent === "marketplace";
   const pack = {
     signin: {
       title: zh ? "登入" : "Sign in",
-      lede: zh ? "繼續進入後台。" : "Continue to the back office.",
+      lede: seller
+        ? zh
+          ? "繼續刊登教材。"
+          : "Continue to post a listing."
+        : zh
+          ? "繼續進入後台。"
+          : "Continue to the back office.",
       submit: zh ? "登入" : "Sign in",
     },
     register: {
       title: zh ? "建立帳號" : "Create account",
-      lede: zh ? "建立職員帳號，需經 super admin 核准。" : "Create a staff account. A super admin approves access.",
+      lede: seller
+        ? zh
+          ? "建立賣方帳號後即可刊登教材。"
+          : "Create a seller account to post listings."
+        : zh
+          ? "建立職員帳號，需經 super admin 核准。"
+          : "Create a staff account. A super admin approves access.",
       submit: zh ? "建立帳號" : "Create account",
     },
     reset: {
@@ -214,7 +227,7 @@ export const initLoginForm = () => {
         el.disabled = !on;
       });
     });
-    const copy = loginCopy(mode);
+    const copy = loginCopy(mode, form.dataset.intent);
     const title = document.querySelector("[data-login-title]");
     const lede = document.querySelector("[data-login-lede]");
     const submit = form.querySelector("[data-login-submit]") || form.querySelector(".login-submit");

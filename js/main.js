@@ -2,10 +2,10 @@ import { renderNewsArticle, renderNewsCards } from "./news-ui.js";
 import { hydrateNews } from "./news-store.js";
 import { applyOfficialLinks } from "./official.js";
 import { initGallery, refreshGalleryCaptions } from "./gallery.js";
-import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage } from "./auth.js?v=login5";
+import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage } from "./auth.js?v=login6";
 import { initFacultyDirectory } from "./faculty.js?v=dirh4";
 import { initMarketplace, initListing } from "./marketplace.js?v=auth1";
-import { initMarketAccount } from "./market-account.js?v=auth3";
+import { initMarketAccount } from "./market-account.js?v=login6";
 import { initAnalytics } from "./analytics.js";
 import { initAdminDash } from "./admin-dash.js?v=liquid2";
 
@@ -328,7 +328,7 @@ const translations = {
     "market.sellHint": "Students can register as a marketplace seller to post a listing.",
     "market.accountTitle": "Seller account",
     "market.accountMeta": "Register, verify email, sign in, or reset a password to post a marketplace listing.",
-    "market.accountLede": "Register, verify your email, sign in, or reset a password. Staff and super admin sign in from the back office, not here.",
+    "market.accountLede": "Sign in to post a listing.",
     "market.sellerIn": "Seller sign in",
     "market.desk": "Seller desk",
     "market.item1": "Core textbook and case pack · typically circulated between first-year cohorts.",
@@ -539,8 +539,12 @@ const translations = {
     "login.title": "Sign in",
     "login.lede": "Sign in to manage announcements. A single click on the logo returns to the home page.",
     "login.staffLede": "Continue to the back office.",
+    "login.sellerLede": "Continue to post a listing.",
     "login.marketHint": "Selling on Marketplace?",
     "login.marketLink": "Seller sign in",
+    "login.staffHint": "Staff or super admin?",
+    "login.staffLink": "Back office sign in",
+    "login.email": "Email",
     "login.forgot": "Forgot password?",
     "login.back": "Back to sign in",
     "login.registerTitle": "Create account",
@@ -914,7 +918,7 @@ const translations = {
     "market.sellHint": "同學可註冊為市集賣方後刊登教材。",
     "market.accountTitle": "賣方帳號",
     "market.accountMeta": "註冊、驗證信箱、登入或重設密碼後即可刊登教材。",
-    "market.accountLede": "在此註冊、驗證信箱、登入或重設密碼。職員與 super admin 請走後台登入，不要在這裡註冊。",
+    "market.accountLede": "登入後即可刊登教材。",
     "market.sellerIn": "賣方登入",
     "market.desk": "賣方工作台",
     "market.item1": "核心教科書與個案教材 · 常見於一年級同學流轉。",
@@ -1111,8 +1115,12 @@ const translations = {
     "login.title": "登入",
     "login.lede": "登入後即可管理公告。點一下校徽會回到首頁。",
     "login.staffLede": "繼續進入後台。",
+    "login.sellerLede": "繼續刊登教材。",
     "login.marketHint": "在市集上架？",
     "login.marketLink": "賣方登入",
+    "login.staffHint": "職員或 super admin？",
+    "login.staffLink": "後台登入",
+    "login.email": "電子郵件",
     "login.forgot": "忘記密碼？",
     "login.back": "回到登入",
     "login.registerTitle": "建立帳號",

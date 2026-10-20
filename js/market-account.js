@@ -1,4 +1,4 @@
-import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=liquid2";
+import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=login6";
 import { createListing } from "./listings-store.js?v=auth1";
 
 export const initMarketAccount = () => {

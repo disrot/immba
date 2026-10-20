@@ -26,7 +26,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/styles.css?v=login6" />
   </head>
   <body data-title-key="market.accountTitle" data-desc-key="market.accountMeta">
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
@@ -180,30 +180,61 @@
         <div class="container shop-plp shop-account-page">
           <p class="shop-kicker"><a href="marketplace.html" data-i18n="market.headline">Marketplace</a></p>
           <h1 class="shop-hero-title" data-i18n="market.accountTitle">Seller account</h1>
-          <p data-i18n="market.accountLede">Register, verify your email, sign in, or reset a password. Staff and super admin sign in from the back office, not here.</p>
+          <p data-i18n="market.accountLede">Sign in to post a listing.</p>
           <div class="shop-account" data-market-account></div>
           <div data-market-auth>
-            <div class="login-modes">
-              <button type="button" data-login-mode="signin" aria-current="true" data-i18n="login.submit">Sign in</button>
-              <button type="button" data-login-mode="register" data-i18n="login.register">Register</button>
-              <button type="button" data-login-mode="reset" data-i18n="login.reset">Reset password</button>
-            </div>
-            <form class="login-form market-login" data-login-form data-mode="signin" data-intent="marketplace">
-              <label class="login-field" data-for-mode="register">
-                <span class="sr-only" data-i18n="login.name">Display name</span>
-                <input type="text" name="displayName" autocomplete="name" data-i18n-attr="placeholder:login.name" placeholder="Display name" />
-              </label>
-              <label class="login-field">
-                <span class="sr-only" data-i18n="login.user">Email</span>
-                <input type="email" name="email" autocomplete="username" required placeholder="Email" />
-              </label>
-              <label class="login-field" data-for-mode="signin register newpass">
-                <span class="sr-only" data-i18n="login.pass">Password</span>
-                <input type="password" name="password" autocomplete="current-password" data-i18n-attr="placeholder:login.pass" placeholder="Password" />
-              </label>
-              <p class="login-error" data-login-error hidden>Could not complete that request.</p>
-              <button type="submit" class="btn btn-primary login-submit" data-i18n="login.submit">Sign in</button>
-            </form>
+            <section class="login-card market-auth-card" data-login-card>
+              <h2 data-login-title data-i18n="login.title">Sign in</h2>
+              <p class="login-lede" data-login-lede data-i18n="login.sellerLede">Continue to post a listing.</p>
+              <p class="login-aside">
+                <span data-i18n="login.staffHint">Staff or super admin?</span>
+                <a href="login.html" data-i18n="login.staffLink">Back office sign in</a>
+              </p>
+              <div class="login-switch" data-login-switch>
+                <button type="button" data-login-mode="signin" aria-current="true" data-i18n="login.submit">Sign in</button>
+                <button type="button" data-login-mode="register" data-i18n="login.register">Register</button>
+              </div>
+              <form class="login-form market-login" data-login-form data-mode="signin" data-intent="marketplace">
+                <div class="login-collapse" data-for-mode="register">
+                  <div class="login-collapse-inner">
+                    <label class="login-field">
+                      <span class="sr-only" data-i18n="login.name">Display name</span>
+                      <input type="text" name="displayName" autocomplete="name" data-i18n-attr="placeholder:login.name" placeholder="Display name" />
+                    </label>
+                  </div>
+                </div>
+                <label class="login-field">
+                  <span class="sr-only" data-i18n="login.email">Email</span>
+                  <input type="email" name="email" autocomplete="username" required data-i18n-attr="placeholder:login.email" placeholder="Email" />
+                </label>
+                <div class="login-collapse" data-for-mode="signin register newpass">
+                  <div class="login-collapse-inner">
+                    <label class="login-field">
+                      <span class="sr-only" data-i18n="login.pass">Password</span>
+                      <input type="password" name="password" autocomplete="current-password" data-i18n-attr="placeholder:login.pass" placeholder="Password" />
+                    </label>
+                  </div>
+                </div>
+                <div class="login-collapse" data-for-mode="signin">
+                  <div class="login-collapse-inner">
+                    <div class="login-aux">
+                      <label class="login-keep">
+                        <input type="checkbox" name="remember" />
+                        <span data-i18n="login.keep">Keep me signed in</span>
+                      </label>
+                      <button type="button" class="login-forgot" data-login-mode="reset" data-i18n="login.forgot">Forgot password?</button>
+                    </div>
+                  </div>
+                </div>
+                <p class="login-error" data-login-error hidden>Could not complete that request.</p>
+                <button type="submit" class="btn btn-primary login-submit" data-login-submit data-i18n="login.submit">Sign in</button>
+                <div class="login-collapse" data-for-mode="reset newpass">
+                  <div class="login-collapse-inner">
+                    <button type="button" class="login-back" data-login-mode="signin" data-i18n="login.back">Back to sign in</button>
+                  </div>
+                </div>
+              </form>
+            </section>
           </div>
           <div data-market-desk hidden>
             <form class="admin-form shop-sell" data-market-form>
@@ -347,7 +378,7 @@
       </div>
     </footer>
 
-    <script type="module" src="js/main.js?v=auth3"></script>
+    <script type="module" src="js/main.js?v=login6"></script>
     <script type="module" src="js/back-top.js"></script>
   </body>
 </html>
