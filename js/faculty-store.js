@@ -1,5 +1,6 @@
 import { LOCAL_FACULTY } from "./faculty-data.js";
 import { getSupabase, isCloud, rest, uploadFacultyPhoto } from "./supabase.js?v=auth3";
+import { logAudit } from "./audit-store.js?v=audit1";
 
 const CACHE = "immba-faculty-rows";
 
@@ -136,12 +137,22 @@ export const upsertFaculty = async (row) => {
     id: row.id || `f-${Date.now()}`,
   });
   if (isCloud()) {
-    const existing = await cloudFaculty(`faculty?id=eq.${encodeURIComponent(next.id)}&select=id`);
+    const existing = await cloudFaculty(`faculty?id=eq.${encodeURIComponent(next.id)}&select=*`);
+    const before = existing?.[0] || null;
     if (existing?.length) {
       await cloudFaculty(`faculty?id=eq.${encodeURIComponent(next.id)}`, { method: "PATCH", body: next });
     } else {
       await cloudFaculty("faculty", { method: "POST", body: next });
     }
+    void logAudit({
+      module: "CMS_PAGES",
+      action: before ? "UPDATE" : "CREATE",
+      entityType: "faculty",
+      entityId: next.id,
+      entityLabel: next.name || next.id,
+      oldValues: before,
+      newValues: next,
+    });
     return listCloudFaculty();
   }
   const rows = await listFacultyRows();
@@ -153,7 +164,17 @@ export const upsertFaculty = async (row) => {
 
 export const deleteFaculty = async (id) => {
   if (isCloud()) {
+    const existing = await cloudFaculty(`faculty?id=eq.${encodeURIComponent(id)}&select=*`);
     await cloudFaculty(`faculty?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+    void logAudit({
+      module: "CMS_PAGES",
+      action: "DELETE",
+      entityType: "faculty",
+      entityId: id,
+      entityLabel: existing?.[0]?.name || id,
+      oldValues: existing?.[0] || null,
+      isDeleted: true,
+    });
     return listCloudFaculty();
   }
   return writeCache((await listFacultyRows()).filter((row) => row.id !== id));

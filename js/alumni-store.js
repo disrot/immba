@@ -1,4 +1,5 @@
 import { getAuthSession, rest } from "./supabase.js?v=news2";
+import { logAudit } from "./audit-store.js?v=audit1";
 
 export const DEGREES = ["Bachelor", "Master", "Doctoral", "Other"];
 
@@ -142,6 +143,17 @@ const writeAudit = async ({ action, record, before, after, summary }) => {
       before: before || null,
       after: after || null,
     },
+  });
+  void logAudit({
+    module: "STUDENT_RECORDS",
+    action,
+    entityType: "alumni",
+    entityId: record?.id || record?.student_id || "",
+    entityLabel: record?.full_name || record?.student_id || "",
+    oldValues: before || null,
+    newValues: after || null,
+    metadata: { summary },
+    isDeleted: action === "DELETE",
   });
 };
 

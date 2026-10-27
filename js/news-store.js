@@ -480,6 +480,39 @@ export const publishedNews = () =>
 
 export const getNewsById = (id) => loadNews().find((item) => item.id === id) || null;
 
+const newsSnap = (item) =>
+  item
+    ? {
+        id: item.id,
+        date: item.date,
+        link_url: item.link || item.link_url || "",
+        sort_order: item.order ?? item.sort_order ?? 0,
+        status: item.status || "published",
+        source: item.source || "",
+        official_url: item.official || item.official_url || "",
+        title_en: item.title?.en || item.title_en || "",
+        title_zh: item.title?.zh || item.title_zh || "",
+        content_en: item.content?.en || item.content_en || "",
+        content_zh: item.content?.zh || item.content_zh || "",
+        photos: item.photos || [],
+      }
+    : null;
+
+const logNews = (action, before, after) => {
+  void import("./audit-store.js?v=audit1").then(({ logAudit }) =>
+    logAudit({
+      module: "ANNOUNCEMENTS",
+      action,
+      entityType: "news",
+      entityId: (after || before)?.id,
+      entityLabel: (after || before)?.title?.en || (after || before)?.title_en || (after || before)?.id,
+      oldValues: newsSnap(before),
+      newValues: newsSnap(after),
+      isDeleted: action === "DELETE",
+    })
+  );
+};
+
 export const upsertNews = async (item) => {
   const list = loadNews();
   const index = list.findIndex((row) => row.id === String(item?.id || ""));
@@ -492,10 +525,15 @@ export const upsertNews = async (item) => {
   });
   if (index >= 0) list[index] = nextItem;
   else list.push(nextItem);
+  logNews(index >= 0 ? "UPDATE" : "CREATE", prev?.id ? prev : null, nextItem);
   return saveNews(list);
 };
 
-export const deleteNews = (id) => saveNews(loadNews().filter((item) => item.id !== id));
+export const deleteNews = (id) => {
+  const before = loadNews().find((item) => item.id === id);
+  logNews("DELETE", before, null);
+  return saveNews(loadNews().filter((item) => item.id !== id));
+};
 
 const translateChunk = async (text, pair) => {
   const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${pair}`;

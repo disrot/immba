@@ -1,4 +1,5 @@
 import { getAuthSession, isCloud, rest, uploadMarketPhoto } from "./supabase.js?v=notice1";
+import { logAudit } from "./audit-store.js?v=audit1";
 
 const toItem = (row) => ({
   id: row.id,
@@ -85,6 +86,15 @@ export const removeListing = async (id) => {
   } catch {
     await rest(`listings?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
   }
+  void logAudit({
+    module: "CMS_PAGES",
+    action: "DELETE",
+    entityType: "listings",
+    entityId: id,
+    entityLabel: id,
+    isDeleted: true,
+    newValues: { id, removed: true },
+  });
 };
 
 export const deleteListing = removeListing;
@@ -123,5 +133,14 @@ export const createListing = async (input) => {
     seller_seen: true,
   };
   const saved = await rest("listings", { method: "POST", body: row });
-  return (saved || [row]).map?.(toItem)?.[0] || toItem({ ...row, id: `tmp-${Date.now()}` });
+  const created = (saved || [row]).map?.(toItem)?.[0] || toItem({ ...row, id: `tmp-${Date.now()}` });
+  void logAudit({
+    module: "CMS_PAGES",
+    action: "CREATE",
+    entityType: "listings",
+    entityId: created.id,
+    entityLabel: created.title || row.title,
+    newValues: { ...row, id: created.id },
+  });
+  return created;
 };

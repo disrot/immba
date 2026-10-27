@@ -112,12 +112,22 @@ export const rest = async (path, { method = "GET", body, headers: extra, anon = 
   });
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text || res.statusText);
+    let message = text || res.statusText;
+    try {
+      const data = JSON.parse(text);
+      message = data.message || data.details || data.error || message;
+    } catch {
+      /* keep text */
+    }
+    throw new Error(message);
   }
   if (res.status === 204) return null;
   const text = await res.text();
   return text ? JSON.parse(text) : null;
 };
+
+export const rpc = (name, args = {}, options = {}) =>
+  rest(`rpc/${name}`, { method: "POST", body: args, ...options });
 
 export const uploadFacultyPhoto = async (file, filename) => {
   const { url, key } = getSupabase();

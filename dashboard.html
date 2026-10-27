@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=drop2" />
+    <link rel="stylesheet" href="css/styles.css?v=audit2" />
   </head>
   <body class="office-page" data-title-key="dash.title">
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
@@ -76,6 +76,10 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="12" height="16" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="9" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8.2 17c.8-1.8 2-2.7 3.8-2.7s3 0.9 3.8 2.7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             <span data-i18n="office.tabFaculty">Faculty</span>
           </button>
+          <button type="button" class="office-tab" data-office-tab="audit">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 9h8M8 13h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span data-i18n="office.tabAudit">Audit</span>
+          </button>
           <button type="button" class="office-tab" data-office-tab="news">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 9h8M8 13h8M8 17h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             <span data-i18n="office.tabNews">News</span>
@@ -101,13 +105,14 @@
               <option value="listings" data-i18n="office.tabListings">Listings</option>
               <option value="alumni" data-i18n="office.tabAlumni">Alumni</option>
               <option value="faculty" data-i18n="office.tabFaculty">Faculty</option>
+              <option value="audit" data-i18n="office.tabAudit">Audit</option>
               <option value="news" data-i18n="office.tabNews">News</option>
               <option value="compose" data-i18n="admin.new">New announcement</option>
             </select>
           </label>
           <p class="office-live" data-office-only="analytics"><span data-i18n="dash.live">Live now</span> <strong data-dash-live>0</strong></p>
           <div class="office-top-actions">
-            <label class="office-range office-equal" data-office-only="analytics">
+            <label class="office-range" data-office-only="analytics">
               <span class="sr-only" data-i18n="dash.range">Range</span>
               <select data-dash-range>
                 <option value="today" data-i18n="dash.today">Today</option>
@@ -354,7 +359,7 @@
           </section>
           <section class="office-panel office-news" data-office-panel="access" hidden data-access-admin>
             <p class="office-lede" data-i18n="access.lede">
-              Approve pending staff into admin, or reject them. Super admin can also promote an admin.
+              Open Permissions on a row and check a role on or off. Super admin only.
             </p>
             <p class="admin-status" data-access-status></p>
             <div class="admin-table-wrap">
@@ -364,7 +369,7 @@
                     <th data-i18n="access.thEmail">Email</th>
                     <th data-i18n="access.thRole">Role</th>
                     <th data-i18n="access.thType">Account</th>
-                    <th></th>
+                    <th data-i18n="access.thPerms">Permissions</th>
                   </tr>
                 </thead>
                 <tbody data-access-table></tbody>
@@ -573,6 +578,56 @@
               </div>
             </form>
           </section>
+          <section class="office-panel office-news" data-office-panel="audit" hidden data-audit-admin>
+            <p class="office-lede" data-i18n="audit.lede">
+              Append-only office audit trail. Admins only see USER actions. Super admins see every role and can restore snapshots.
+            </p>
+            <p class="admin-status" data-audit-status></p>
+            <div class="audit-tools">
+              <label class="audit-field">
+                <span data-i18n="audit.module">Module</span>
+                <select data-audit-module>
+                  <option value="" data-i18n="audit.moduleAll">All modules</option>
+                  <option value="ANNOUNCEMENTS">ANNOUNCEMENTS</option>
+                  <option value="CMS_PAGES">CMS_PAGES</option>
+                  <option value="STUDENT_RECORDS">STUDENT_RECORDS</option>
+                  <option value="SECURITY_ROLLBACK">SECURITY_ROLLBACK</option>
+                  <option value="AUTH">AUTH</option>
+                </select>
+              </label>
+              <button type="button" class="btn btn-ghost office-equal" data-audit-refresh data-i18n="audit.refresh">Refresh</button>
+              <button type="button" class="btn btn-ghost office-equal" data-audit-verify data-i18n="audit.verify">Verify hash chain</button>
+            </div>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th data-i18n="audit.when">When</th>
+                    <th data-i18n="audit.actor">Actor</th>
+                    <th data-i18n="audit.action">Action</th>
+                    <th data-i18n="audit.entity">Entity</th>
+                    <th data-i18n="audit.status">Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody data-audit-table></tbody>
+              </table>
+            </div>
+            <div class="audit-snapshots" data-audit-snapshots hidden></div>
+            <div class="audit-rollback" data-audit-rollback>
+              <h2 class="office-subhead" data-i18n="audit.rollback">Point-in-time rollback</h2>
+              <p class="office-lede" data-i18n="audit.rollbackLede">Super admin only. Preview the affected records, then execute an atomic restore.</p>
+              <div class="audit-rollback-row">
+                <label class="audit-field audit-date-field">
+                  <span data-i18n="audit.target">Roll back to</span>
+                  <input type="datetime-local" class="audit-date" data-audit-target />
+                </label>
+                <button type="button" class="btn btn-ghost office-equal" data-audit-preview data-i18n="audit.preview">Dry-run preview</button>
+                <button type="button" class="btn btn-primary office-equal" data-audit-execute data-i18n="audit.execute">Execute rollback</button>
+              </div>
+              <div class="audit-preview" data-audit-preview-out hidden></div>
+            </div>
+          </section>
           <section class="office-panel office-news" data-office-panel="news" hidden>
             <p class="office-lede" data-i18n="admin.listLede">
               Edit or delete bilingual announcements. Use New announcement in the left rail to compose a post.
@@ -675,11 +730,12 @@
         </main>
       </div>
     </div>
-    <script type="module" src="js/main.js?v=drop2"></script>
+    <script type="module" src="js/main.js?v=audit2"></script>
     <script type="module" src="js/admin-news.js?v=news2"></script>
     <script type="module" src="js/admin-faculty.js?v=order1"></script>
-    <script type="module" src="js/admin-access.js?v=notice4"></script>
+    <script type="module" src="js/admin-access.js?v=audit2"></script>
     <script type="module" src="js/admin-listings.js?v=notice4"></script>
     <script type="module" src="js/admin-alumni.js?v=drop2"></script>
+    <script type="module" src="js/admin-audit.js?v=audit2"></script>
   </body>
 </html>

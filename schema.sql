@@ -4,6 +4,7 @@
 -- After the faculty table exists, also run schema-auth.sql for register, roles, and marketplace listings.
 -- Then run schema-news.sql so announcements sync across browsers like Faculty.
 -- Then run schema-alumni.sql for the #7 alumni database, CSV import, and audit trail.
+-- Then run schema-audit.sql for append-only back-office logs, snapshots, and point-in-time rollback.
 
 create extension if not exists pgcrypto;
 
