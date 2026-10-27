@@ -713,6 +713,7 @@ body:has(.menu-toggle[aria-expanded="true"]) {
 
 .hero-media.is-video video {
   opacity: 1;
+  transition: none;
 }
 
 .hero-media::after {
@@ -1052,8 +1053,16 @@ body[data-lang="zh"] .page-hero h1 {
   box-shadow: var(--shadow-card);
 }
 
+.menu-drop.is-open {
+  z-index: 40;
+}
+
 .menu-drop.is-open .menu-drop-panel {
   display: grid;
+}
+
+.menu-drop:not(.is-open) .menu-drop-panel {
+  display: none !important;
 }
 
 .menu-drop-public .menu-drop-panel {
@@ -1090,11 +1099,12 @@ body[data-lang="zh"] .page-hero h1 {
 }
 
 .alumni-col-drop {
-  margin: 0 0 1rem;
+  display: block;
+  width: 100%;
+  min-width: 0;
 }
 
 .alumni-cols {
-  display: grid;
   gap: 0.15rem;
   min-width: 16rem;
 }
@@ -1134,8 +1144,7 @@ body[data-lang="zh"] .page-hero h1 {
 }
 
 .office-header,
-.office-top-actions,
-.office-panel {
+.office-top-actions {
   overflow: visible;
 }
 
@@ -3564,14 +3573,62 @@ a.news-card {
 }
 
 .alumni-filters {
-  margin: 0.8rem 0 1rem;
+  display: grid;
+  gap: 0.7rem;
+  margin: 0.8rem 0 1.1rem;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: end;
+  position: relative;
+  z-index: 6;
+  overflow: visible;
+}
+
+.alumni-field {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.alumni-field > span {
+  font-size: 0.78rem;
+  color: var(--office-muted, var(--text-muted));
+}
+
+.alumni-field input[type="search"] {
+  width: 100%;
+  min-height: 2.6rem;
+  padding: 0 0.9rem;
+  border: 1px solid rgba(22, 51, 0, 0.1);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--surface-raised) 80%, transparent);
+  color: var(--office-ink, var(--text));
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.alumni-field input[type="search"]:hover,
+.alumni-field input[type="search"]:focus {
+  outline: none;
+  background: #efe6d6;
+  border-color: rgba(22, 51, 0, 0.16);
 }
 
 .alumni-cols {
-  display: grid;
   gap: 0.15rem;
   min-width: 16rem;
   padding: 0;
+}
+
+@media (max-width: 1100px) {
+  .alumni-filters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .alumni-filters {
+    grid-template-columns: 1fr;
+  }
 }
 
 .alumni-cols label {

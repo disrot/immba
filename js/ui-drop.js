@@ -32,8 +32,14 @@ export const bindSelectDrop = (select) => {
   wrap.className = `menu-drop ${office ? "menu-drop-office" : "menu-drop-public"}`;
   if (select.closest(".office-switch")) wrap.classList.add("menu-drop-title");
   select.classList.add("menu-drop-source");
+  select.tabIndex = -1;
+  select.setAttribute("aria-hidden", "true");
   select.parentNode.insertBefore(wrap, select);
   wrap.appendChild(select);
+  const hostLabel = wrap.closest("label");
+  hostLabel?.addEventListener("click", (event) => {
+    if (event.target.closest("[data-drop-btn], [data-drop-panel]")) event.preventDefault();
+  });
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = "menu-drop-btn";

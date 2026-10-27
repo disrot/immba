@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=drop1" />
+    <link rel="stylesheet" href="css/styles.css?v=drop2" />
   </head>
   <body class="office-page" data-title-key="dash.title">
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
@@ -407,31 +407,34 @@
               <button type="button" class="btn btn-ghost office-equal" data-alumni-export data-i18n="alumni.export">Export filtered CSV</button>
               <span class="alumni-count" data-alumni-count></span>
             </div>
-            <div class="alumni-filters admin-shared">
-              <label>
+            <div class="alumni-filters">
+              <label class="alumni-field">
                 <span data-i18n="alumni.search">Search</span>
-                <input type="search" data-alumni-q placeholder="Name, company, email…" />
+                <input type="search" data-alumni-q data-i18n-attr="placeholder:alumni.searchHint" placeholder="Name, company, email…" />
               </label>
-              <label>
+              <label class="alumni-field">
                 <span data-i18n="alumni.degree">Degree program</span>
                 <select data-alumni-degree></select>
               </label>
-              <label>
+              <label class="alumni-field">
                 <span data-i18n="alumni.year">Graduation year</span>
                 <select data-alumni-year></select>
               </label>
-              <label>
+              <label class="alumni-field">
                 <span data-i18n="alumni.dept">Department</span>
                 <select data-alumni-dept></select>
               </label>
-              <label>
+              <label class="alumni-field">
                 <span data-i18n="alumni.company">Company</span>
                 <select data-alumni-company></select>
               </label>
-            </div>
-            <div class="menu-drop menu-drop-office alumni-col-drop" data-alumni-col-drop>
-              <button type="button" class="menu-drop-btn" data-drop-btn data-i18n="alumni.columns" aria-expanded="false">Display fields</button>
-              <div class="menu-drop-panel alumni-cols" data-drop-panel data-alumni-cols></div>
+              <div class="alumni-field">
+                <span data-i18n="alumni.columns">Display fields</span>
+                <div class="menu-drop menu-drop-office alumni-col-drop" data-alumni-col-drop>
+                  <button type="button" class="menu-drop-btn" data-drop-btn data-i18n="alumni.columns" aria-expanded="false">Display fields</button>
+                  <div class="menu-drop-panel alumni-cols" data-drop-panel data-alumni-cols></div>
+                </div>
+              </div>
             </div>
             <div class="admin-table-wrap">
               <table class="admin-table">
@@ -672,11 +675,11 @@
         </main>
       </div>
     </div>
-    <script type="module" src="js/main.js?v=drop1"></script>
+    <script type="module" src="js/main.js?v=drop2"></script>
     <script type="module" src="js/admin-news.js?v=news2"></script>
     <script type="module" src="js/admin-faculty.js?v=order1"></script>
     <script type="module" src="js/admin-access.js?v=notice4"></script>
     <script type="module" src="js/admin-listings.js?v=notice4"></script>
-    <script type="module" src="js/admin-alumni.js?v=drop1"></script>
+    <script type="module" src="js/admin-alumni.js?v=drop2"></script>
   </body>
 </html>

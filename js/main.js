@@ -8,8 +8,8 @@ import { initMarketplace, initListing } from "./marketplace.js?v=notice3";
 import { initMarketAccount } from "./market-account.js?v=notice4";
 import { initAnalytics } from "./analytics.js";
 import { initAdminDash } from "./admin-dash.js?v=alumni1";
-import { initPageHero } from "./page-hero.js?v=drop1";
-import { initSelectDrops, refreshSelectDrop } from "./ui-drop.js?v=drop1";
+import { initPageHero } from "./page-hero.js?v=drop2";
+import { initSelectDrops, refreshSelectDrop } from "./ui-drop.js?v=drop2";
 
 const translations = {
   en: {
@@ -583,6 +583,7 @@ const translations = {
     "alumni.import": "Import CSV",
     "alumni.export": "Export filtered CSV",
     "alumni.search": "Search",
+    "alumni.searchHint": "Name, company, email…",
     "alumni.degree": "Degree program",
     "alumni.year": "Graduation year",
     "alumni.dept": "Department",
@@ -1184,6 +1185,7 @@ const translations = {
     "alumni.import": "匯入 CSV",
     "alumni.export": "匯出篩選結果",
     "alumni.search": "搜尋",
+    "alumni.searchHint": "姓名、公司、Email…",
     "alumni.degree": "學制",
     "alumni.year": "畢業年",
     "alumni.dept": "系所",
@@ -1359,6 +1361,7 @@ initMarketAccount();
 enhanceFooter();
 initPageHero();
 initSelectDrops();
+applyLang();
 hydrateNews().finally(() => applyLang());
 
 const setScrolled = () => {
@@ -1408,23 +1411,24 @@ const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)
 const heroMedia = document.querySelector(".hero-media");
 const heroVideo = document.querySelector("[data-hero-video]");
 if (heroMedia && heroVideo && !prefersReducedMotion) {
-  const showVideo = () => {
-    if (!heroVideo.paused) heroMedia.classList.add("is-video");
-  };
+  const showVideo = () => heroMedia.classList.add("is-video");
   const tryPlay = () => {
     const attempt = heroVideo.play();
     if (attempt && typeof attempt.then === "function") {
       attempt.then(showVideo).catch(() => {});
-    }
+    } else if (!heroVideo.paused) showVideo();
   };
   heroVideo.muted = true;
-  heroVideo.setAttribute("playsinline", "");
-  heroVideo.addEventListener("canplay", tryPlay);
+  heroVideo.defaultMuted = true;
+  heroVideo.playsInline = true;
+  heroVideo.addEventListener("loadeddata", () => {
+    showVideo();
+    tryPlay();
+  });
   heroVideo.addEventListener("playing", showVideo);
   tryPlay();
-  const unlock = () => tryPlay();
-  document.addEventListener("touchstart", unlock, { once: true, passive: true });
-  document.addEventListener("click", unlock, { once: true });
+  document.addEventListener("touchstart", tryPlay, { once: true, passive: true });
+  document.addEventListener("click", tryPlay, { once: true });
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) tryPlay();
   });

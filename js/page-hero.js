@@ -18,7 +18,7 @@ const HEROES = {
 };
 
 export const initPageHero = () => {
-  if (document.querySelector(".hero, .office-page, .login-page, .pending-page, .page-hero")) return;
+  if (document.querySelector(".hero, .dd-hero, .office-page, .login-page, .pending-page, .page-hero")) return;
   const main = document.getElementById("main");
   if (!main) return;
   const nested = /\/(announcements|events)\//.test(location.pathname);
