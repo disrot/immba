@@ -9,6 +9,7 @@ alter table public.profiles
 
 alter table public.profiles add column if not exists display_name text not null default '';
 alter table public.profiles add column if not exists intent text not null default 'staff';
+alter table public.profiles add column if not exists pages text[] not null default '{}';
 
 create or replace function public.current_role()
 returns text

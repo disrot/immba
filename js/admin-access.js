@@ -1,4 +1,4 @@
-import { isSuperAdmin } from "./auth.js?v=notice4";
+import { ALL_OFFICE_PAGES, OFFICE_PAGES, isSuperAdmin, pagesForRole } from "./auth.js?v=pages1";
 import { rest } from "./supabase.js?v=audit2";
 import { bindPanelDrop } from "./ui-drop.js?v=drop2";
 import { logAudit } from "./audit-store.js?v=audit2";
@@ -37,39 +37,61 @@ if (!root) {
     return zh() ? "職員" : "Staff";
   };
 
+  const pageLabel = (key) => {
+    const match = OFFICE_PAGES.find((page) => page.key === key);
+    if (!match) return key;
+    return zh() ? match.zh : match.en;
+  };
+
   const paint = () => {
     if (!table) return;
     table.innerHTML = rows
-      .map(
-        (row) => `<tr>
+      .map((row) => {
+        const pages = pagesForRole(row.role, row.pages);
+        return `<tr>
           <td>${row.email || ""}</td>
           <td>${roleLabel(row.role)}</td>
           <td>${intentLabel(row.intent)}</td>
           <td>
-            <div class="menu-drop menu-drop-office access-role-drop" data-access-drop data-id="${row.id}">
-              <button type="button" class="menu-drop-btn" data-drop-btn aria-expanded="false">${zh() ? "權限" : "Permissions"}</button>
-              <div class="menu-drop-panel access-role-panel" data-drop-panel>
-                ${ROLES.map(
-                  (role) => `<label class="access-check">
-                    <input type="checkbox" data-access-perm="${role.key}" ${row.role === role.key ? "checked" : ""} />
-                    ${zh() ? role.zh : role.en}
-                  </label>`
-                ).join("")}
+            <div class="access-menus">
+              <div class="menu-drop menu-drop-office access-role-drop" data-access-drop data-id="${row.id}">
+                <button type="button" class="menu-drop-btn" data-drop-btn aria-expanded="false">${zh() ? "角色" : "Role"}</button>
+                <div class="menu-drop-panel access-role-panel" data-drop-panel>
+                  ${ROLES.map(
+                    (role) => `<label class="access-check">
+                      <input type="checkbox" data-access-perm="${role.key}" ${row.role === role.key ? "checked" : ""} />
+                      ${zh() ? role.zh : role.en}
+                    </label>`
+                  ).join("")}
+                </div>
+              </div>
+              <div class="menu-drop menu-drop-office access-role-drop" data-access-pages data-id="${row.id}">
+                <button type="button" class="menu-drop-btn" data-drop-btn aria-expanded="false">${zh() ? "頁面" : "Pages"}</button>
+                <div class="menu-drop-panel access-role-panel" data-drop-panel>
+                  ${OFFICE_PAGES.map(
+                    (page) => `<label class="access-check">
+                      <input type="checkbox" data-access-page="${page.key}" ${pages.includes(page.key) ? "checked" : ""} ${
+                        row.role === "pending" || row.role === "rejected" ? "disabled" : ""
+                      } />
+                      ${pageLabel(page.key)}
+                    </label>`
+                  ).join("")}
+                </div>
               </div>
             </div>
           </td>
-        </tr>`
-      )
+        </tr>`;
+      })
       .join("");
-    table.querySelectorAll("[data-access-drop]").forEach(bindPanelDrop);
+    table.querySelectorAll("[data-access-drop], [data-access-pages]").forEach(bindPanelDrop);
   };
 
   const reload = async () => {
     try {
       try {
-        rows = (await rest("profiles?select=id,email,role,intent,created_at&order=created_at.desc")) || [];
+        rows = (await rest("profiles?select=id,email,role,intent,pages,created_at&order=created_at.desc")) || [];
       } catch {
-        rows = (await rest("profiles?select=id,email,role,created_at&order=created_at.desc")) || [];
+        rows = (await rest("profiles?select=id,email,role,intent,created_at&order=created_at.desc")) || [];
       }
       rows = rows.filter((row) => row.role !== "marketplace" && row.intent !== "marketplace");
       rows.sort((a, b) => Number(b.role === "pending") - Number(a.role === "pending"));
@@ -79,11 +101,11 @@ if (!root) {
         status.textContent = rows.length
           ? pending
             ? zh()
-              ? `${pending} 人等候核准。勾選即可加上或拿掉權限。`
-              : `${pending} waiting. Check a permission on or off.`
+              ? `${pending} 人等候核准。`
+              : `${pending} waiting for approval.`
             : zh()
-              ? "沒有等候中的職員。勾選即可加上或拿掉權限。"
-              : "No staff waiting. Check a permission on or off."
+              ? "沒有等候中的職員。"
+              : "No staff waiting."
           : zh()
             ? "尚無帳號。新職員註冊後會出現在這裡。"
             : "No accounts yet. New staff registrations appear here as pending.";
@@ -93,32 +115,48 @@ if (!root) {
     }
   };
 
+  const saveRow = async (id, body, before, after) => {
+    await rest(`profiles?id=eq.${id}`, { method: "PATCH", body });
+    await logAudit({
+      module: "AUTH",
+      action: "UPDATE",
+      entityType: "profiles",
+      entityId: id,
+      entityLabel: before.email || id,
+      oldValues: { role: before.role, pages: pagesForRole(before.role, before.pages) },
+      newValues: after,
+    });
+    await reload();
+  };
+
   table?.addEventListener("change", async (event) => {
-    const input = event.target.closest("[data-access-perm]");
-    if (!input) return;
-    const wrap = input.closest("[data-access-drop]");
+    const roleInput = event.target.closest("[data-access-perm]");
+    const pageInput = event.target.closest("[data-access-page]");
+    const wrap = event.target.closest("[data-access-drop], [data-access-pages]");
     const id = wrap?.getAttribute("data-id");
     if (!id) return;
     const current = rows.find((row) => row.id === id);
-    const next = input.checked ? input.getAttribute("data-access-perm") : "pending";
-    if (!current || current.role === next) return;
+    if (!current) return;
     try {
-      await rest(`profiles?id=eq.${id}`, {
-        method: "PATCH",
-        body: { role: next },
-      });
-      await logAudit({
-        module: "AUTH",
-        action: "UPDATE",
-        entityType: "profiles",
-        entityId: id,
-        entityLabel: current.email || id,
-        oldValues: { role: current.role },
-        newValues: { role: next },
-      });
-      await reload();
+      if (roleInput) {
+        const next = roleInput.checked ? roleInput.getAttribute("data-access-perm") : "pending";
+        if (current.role === next) return;
+        await saveRow(id, { role: next, pages: pagesForRole(next, current.pages) }, current, {
+          role: next,
+          pages: pagesForRole(next, current.pages),
+        });
+        return;
+      }
+      if (pageInput) {
+        if (current.role === "pending" || current.role === "rejected") return;
+        const box = wrap.querySelector("[data-drop-panel]");
+        let pages = [...box.querySelectorAll("[data-access-page]:checked")].map((input) => input.getAttribute("data-access-page"));
+        if (current.role === "super_admin") pages = ALL_OFFICE_PAGES.filter((key) => pages.includes(key));
+        if (!pages.length) pages = ["analytics"];
+        await saveRow(id, { pages }, current, { role: current.role, pages });
+      }
     } catch (error) {
-      if (status) status.textContent = error.message || "Update failed.";
+      if (status) status.textContent = error.message || "Update failed. Run schema-auth.sql to add pages.";
     }
   });
 

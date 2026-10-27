@@ -2,12 +2,12 @@ import { renderNewsArticle, renderNewsCards } from "./news-ui.js";
 import { hydrateNews } from "./news-store.js?v=news2";
 import { applyOfficialLinks } from "./official.js";
 import { initGallery, refreshGalleryCaptions } from "./gallery.js";
-import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage } from "./auth.js?v=notice4";
+import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage } from "./auth.js?v=pages1";
 import { initFacultyDirectory } from "./faculty.js?v=notice3";
 import { initMarketplace, initListing } from "./marketplace.js?v=notice3";
 import { initMarketAccount } from "./market-account.js?v=notice4";
 import { initAnalytics } from "./analytics.js";
-import { initAdminDash } from "./admin-dash.js?v=alumni1";
+import { initAdminDash } from "./admin-dash.js?v=pages1";
 import { initPageHero } from "./page-hero.js?v=drop2";
 import { initSelectDrops, refreshSelectDrop } from "./ui-drop.js?v=drop2";
 
@@ -622,8 +622,8 @@ const translations = {
     "access.thType": "Account",
     "admin.facultyAdvanced": "Advanced connection",
     "access.kicker": "Access",
-    "access.thPerms": "Permissions",
-    "access.lede": "Open Permissions on a row and check a role on or off. Super admin only.",
+    "access.thPerms": "Access",
+    "access.lede": "Check a role, then check which back-office pages that account can open.",
     "nav.admin": "News",
     "article.event": "Event",
     "downloads.title": "Official forms and brochures.",
@@ -1243,7 +1243,7 @@ const translations = {
     "admin.facultyAdvanced": "進階連線",
     "access.kicker": "權限",
     "access.thPerms": "權限",
-    "access.lede": "在列上開啟「權限」，勾選即可加上或拿掉角色。僅超級管理員。",
+    "access.lede": "勾選角色，再勾選對方能進入的後台頁面。",
     "nav.admin": "公告",
     "article.event": "活動",
     "downloads.title": "官方表件與簡章。",

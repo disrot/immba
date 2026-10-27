@@ -23,6 +23,34 @@ export const isAdminAuthed = () => {
 
 export const isSuperAdmin = () => getAuthSession()?.role === "super_admin" || isLocalAdmin();
 
+export const OFFICE_PAGES = [
+  { key: "analytics", en: "Web Analytics", zh: "網站分析" },
+  { key: "people", en: "People", zh: "訪客" },
+  { key: "access", en: "Access", zh: "權限" },
+  { key: "listings", en: "Listings", zh: "刊登" },
+  { key: "alumni", en: "Alumni", zh: "校友" },
+  { key: "faculty", en: "Faculty", zh: "師資" },
+  { key: "audit", en: "Audit", zh: "稽核" },
+  { key: "news", en: "News", zh: "公告" },
+  { key: "compose", en: "Compose", zh: "撰寫" },
+];
+
+export const ALL_OFFICE_PAGES = OFFICE_PAGES.map((page) => page.key);
+const DEFAULT_ADMIN_PAGES = ALL_OFFICE_PAGES.filter((key) => key !== "access" && key !== "audit");
+
+export const pagesForRole = (role, pages) => {
+  if (role === "super_admin") return [...ALL_OFFICE_PAGES];
+  if (role !== "admin") return [];
+  const selected = Array.isArray(pages) ? pages.filter((key) => ALL_OFFICE_PAGES.includes(key)) : [];
+  return selected.length ? selected : [...DEFAULT_ADMIN_PAGES];
+};
+
+export const allowedOfficePages = () => {
+  if (isLocalAdmin()) return [...ALL_OFFICE_PAGES];
+  const session = getAuthSession();
+  return pagesForRole(session?.role, session?.pages);
+};
+
 export const isSellerAuthed = () => {
   if (isLocalAdmin()) return false;
   const session = getAuthSession();
@@ -110,6 +138,7 @@ const loadProfile = async (session) => {
     role,
     intent,
     email,
+    pages: pagesForRole(role, rows[0]?.pages),
   };
   saveAuthSession(next);
   return next;

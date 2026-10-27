@@ -1,5 +1,6 @@
 import { summarizeAnalytics, clearAnalytics, shortVisitor } from "./analytics.js";
 import { worldMapSvg } from "./world-map.js";
+import { allowedOfficePages } from "./auth.js?v=pages1";
 
 const COLORS = ["#163300", "#8c6a3a", "#5c5346", "#c4a574", "#3d4a36"];
 
@@ -336,8 +337,21 @@ const initOfficeTabs = (root) => {
     }, 520);
   };
 
+  const syncAllowed = () => {
+    const allowed = allowedOfficePages();
+    tabs.forEach((tab) => {
+      tab.hidden = !allowed.includes(tab.dataset.officeTab);
+    });
+    switcher?.querySelectorAll("option").forEach((option) => {
+      option.hidden = option.value && !allowed.includes(option.value);
+    });
+    return allowed;
+  };
+
   const apply = (id) => {
-    const next = panels.some((panel) => panel.dataset.officePanel === id) ? id : "analytics";
+    const allowed = syncAllowed();
+    const requested = panels.some((panel) => panel.dataset.officePanel === id) ? id : allowed[0] || "analytics";
+    const next = allowed.includes(requested) ? requested : allowed[0] || "analytics";
     panels.forEach((panel) => {
       panel.hidden = panel.dataset.officePanel !== next;
     });
@@ -371,6 +385,7 @@ const initOfficeTabs = (root) => {
                   ? "office.tabListings"
                   : "dash.title";
     document.body.setAttribute("data-title-key", titleKey);
+    window.dispatchEvent(new Event("immba:lang"));
     const shown = panels.find((panel) => panel.dataset.officePanel === next);
     kickPanel(shown);
     requestAnimationFrame(() => placeBubble(false));
