@@ -7,7 +7,9 @@ import { initFacultyDirectory } from "./faculty.js?v=notice3";
 import { initMarketplace, initListing } from "./marketplace.js?v=notice3";
 import { initMarketAccount } from "./market-account.js?v=notice4";
 import { initAnalytics } from "./analytics.js";
-import { initAdminDash } from "./admin-dash.js?v=mod1";
+import { initAdminDash } from "./admin-dash.js?v=alumni1";
+import { initPageHero } from "./page-hero.js?v=drop1";
+import { initSelectDrops, refreshSelectDrop } from "./ui-drop.js?v=drop1";
 
 const translations = {
   en: {
@@ -574,6 +576,20 @@ const translations = {
     "pending.switch": "Switch account",
     "pending.seller": "I meant to sell on Marketplace",
     "office.tabFaculty": "Faculty",
+    "office.tabAlumni": "Alumni",
+    "alumni.lede": "Shared alumni database. Add, edit, delete, search, filter, import a CSV, and export the filtered list. Create, update, and delete write an audit trail.",
+    "alumni.new": "New alumni",
+    "alumni.template": "CSV template",
+    "alumni.import": "Import CSV",
+    "alumni.export": "Export filtered CSV",
+    "alumni.search": "Search",
+    "alumni.degree": "Degree program",
+    "alumni.year": "Graduation year",
+    "alumni.dept": "Department",
+    "alumni.company": "Company",
+    "alumni.columns": "Display fields",
+    "alumni.save": "Save alumni",
+    "alumni.audit": "Activity history",
     "office.tabListings": "Listings",
     "office.tabNews": "News",
     "office.tabCompose": "Compose",
@@ -1161,6 +1177,20 @@ const translations = {
     "pending.switch": "切換帳號",
     "pending.seller": "我其實要在市集刊登",
     "office.tabFaculty": "師資",
+    "office.tabAlumni": "校友",
+    "alumni.lede": "共用校友資料庫。可新增、編輯、刪除、搜尋、篩選、匯入 CSV，並匯出目前篩選結果。新增、更新、刪除都會寫入稽核紀錄。",
+    "alumni.new": "新增校友",
+    "alumni.template": "CSV 範本",
+    "alumni.import": "匯入 CSV",
+    "alumni.export": "匯出篩選結果",
+    "alumni.search": "搜尋",
+    "alumni.degree": "學制",
+    "alumni.year": "畢業年",
+    "alumni.dept": "系所",
+    "alumni.company": "公司",
+    "alumni.columns": "顯示欄位",
+    "alumni.save": "儲存校友",
+    "alumni.audit": "操作紀錄",
     "office.tabListings": "刊登",
     "office.tabNews": "公告",
     "office.tabCompose": "撰寫",
@@ -1263,6 +1293,7 @@ const applyLang = () => {
   renderNewsArticle(lang);
   applyOfficialLinks(d);
   refreshGalleryCaptions();
+  document.querySelectorAll("select.menu-drop-source").forEach(refreshSelectDrop);
   window.dispatchEvent(new Event("resize"));
   window.dispatchEvent(new CustomEvent("immba:lang"));
 };
@@ -1326,6 +1357,8 @@ initAnalytics();
 initAdminDash();
 initMarketAccount();
 enhanceFooter();
+initPageHero();
+initSelectDrops();
 hydrateNews().finally(() => applyLang());
 
 const setScrolled = () => {

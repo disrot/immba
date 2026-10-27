@@ -911,6 +911,238 @@ body[data-lang="zh"] .hero h1 strong {
   text-align: center;
 }
 
+.page-hero {
+  position: relative;
+  min-height: clamp(16rem, 42vh, 24rem);
+  display: grid;
+  align-items: center;
+  color: var(--text-on-dark);
+}
+
+.page-hero-media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.page-hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.page-hero-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface-dark) 28%, transparent) 0%,
+    color-mix(in srgb, var(--surface-dark) 62%, transparent) 100%
+  );
+}
+
+.page-hero-copy {
+  position: relative;
+  z-index: 1;
+  padding: var(--space-xl) 0;
+  text-align: center;
+}
+
+.page-hero .label,
+.page-hero h1 {
+  color: var(--text-on-dark);
+  margin: 0;
+}
+
+.page-hero h1 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  font-size: clamp(1.7rem, 4.2cqi, 3rem);
+  letter-spacing: -0.03em;
+  line-height: var(--lh-tight);
+}
+
+body[data-lang="zh"] .page-hero h1 {
+  font-family: var(--font-cjk), var(--font-display);
+  letter-spacing: 0.04em;
+}
+
+.has-page-hero .dir-headline,
+.has-page-hero .dir-rule,
+.has-page-hero .shop-hero-title {
+  display: none;
+}
+
+.menu-drop {
+  position: relative;
+  display: inline-block;
+  min-width: 10rem;
+}
+
+.menu-drop-source {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.menu-drop-btn {
+  width: 100%;
+  min-height: 2.6rem;
+  padding: 0 2rem 0 0.9rem;
+  border-radius: var(--radius-pill);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 12px 8px;
+}
+
+.menu-drop-public .menu-drop-btn {
+  border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+  background-color: var(--surface-raised);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1.5 L6 6.5 L11 1.5' fill='none' stroke='%23163300' stroke-width='1.6'/%3E%3C/svg%3E");
+  color: var(--text);
+}
+
+.menu-drop-public .menu-drop-btn:hover,
+.menu-drop-public.is-open .menu-drop-btn {
+  border-color: var(--accent);
+}
+
+.menu-drop-office .menu-drop-btn {
+  border: 1px solid rgba(22, 51, 0, 0.1);
+  background-color: color-mix(in srgb, var(--surface-raised) 80%, transparent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1.5 L6 6.5 L11 1.5' fill='none' stroke='%235c5346' stroke-width='1.6'/%3E%3C/svg%3E");
+  color: var(--office-ink, var(--text));
+}
+
+.menu-drop-office .menu-drop-btn:hover,
+.menu-drop-office.is-open .menu-drop-btn {
+  background-color: #efe6d6;
+}
+
+.menu-drop-title {
+  min-width: 14rem;
+}
+
+.menu-drop-title .menu-drop-btn {
+  border: 0;
+  background-color: transparent;
+  font-size: 1.7rem;
+  font-weight: 600;
+  min-height: 2.6rem;
+  padding-left: 0.2rem;
+}
+
+.menu-drop-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  z-index: 20;
+  min-width: 100%;
+  max-height: 16rem;
+  overflow: auto;
+  padding: 0.35rem;
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+}
+
+.menu-drop.is-open .menu-drop-panel {
+  display: grid;
+}
+
+.menu-drop-public .menu-drop-panel {
+  background: var(--surface-raised);
+  border: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+.menu-drop-office .menu-drop-panel {
+  background: #f7f1e6;
+  border: 1px solid rgba(22, 51, 0, 0.08);
+}
+
+.menu-drop-item {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-drop-public .menu-drop-item:hover,
+.menu-drop-public .menu-drop-item.is-on {
+  background: color-mix(in srgb, var(--accent) 45%, white);
+}
+
+.menu-drop-office .menu-drop-item:hover,
+.menu-drop-office .menu-drop-item.is-on {
+  background: #efe6d6;
+}
+
+.alumni-col-drop {
+  margin: 0 0 1rem;
+}
+
+.alumni-cols {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 16rem;
+}
+
+.alumni-cols label {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+  padding: 0.4rem 0.55rem;
+  border-radius: 10px;
+}
+
+.alumni-filters .menu-drop,
+.dir-field .menu-drop,
+.admin-form .menu-drop,
+.admin-shared .menu-drop,
+.shop-tool .menu-drop {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.office-range {
+  overflow: visible;
+  width: auto;
+}
+
+.office-range .menu-drop {
+  width: 8.4rem;
+  min-width: 8.4rem;
+}
+
+.office-range .menu-drop-btn {
+  height: 2.6rem;
+  min-height: 2.6rem;
+  justify-content: flex-start;
+}
+
+.office-header,
+.office-top-actions,
+.office-panel {
+  overflow: visible;
+}
+
+.page-hero-copy {
+  container-type: inline-size;
+}
+
 .capabilities {
   position: relative;
   padding: var(--space-xl) 0;
@@ -3302,6 +3534,76 @@ a.news-card {
   margin-top: 0.2rem;
   color: var(--office-muted, var(--text-muted));
   font-weight: 400;
+}
+
+.alumni-tools {
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.alumni-file {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.alumni-file input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.alumni-count {
+  margin-left: auto;
+  color: var(--office-muted, var(--text-muted));
+  font-size: 0.92rem;
+}
+
+.alumni-filters {
+  margin: 0.8rem 0 1rem;
+}
+
+.alumni-cols {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 16rem;
+  padding: 0;
+}
+
+.alumni-cols label {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+  padding: 0.4rem 0.55rem;
+  border-radius: 10px;
+  font-size: 0.92rem;
+}
+
+.office-subhead {
+  margin: 1.4rem 0 0.6rem;
+  font-size: 1.05rem;
+}
+
+.alumni-audit {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.alumni-audit li {
+  padding: 0.7rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+.alumni-audit small,
+.alumni-audit span {
+  display: block;
+  color: var(--office-muted, var(--text-muted));
+  margin-top: 0.2rem;
 }
 
 @media (max-width: 900px) {

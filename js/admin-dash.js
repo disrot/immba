@@ -361,6 +361,8 @@ const initOfficeTabs = (root) => {
             ? "admin.new"
             : next === "faculty"
               ? "admin.faculty"
+              : next === "alumni"
+                ? "office.tabAlumni"
               : next === "access"
                 ? "access.kicker"
                 : next === "listings"
