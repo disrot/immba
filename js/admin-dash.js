@@ -1,6 +1,6 @@
 import { summarizeAnalytics, clearAnalytics, shortVisitor } from "./analytics.js";
 import { worldMapSvg } from "./world-map.js";
-import { allowedOfficePages } from "./auth.js?v=pages1";
+import { allowedOfficePages } from "./auth.js?v=block1";
 
 const COLORS = ["#163300", "#8c6a3a", "#5c5346", "#c4a574", "#3d4a36"];
 

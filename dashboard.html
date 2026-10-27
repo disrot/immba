@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=pages1" />
+    <link rel="stylesheet" href="css/styles.css?v=block1" />
   </head>
   <body class="office-page" data-title-key="dash.title">
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
@@ -39,7 +39,7 @@
           return;
         }
         if (role === "pending" || role === "rejected") {
-          location.replace("pending.html");
+          location.replace(role === "rejected" ? "pending.html?blocked=1" : "pending.html");
           return;
         }
         location.replace("login.html");
@@ -730,10 +730,10 @@
         </main>
       </div>
     </div>
-    <script type="module" src="js/main.js?v=pages1"></script>
+    <script type="module" src="js/main.js?v=block1"></script>
     <script type="module" src="js/admin-news.js?v=news2"></script>
     <script type="module" src="js/admin-faculty.js?v=order1"></script>
-    <script type="module" src="js/admin-access.js?v=pages1"></script>
+    <script type="module" src="js/admin-access.js?v=block1"></script>
     <script type="module" src="js/admin-listings.js?v=notice4"></script>
     <script type="module" src="js/admin-alumni.js?v=drop2"></script>
     <script type="module" src="js/admin-audit.js?v=audit2"></script>

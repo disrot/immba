@@ -2,7 +2,7 @@ import { renderNewsArticle, renderNewsCards } from "./news-ui.js";
 import { hydrateNews } from "./news-store.js?v=news2";
 import { applyOfficialLinks } from "./official.js";
 import { initGallery, refreshGalleryCaptions } from "./gallery.js";
-import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage } from "./auth.js?v=pages1";
+import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage, watchOfficeAccess } from "./auth.js?v=block1";
 import { initFacultyDirectory } from "./faculty.js?v=notice3";
 import { initMarketplace, initListing } from "./marketplace.js?v=notice3";
 import { initMarketAccount } from "./market-account.js?v=notice4";
@@ -575,6 +575,9 @@ const translations = {
     "pending.lede": "Your email is registered. Verify it if asked, then wait \u2014 a super admin must approve staff before they can open the back office.",
     "pending.switch": "Switch account",
     "pending.seller": "I meant to sell on Marketplace",
+    "pending.blockedTitle": "This account was blocked",
+    "pending.blockedLede": "This account was blocked, so you have been signed out. If you think this is a mistake, please contact imMBA@mail.fju.edu.tw.",
+    "access.delete": "Delete",
     "office.tabFaculty": "Faculty",
     "office.tabAlumni": "Alumni",
     "office.tabAudit": "Audit",
@@ -1195,6 +1198,9 @@ const translations = {
     "pending.lede": "帳號已註冊。如需請先驗證電子郵件，再等候 super admin 核准後台權限。",
     "pending.switch": "切換帳號",
     "pending.seller": "我其實要在市集刊登",
+    "pending.blockedTitle": "帳號已封鎖",
+    "pending.blockedLede": "這個帳號已被封鎖，因此已立即登出。若你認為這是誤判，請聯絡 imMBA@mail.fju.edu.tw。",
+    "access.delete": "刪除",
     "office.tabFaculty": "師資",
     "office.tabAlumni": "校友",
     "office.tabAudit": "稽核",
@@ -1391,6 +1397,7 @@ initLogoGate();
 initLoginForm();
 initPendingPage();
 guardAdminPage();
+watchOfficeAccess();
 initAnalytics();
 initAdminDash();
 initMarketAccount();

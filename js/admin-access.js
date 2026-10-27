@@ -1,5 +1,5 @@
-import { ALL_OFFICE_PAGES, OFFICE_PAGES, isSuperAdmin, pagesForRole } from "./auth.js?v=pages1";
-import { rest } from "./supabase.js?v=audit2";
+import { ALL_OFFICE_PAGES, OFFICE_PAGES, isSuperAdmin, pagesForRole } from "./auth.js?v=block1";
+import { getAuthSession, rest, rpc } from "./supabase.js?v=audit2";
 import { bindPanelDrop } from "./ui-drop.js?v=drop2";
 import { logAudit } from "./audit-store.js?v=audit2";
 
@@ -78,6 +78,11 @@ if (!root) {
                   ).join("")}
                 </div>
               </div>
+              ${
+                row.id === getAuthSession()?.user?.id
+                  ? ""
+                  : `<button type="button" class="btn btn-ghost office-equal access-delete" data-access-delete="${row.id}">${zh() ? "刪除" : "Delete"}</button>`
+              }
             </div>
           </td>
         </tr>`;
@@ -128,6 +133,36 @@ if (!root) {
     });
     await reload();
   };
+
+  table?.addEventListener("click", async (event) => {
+    const btn = event.target.closest("[data-access-delete]");
+    if (!btn) return;
+    const id = btn.getAttribute("data-access-delete");
+    const current = rows.find((row) => row.id === id);
+    if (!current) return;
+    if (!window.confirm(zh() ? `刪除 ${current.email || "此帳號"}？對方會立即被登出。` : `Delete ${current.email || "this account"}? They will be signed out at once.`)) {
+      return;
+    }
+    try {
+      try {
+        await rpc("office_delete_account", { p_id: id });
+      } catch {
+        await rest(`profiles?id=eq.${id}`, { method: "DELETE" });
+      }
+      await logAudit({
+        module: "AUTH",
+        action: "DELETE",
+        entityType: "profiles",
+        entityId: id,
+        entityLabel: current.email || id,
+        oldValues: { role: current.role, email: current.email },
+        isDeleted: true,
+      });
+      await reload();
+    } catch (error) {
+      if (status) status.textContent = error.message || "Could not delete that account.";
+    }
+  });
 
   table?.addEventListener("change", async (event) => {
     const roleInput = event.target.closest("[data-access-perm]");

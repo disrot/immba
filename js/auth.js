@@ -6,6 +6,8 @@ const ADMIN_USER = "admin";
 const ADMIN_PASS = "123456";
 const DOUBLE_CLICK_MS = 320;
 const OFFICE_OK = "immba-office-ok";
+const BLOCKED_KEY = "immba-blocked-notice";
+export const OFFICE_CONTACT = "imMBA@mail.fju.edu.tw";
 
 const SITE = () => `${location.origin}${location.pathname.replace(/[^/]+$/, "")}`;
 const HERE = () => `${location.origin}${location.pathname}`;
@@ -78,6 +80,51 @@ export const logoutAdmin = () => {
   saveAuthSession(null);
 };
 
+export const hasBlockedNotice = () =>
+  sessionStorage.getItem(BLOCKED_KEY) === "1" || new URLSearchParams(location.search).get("blocked") === "1";
+
+export const kickBlockedSession = () => {
+  sessionStorage.setItem(BLOCKED_KEY, "1");
+  logoutAdmin();
+  if (document.querySelector("[data-pending]")) return;
+  window.location.replace("pending.html?blocked=1");
+};
+
+export const watchOfficeAccess = () => {
+  if (window.__immbaWatchOffice || isLocalAdmin()) return;
+  window.__immbaWatchOffice = true;
+  const tick = async () => {
+    const session = getAuthSession();
+    if (!session?.access_token || !session.user?.id) return;
+    if (session.role === "marketplace" || session.intent === "marketplace") return;
+    try {
+      const rows = await rest(`profiles?id=eq.${session.user.id}&select=role,pages`);
+      const live = rows?.[0];
+      if (!live || live.role === "rejected") {
+        kickBlockedSession();
+        return;
+      }
+      if (live.role !== session.role || JSON.stringify(live.pages || []) !== JSON.stringify(session.pages || [])) {
+        saveAuthSession({ ...session, role: live.role, pages: pagesForRole(live.role, live.pages) });
+        if (
+          document.querySelector("[data-admin-guard]") &&
+          live.role !== "admin" &&
+          live.role !== "super_admin"
+        ) {
+          window.location.replace(routeAfterAuth({ ...session, role: live.role }));
+        }
+      }
+    } catch {
+      /* Keep the current page if the profile read is briefly unavailable. */
+    }
+  };
+  void tick();
+  window.setInterval(tick, 2500);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) void tick();
+  });
+};
+
 const clearLocalOffice = () => {
   sessionStorage.removeItem(SESSION_KEY);
   localStorage.removeItem(SESSION_KEY);
@@ -140,6 +187,7 @@ const loadProfile = async (session) => {
     email,
     pages: pagesForRole(role, rows[0]?.pages),
   };
+  if (role === "rejected") sessionStorage.setItem(BLOCKED_KEY, "1");
   saveAuthSession(next);
   return next;
 };
@@ -185,7 +233,7 @@ export const routeAfterAuth = (session) => {
   const intent = session?.intent || session?.user?.user_metadata?.intent;
   if (role === "admin" || role === "super_admin") return "dashboard.html";
   if (role === "marketplace" || intent === "marketplace") return "marketplace.html";
-  if (role === "rejected") return "pending.html";
+  if (role === "rejected") return "pending.html?blocked=1";
   return "pending.html";
 };
 
@@ -421,17 +469,20 @@ export const initPendingPage = () => {
   paintEmail(getAuthSession()?.email);
   const paintCopy = () => {
     const zh = document.body?.dataset.lang === "zh";
-    const rejected = getAuthSession()?.role === "rejected";
+    const blocked = hasBlockedNotice() || getAuthSession()?.role === "rejected";
     const title = root.querySelector("[data-i18n='pending.title']");
     const lede = root.querySelector("[data-i18n='pending.lede']");
-    if (rejected && title) title.textContent = zh ? "未核准" : "Access was not approved";
-    if (rejected && lede) {
-      lede.textContent = zh
-        ? "這個職員帳號未獲核准，無法進入後台。請切換帳號，或聯絡 super admin。"
-        : "This staff account was not approved, so the back office stays closed. Switch account or contact a super admin.";
+    if (blocked && title) title.textContent = zh ? "帳號已封鎖" : "This account was blocked";
+    if (blocked && lede) {
+      lede.innerHTML = zh
+        ? `這個帳號已被封鎖，因此已立即登出。若你認為這是誤判，請聯絡 <a href="mailto:${OFFICE_CONTACT}">${OFFICE_CONTACT}</a>。`
+        : `This account was blocked, so you have been signed out. If you think this is a mistake, please contact <a href="mailto:${OFFICE_CONTACT}">${OFFICE_CONTACT}</a>.`;
     }
   };
   paintCopy();
+  if (hasBlockedNotice() || getAuthSession()?.role === "rejected") {
+    logoutAdmin();
+  }
   window.addEventListener("immba:lang", paintCopy);
   void consumeAuthHash().then((session) => {
     if (session?.recovery) {
@@ -439,8 +490,15 @@ export const initPendingPage = () => {
       return;
     }
     const current = session || getAuthSession();
+    if (current?.role === "rejected" || hasBlockedNotice()) {
+      sessionStorage.setItem(BLOCKED_KEY, "1");
+      paintEmail(current?.email);
+      paintCopy();
+      logoutAdmin();
+      return;
+    }
     const dest = current?.access_token ? routeAfterAuth(current) : "";
-    if (dest && dest !== "pending.html") {
+    if (dest && !dest.startsWith("pending.html")) {
       location.replace(dest);
       return;
     }
@@ -448,10 +506,12 @@ export const initPendingPage = () => {
     paintCopy();
   });
   root.querySelector("[data-pending-switch]")?.addEventListener("click", () => {
+    sessionStorage.removeItem(BLOCKED_KEY);
     logoutAdmin();
     location.href = "login.html";
   });
   root.querySelector("[data-pending-seller]")?.addEventListener("click", () => {
+    sessionStorage.removeItem(BLOCKED_KEY);
     logoutAdmin();
     location.href = "market-account.html";
   });
@@ -468,5 +528,5 @@ export const guardAdminPage = () => {
     logoutAdmin();
     window.location.href = "login.html";
   });
-  /* Keep the office session when staff open the public site to check it. */
+  watchOfficeAccess();
 };

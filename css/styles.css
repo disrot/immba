@@ -7198,6 +7198,12 @@ body[data-lang="zh"] [data-dd-lang="en"] {
   background: var(--office-card);
 }
 
+.pending-page .login-card a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
 .office-page .admin-toolbar .btn,
 .office-page .admin-actions .btn,
 .office-page .admin-save-row .btn {
@@ -7647,6 +7653,12 @@ body[data-lang="zh"] [data-dd-lang="en"] {
   min-width: 8.6rem;
 }
 
+.access-delete {
+  height: 2.6rem;
+  min-height: 2.6rem;
+  padding: 0 1.05rem;
+}
+
 .access-role-panel {
   min-width: 13rem;
   max-height: 22rem;
@@ -7706,7 +7718,8 @@ body[data-lang="zh"] [data-dd-lang="en"] {
   .audit-date-field,
   .audit-tools .menu-drop,
   .audit-rollback-row .office-equal,
-  .access-role-drop {
+  .access-role-drop,
+  .access-delete {
     min-width: 0;
     width: 100%;
   }

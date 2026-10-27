@@ -156,3 +156,29 @@ create policy marketplace_photos_public_read
   on storage.objects for select using (bucket_id = 'marketplace-photos');
 create policy marketplace_photos_public_write
   on storage.objects for insert with check (bucket_id = 'marketplace-photos');
+
+create or replace function public.office_delete_account(p_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public, auth, pg_temp
+as $$
+declare
+  me text;
+begin
+  me := coalesce(
+    (select role from public.profiles where id = auth.uid()),
+    case when auth.uid() is null then 'super_admin' else '' end
+  );
+  if me <> 'super_admin' then
+    raise exception 'Forbidden' using errcode = '42501';
+  end if;
+  if p_id is not null and p_id = auth.uid() then
+    raise exception 'You cannot delete your own account';
+  end if;
+  delete from public.profiles where id = p_id;
+  delete from auth.users where id = p_id;
+end;
+$$;
+
+grant execute on function public.office_delete_account(uuid) to anon, authenticated;
