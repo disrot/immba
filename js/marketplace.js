@@ -348,6 +348,13 @@ export const listingHref = (id) => `listing.html?id=${encodeURIComponent(id)}`;
 
 const currentLang = () => (document.body?.dataset.lang === "zh" ? "zh" : "en");
 
+const esc = (value) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
 const money = (n) =>
   currentLang() === "zh" ? `NT$${n.toLocaleString("zh-TW")}` : `NT$${n.toLocaleString("en-US")}`;
 
@@ -355,19 +362,28 @@ let extraCache = [];
 
 const packetById = (id) => extraCache.find((item) => item.id === id) || PACKETS.find((item) => item.id === id);
 
+const allPackets = () => {
+  const seen = new Set();
+  return [...extraCache, ...PACKETS].filter((item) => {
+    if (seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  });
+};
+
 const cardHTML = (item) => {
   const copy = item[currentLang()];
-  const soldLabel = currentLang() === "zh" ? "已售出" : "Sold out";
-  const price = item.sold
-    ? `<span class="shop-sold">${soldLabel}</span>`
-    : `<span class="shop-price">${money(item.price)}</span>`;
+  const lang = currentLang();
+  const soldLabel = lang === "zh" ? "已售出" : "Sold out";
+  const tag = TAG_LABEL[lang][item.tag] || "";
+  const price = item.sold ? `<span class="shop-sold">${soldLabel}</span>` : `<span class="shop-price">${money(item.price)}</span>`;
   return `<a class="shop-card${item.sold ? " is-sold" : ""}" href="${listingHref(item.id)}">
     <div class="shop-cover">
-      <img src="${item.image}" alt="" width="900" height="1200" loading="lazy">
+      <img src="${esc(item.image)}" alt="" width="900" height="1120" loading="lazy">
       ${item.sold ? `<span class="shop-badge">${soldLabel}</span>` : ""}
     </div>
-    <h2>${copy.title}</h2>
-    <p class="shop-format">${copy.format}</p>
+    <p class="shop-card-kicker">${esc(tag)}</p>
+    <h2>${esc(copy.title)}</h2>
     <p class="shop-price-row">${price}</p>
   </a>`;
 };
@@ -384,7 +400,7 @@ export const initMarketplace = () => {
   const empty = root.querySelector("[data-shop-empty]");
   let extra = [];
 
-  const catalog = () => [...extra, ...PACKETS];
+  const catalog = () => allPackets();
 
   const render = () => {
     const tag = filter?.value || "all";
@@ -433,79 +449,69 @@ export const initListing = () => {
 
   const params = new URLSearchParams(window.location.search);
   const crumb = root.querySelector("[data-pdp-crumb]");
-  const gallery = root.querySelector("[data-pdp-gallery]");
+  const stage = root.querySelector("[data-pdp-stage]");
+  const thumbs = root.querySelector("[data-pdp-thumbs]");
   const info = root.querySelector("[data-pdp-info]");
-  const panel = root.querySelector("[data-pdp-panel]");
+  const story = root.querySelector("[data-pdp-story]");
+  const dock = root.querySelector("[data-pdp-dock]");
   const relatedWrap = root.querySelector("[data-pdp-related]");
   const relatedGrid = root.querySelector("[data-pdp-related-grid]");
-  const tabs = [...root.querySelectorAll("[data-pdp-tab]")];
 
   let item = packetById(params.get("id") || "");
   let qty = 1;
-  let tab = "desc";
   let activeSrc = item?.gallery?.[0] || item?.image || "";
 
   const setTitle = () => {
     const copy = item[currentLang()];
-    const brand = currentLang() === "zh" ? "imMBA" : "imMBA";
-    document.title = `${copy.title}: ${brand}`;
+    document.title = `${copy.title}: imMBA`;
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute("content", copy.blurb);
-  };
-
-  const panelCopy = () => {
-    const copy = item[currentLang()];
-    if (tab === "details") {
-      return `<ul class="pdp-bullets">${copy.details.map((line) => `<li>${line}</li>`).join("")}</ul>`;
-    }
-    if (tab === "pickup") {
-      return `<p>${copy.pickup}</p>`;
-    }
-    return `<p>${copy.blurb}</p>`;
   };
 
   const render = () => {
     const lang = currentLang();
     const copy = item[lang];
-    const tagLabel = TAG_LABEL[lang][item.tag];
+    const tagLabel = TAG_LABEL[lang][item.tag] || "";
     const soldLabel = lang === "zh" ? "已售出" : "Sold out";
-    const contact = lang === "zh" ? "聯絡賣方" : "Message seller";
-    const pickupCta = item.kind === "book" ? (lang === "zh" ? "校園面交" : "Campus pickup") : lang === "zh" ? "數位交付" : "Digital delivery";
+    const contact = lang === "zh" ? "寫信給賣方" : "Message the seller";
+    const bagLabel = lang === "zh" ? "加入袋子" : "Add to bag";
     const qtyLabel = lang === "zh" ? "數量" : "Quantity";
-    const formatLabel = lang === "zh" ? "形式" : "Format";
     const skuLabel = lang === "zh" ? "編號" : "SKU";
+    const shots = (item.gallery?.length ? item.gallery : [item.image]).filter(Boolean);
+    if (!shots.includes(activeSrc)) activeSrc = shots[0] || "";
 
     setTitle();
 
     if (crumb) {
       crumb.innerHTML = `<a href="marketplace.html">${lang === "zh" ? "教材市集" : "Marketplace"}</a>
-        <span>/</span>
+        <span aria-hidden="true">/</span>
         <a href="marketplace.html">${tagLabel}</a>
-        <span>/</span>
-        <span>${copy.title}</span>`;
+        <span aria-hidden="true">/</span>
+        <span>${esc(copy.title)}</span>`;
     }
 
-    if (gallery) {
-      const shots = item.gallery.length > 1 ? item.gallery : [item.image];
-      gallery.classList.toggle("is-single", shots.length === 1);
-      gallery.innerHTML = shots
+    if (stage) {
+      stage.innerHTML = activeSrc
+        ? `<img src="${esc(activeSrc)}" alt="${esc(copy.title)}" width="1200" height="1500">`
+        : "";
+    }
+    if (thumbs) {
+      thumbs.hidden = shots.length < 2;
+      thumbs.innerHTML = shots
         .map(
           (src) =>
-            `<button type="button" class="pdp-shot${src === activeSrc ? " is-active" : ""}" data-pdp-shot="${src}">
-              <img src="${src}" alt="${copy.title}" width="900" height="1200">
+            `<button type="button" class="pdp-thumb${src === activeSrc ? " is-active" : ""}" data-pdp-shot="${esc(src)}">
+              <img src="${esc(src)}" alt="" width="120" height="150">
             </button>`
         )
         .join("");
     }
 
-    if (panel) panel.innerHTML = panelCopy();
-    tabs.forEach((btn) => btn.setAttribute("aria-selected", btn.getAttribute("data-pdp-tab") === tab ? "true" : "false"));
-
-    const variants = PACKETS.filter((other) => other.family === item.family);
+    const variants = allPackets().filter((other) => other.family === item.family);
     const variantRow =
       variants.length > 1
         ? `<div class="pdp-field">
-            <p class="pdp-label">${lang === "zh" ? "相關版本" : "Related styles"}</p>
+            <p class="pdp-label">${lang === "zh" ? "版本" : "Style"}</p>
             <div class="pdp-styles">
               ${variants
                 .map(
@@ -518,33 +524,62 @@ export const initListing = () => {
         : "";
 
     const mail = `mailto:imMBA@mail.fju.edu.tw?subject=${encodeURIComponent(`Marketplace: ${copy.title}`)}`;
+    const bagHref = `cart.html?listing=${encodeURIComponent(item.id)}&qty=${qty}`;
     const cta = item.sold
-      ? `<button type="button" class="btn btn-primary pdp-cta" disabled>${soldLabel}</button>`
-      : `<a class="btn btn-primary pdp-cta" href="${mail}">${contact}</a>
-         <button type="button" class="btn pdp-cta-ghost" data-pdp-tab-jump="pickup">${pickupCta}<small>${copy.format}</small></button>`;
+      ? `<button type="button" class="pdp-bag" disabled>${soldLabel}</button>`
+      : `<a class="pdp-bag" href="${bagHref}">${bagLabel}</a>
+         <a class="pdp-mail" href="${mail}">${contact}</a>`;
 
     if (info) {
       info.innerHTML = `
-        <h1 class="pdp-title">${copy.title}</h1>
+        <p class="pdp-kicker">${tagLabel}</p>
+        <h1 class="pdp-title">${esc(copy.title)}</h1>
         <p class="pdp-price">${item.sold ? soldLabel : money(item.price)}</p>
-        <p class="pdp-sku">${skuLabel} ${item.sku}</p>
-        <div class="pdp-field">
-          <p class="pdp-label">${formatLabel}</p>
-          <p class="pdp-format-line">${copy.format}</p>
-        </div>
+        <p class="pdp-lead">${esc(copy.blurb)}</p>
+        <p class="pdp-sku">${skuLabel} ${esc(item.sku)}</p>
         ${variantRow}
         <div class="pdp-field">
           <p class="pdp-label">${qtyLabel}</p>
           <div class="pdp-qty">
             <button type="button" data-qty="-1" ${qty <= 1 || item.sold ? "disabled" : ""} aria-label="Decrease quantity">−</button>
-            <span data-qty-value>${qty}</span>
+            <span>${qty}</span>
             <button type="button" data-qty="1" ${item.sold || item.kind === "digital" || qty >= 3 ? "disabled" : ""} aria-label="Increase quantity">+</button>
           </div>
         </div>
-        <div class="pdp-actions">${cta}</div>`;
+        <div class="pdp-actions">${cta}</div>
+        <ul class="pdp-notes">
+          <li>${esc(copy.format)}</li>
+          <li>${lang === "zh" ? "賣方為 imMBA 同學" : "Sold by an imMBA student"}</li>
+          <li>${lang === "zh" ? "結帳在 Stripe 上線前不會扣款" : "Payment stays off until Stripe is live"}</li>
+        </ul>`;
     }
 
-    const also = PACKETS.filter((other) => other.id !== item.id)
+    if (story) {
+      story.innerHTML = `
+        <details open>
+          <summary>${lang === "zh" ? "商品說明" : "Product details"}</summary>
+          <p>${esc(copy.blurb)}</p>
+          <ul class="pdp-bullets">${(copy.details || []).map((line) => `<li>${esc(line)}</li>`).join("")}</ul>
+        </details>
+        <details>
+          <summary>${lang === "zh" ? "取件" : "Order details"}</summary>
+          <p>${esc(copy.pickup)}</p>
+        </details>
+        <details>
+          <summary>${lang === "zh" ? "imMBA 的不同" : "The imMBA difference"}</summary>
+          <p>${lang === "zh" ? "教材跟著英語授課的課綱走，由同學交給下一屆，面交地點多在管理學院。" : "Materials follow the English-taught syllabus and move from one cohort to the next, usually by hand at the College of Management."}</p>
+        </details>`;
+    }
+
+    if (dock) {
+      dock.hidden = false;
+      dock.innerHTML = item.sold
+        ? `<strong>${soldLabel}</strong><button type="button" class="pdp-bag" disabled>${soldLabel}</button>`
+        : `<strong>${money(item.price)}</strong><a class="pdp-bag" href="${bagHref}">${bagLabel}</a>`;
+    }
+
+    const also = allPackets()
+      .filter((other) => other.id !== item.id)
       .sort((a, b) => Number(b.tag === item.tag) - Number(a.tag === item.tag))
       .slice(0, 4);
     if (relatedGrid && relatedWrap) {
@@ -564,25 +599,12 @@ export const initListing = () => {
     if (delta && item && !item.sold) {
       qty = Math.min(3, Math.max(1, qty + Number(delta.getAttribute("data-qty"))));
       render();
-      return;
     }
-    const jump = event.target.closest("[data-pdp-tab-jump]");
-    if (jump) {
-      tab = jump.getAttribute("data-pdp-tab-jump");
-      render();
-      panel?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  });
-
-  tabs.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      tab = btn.getAttribute("data-pdp-tab");
-      render();
-    });
   });
 
   window.addEventListener("immba:lang", render);
   const missing = () => {
+    if (dock) dock.hidden = true;
     if (info) {
       info.innerHTML = `<h1 class="pdp-title">${currentLang() === "zh" ? "找不到此教材" : "Listing not found"}</h1>
         <p><a href="marketplace.html">${currentLang() === "zh" ? "返回教材市集" : "Back to Marketplace"}</a></p>`;

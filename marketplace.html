@@ -26,7 +26,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=drop2" />
+    <link rel="stylesheet" href="css/styles.css?v=atelier2" />
   </head>
   <body data-title-key="market.pageTitle" data-desc-key="market.meta">
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
@@ -176,9 +176,16 @@
     </header>
 
     <main id="main">
-      <section class="shop-page" data-shop>
+      <section class="shop-page shop-atelier" data-shop>
         <div class="container shop-plp">
-          <h1 class="shop-hero-title" data-i18n="market.headline">Marketplace</h1>
+          <header class="shop-mast">
+            <div>
+              <p class="shop-kicker">imMBA</p>
+              <h1 class="shop-hero-title" data-i18n="market.headline">Marketplace</h1>
+              <p class="shop-lede" data-i18n="market.lede">Course books and packets, passed from one imMBA cohort to the next.</p>
+            </div>
+            <a class="shop-bag" href="cart.html" data-i18n="market.bag">Bag</a>
+          </header>
           <div class="shop-account" data-market-account></div>
           <div class="shop-toolbar">
             <label class="shop-tool">
@@ -204,6 +211,20 @@
           </div>
           <div class="shop-grid" data-shop-grid></div>
           <p class="shop-empty" data-shop-empty hidden data-i18n="market.empty">No packets match these filters.</p>
+          <section class="shop-promises" aria-label="Marketplace">
+            <article>
+              <h2 data-i18n="market.promise1">Student to student</h2>
+              <p data-i18n="market.promise1b">Listings come from classmates, not a bookstore.</p>
+            </article>
+            <article>
+              <h2 data-i18n="market.promise2">Pickup or digital</h2>
+              <p data-i18n="market.promise2b">Meet on campus, or receive a file by email.</p>
+            </article>
+            <article>
+              <h2 data-i18n="market.promise3">English-taught shelf</h2>
+              <p data-i18n="market.promise3b">Materials follow the international curriculum.</p>
+            </article>
+          </section>
         </div>
       </section>
     </main>
@@ -314,7 +335,7 @@
       </div>
     </footer>
 
-    <script type="module" src="js/main.js?v=drop2"></script>
+    <script type="module" src="js/main.js?v=desk1"></script>
     <script type="module" src="js/back-top.js"></script>
   </body>
 </html>

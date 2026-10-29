@@ -2,13 +2,13 @@ import { renderNewsArticle, renderNewsCards } from "./news-ui.js";
 import { hydrateNews } from "./news-store.js?v=news2";
 import { applyOfficialLinks } from "./official.js";
 import { initGallery, refreshGalleryCaptions } from "./gallery.js";
-import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage, watchOfficeAccess } from "./auth.js?v=secure1";
+import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage, watchOfficeAccess } from "./auth.js?v=signup1";
 import { initFacultyDirectory } from "./faculty.js?v=notice3";
-import { initMarketplace, initListing } from "./marketplace.js?v=notice3";
-import { initMarketAccount } from "./market-account.js?v=notice4";
+import { initMarketplace, initListing } from "./marketplace.js?v=atelier1";
+import { initMarketAccount } from "./market-account.js?v=desk1";
 import { initAnalytics } from "./analytics.js";
 import { initAdminDash } from "./admin-dash.js?v=pages1";
-import { initPageHero } from "./page-hero.js?v=drop2";
+import { initPageHero } from "./page-hero.js?v=shop1";
 import { initSelectDrops, refreshSelectDrop } from "./ui-drop.js?v=drop2";
 
 const translations = {
@@ -307,6 +307,14 @@ const translations = {
     "market.pageTitle": "Marketplace",
     "market.meta": "Student-to-student course packets, textbooks, and materials for Fu Jen imMBA.",
     "market.headline": "Marketplace",
+    "market.lede": "Course books and packets, passed from one imMBA cohort to the next.",
+    "market.bag": "Bag",
+    "market.promise1": "Student to student",
+    "market.promise1b": "Listings come from classmates, not a bookstore.",
+    "market.promise2": "Pickup or digital",
+    "market.promise2b": "Meet on campus, or receive a file by email.",
+    "market.promise3": "English-taught shelf",
+    "market.promise3b": "Materials follow the international curriculum.",
     "market.filter": "Filter by",
     "market.filterAll": "Filter: All",
     "market.filterCore": "Filter: Core",
@@ -964,6 +972,14 @@ const translations = {
     "market.pageTitle": "教材市集",
     "market.meta": "輔仁大學 imMBA 學生教材、課程包與用書流通市集。",
     "market.headline": "教材市集",
+    "market.lede": "課程用書與教材，由一屆 imMBA 同學交到下一屆。",
+    "market.bag": "袋子",
+    "market.promise1": "同學之間",
+    "market.promise1b": "刊登來自同學，不是書店。",
+    "market.promise2": "面交或數位",
+    "market.promise2b": "在校園見面，或用信箱收檔。",
+    "market.promise3": "英語學程書架",
+    "market.promise3b": "教材對應國際管理課程。",
     "market.filter": "篩選",
     "market.filterAll": "篩選：全部",
     "market.filterCore": "篩選：核心",

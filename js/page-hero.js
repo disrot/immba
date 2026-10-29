@@ -11,9 +11,6 @@ const HEROES = {
   "dual-degree.html": { kicker: "nav.dual", title: "dual.pageTitle", image: "feat-dual.jpg" },
   "exchange.html": { kicker: "nav.exchange", title: "exchange.title", image: "feat-exchange.jpg" },
   "highlights.html": { kicker: "nav.highlights", title: "highlights.pageTitle", image: "campus-1.jpg" },
-  "marketplace.html": { kicker: "nav.marketplace", title: "market.headline", image: "campus-2.jpg" },
-  "listing.html": { kicker: "nav.marketplace", title: "market.headline", image: "campus-2.jpg" },
-  "market-account.html": { kicker: "nav.marketplace", title: "market.accountTitle", image: "campus-2.jpg" },
   "announcement.html": { kicker: "article.announcement", title: "nav.highlights", image: "campus-glass.jpg" },
 };
 

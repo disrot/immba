@@ -102,7 +102,15 @@ export const authApi = async (path, { method = "POST", body } = {}) => {
       options: { data: body.data || {}, emailRedirectTo: body.emailRedirectTo },
     });
     if (error) throw new Error(error.message);
-    return { ...data, access_token: data.session?.access_token, refresh_token: data.session?.refresh_token, user: data.user };
+    const identities = data.user?.identities;
+    const already = Array.isArray(identities) && identities.length === 0;
+    return {
+      ...data,
+      already,
+      access_token: data.session?.access_token,
+      refresh_token: data.session?.refresh_token,
+      user: data.user,
+    };
   }
   if (path.startsWith("token")) {
     const { data, error } = await supabase.auth.signInWithPassword({ email: body.email, password: body.password });

@@ -144,6 +144,16 @@ export const signUpAccount = async ({ email, password, intent, displayName }) =>
       data: { intent, display_name: displayName || "" },
     },
   });
+  if (data.already) {
+    try {
+      const session = await signInAccount(email, password);
+      return { ...session, already: true, redirectTo };
+    } catch {
+      const error = new Error("already-registered");
+      error.code = "already-registered";
+      throw error;
+    }
+  }
   if (data.access_token && data.user) await loadProfile(data);
   return { ...data, redirectTo };
 };
@@ -221,10 +231,11 @@ export const initLogoGate = () => {
   });
 };
 
-const showLoginError = (form, message) => {
+const showLoginError = (form, message, tone = "error") => {
   const err = form.querySelector("[data-login-error]");
   if (!err) return;
   err.hidden = false;
+  err.classList.toggle("is-note", tone === "note");
   err.textContent = message || err.getAttribute("data-error-text") || err.textContent;
 };
 
@@ -298,7 +309,10 @@ export const initLoginForm = () => {
     if (lede) lede.textContent = copy.lede;
     if (submit) submit.textContent = copy.submit;
     const err = form.querySelector("[data-login-error]");
-    if (err && mode !== "newpass") err.hidden = true;
+    if (err && mode !== "newpass") {
+      err.hidden = true;
+      err.classList.remove("is-note");
+    }
   };
   modeButtons.forEach((btn) => btn.addEventListener("click", () => applyMode(btn.dataset.loginMode)));
   window.addEventListener("immba:lang", () => applyMode(form.dataset.mode || "signin"));
@@ -369,24 +383,38 @@ export const initLoginForm = () => {
             return;
           }
           const result = await signUpAccount({ email, password: pass, intent, displayName });
-          if (intent === "marketplace") {
-            if (result.access_token) {
-              location.replace("marketplace.html");
-              return;
-            }
-            showLoginError(form, "Check your email, then sign in. Sellers can post right away — no approval.");
-            return;
-          }
           if (result.access_token) {
-            location.replace(routeAfterAuth(getAuthSession()));
+            location.replace(routeAfterAuth(getAuthSession() || result));
             return;
           }
-          location.replace(`pending.html?email=${encodeURIComponent(email)}`);
+          const zh = document.body?.dataset.lang === "zh";
+          showLoginError(
+            form,
+            intent === "marketplace"
+              ? zh
+                ? "帳號已建立。請到信箱點確認信，然後再登入。賣方不需要後台核准。"
+                : "Account created. Open the confirmation email, then sign in. Sellers do not need office approval."
+              : zh
+                ? "帳號已建立。請到信箱點確認信，然後等待 super admin 核准。"
+                : "Account created. Confirm your email, then wait for a super admin to approve access.",
+            "note"
+          );
           return;
         }
         const session = await signInAccount(email, pass);
         location.replace(routeAfterAuth(session));
       } catch (error) {
+        if (error.code === "already-registered") {
+          const zh = document.body?.dataset.lang === "zh";
+          applyMode("signin");
+          showLoginError(
+            form,
+            zh
+              ? "這個電子郵件已經有帳號，而且密碼不符。請登入，或使用忘記密碼。"
+              : "This email already has an account, and that password does not match. Sign in, or use Forgot password."
+          );
+          return;
+        }
         showLoginError(form, error.message || "Could not complete that request.");
       }
     })();

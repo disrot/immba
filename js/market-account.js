@@ -1,5 +1,6 @@
 import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=notice4";
-import { ackRemovedNotices, createListing, listRemovedNotices } from "./listings-store.js?v=notice3";
+import { ackRemovedNotices, listRemovedNotices } from "./listings-store.js?v=notice3";
+import { initSellerHub } from "./seller-hub.js?v=desk1";
 
 const esc = (value) =>
   String(value ?? "")
@@ -104,32 +105,5 @@ export const initMarketAccount = () => {
     if (seller) void listRemovedNotices().then(paintBell);
   });
 
-  form?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const status = document.querySelector("[data-market-status]");
-    void (async () => {
-      try {
-        await createListing({
-          title: form.elements.namedItem("title").value.trim(),
-          title_zh: form.elements.namedItem("title_zh").value.trim(),
-          blurb: form.elements.namedItem("blurb").value.trim(),
-          blurb_zh: form.elements.namedItem("blurb_zh").value.trim(),
-          price: form.elements.namedItem("price").value,
-          kind: form.elements.namedItem("kind").value,
-          tag: form.elements.namedItem("tag").value,
-          format: form.elements.namedItem("format").value.trim(),
-          file: form.elements.namedItem("photo")?.files?.[0],
-        });
-        if (status) {
-          status.textContent = zh()
-            ? "已刊登。可用下方按鈕回到市集查看。"
-            : "Listing posted. Use Back to Marketplace to see it in the shop.";
-        }
-        form.reset();
-        document.querySelector("[data-market-shop]")?.classList.add("is-ready");
-      } catch (error) {
-        if (status) status.textContent = error.message || "Could not post.";
-      }
-    })();
-  });
+  if (seller) initSellerHub();
 };

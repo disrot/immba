@@ -26,7 +26,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=drop2" />
+    <link rel="stylesheet" href="css/styles.css?v=desk1" />
   </head>
   <body data-title-key="market.accountTitle" data-desc-key="market.accountMeta">
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
@@ -231,39 +231,12 @@
             </section>
           </div>
           <div data-market-desk hidden>
-            <form class="admin-form shop-sell" data-market-form>
-              <p class="admin-status" data-market-status></p>
-              <div class="admin-shared">
-                <label>Title<input type="text" name="title" required /></label>
-                <label>中文標題<input type="text" name="title_zh" /></label>
-                <label>Price NT$<input type="number" name="price" min="0" step="1" required /></label>
-                <label>Kind
-                  <select name="kind">
-                    <option value="book">book</option>
-                    <option value="digital">digital</option>
-                  </select>
-                </label>
-              </div>
-              <div class="admin-shared">
-                <label>Tag
-                  <select name="tag">
-                    <option value="core">core</option>
-                    <option value="spotlight">spotlight</option>
-                    <option value="elective" selected>elective</option>
-                  </select>
-                </label>
-                <label>Format<input type="text" name="format" placeholder="Used book · campus pickup" /></label>
-                <label>Photo<input type="file" name="photo" accept="image/*" /></label>
-              </div>
-              <div class="admin-grid">
-                <label>English blurb<textarea name="blurb" rows="3"></textarea></label>
-                <label>中文說明<textarea name="blurb_zh" rows="3"></textarea></label>
-              </div>
-              <div class="admin-save-row">
-                <button type="submit" class="btn btn-primary">Post listing</button>
-                <a class="btn btn-ghost" href="marketplace.html" data-market-shop data-i18n="market.backShop">Back to Marketplace</a>
-              </div>
-            </form>
+            <div class="seller-app" data-seller-hub>
+              <nav class="seller-nav" data-seller-nav aria-label="Seller desk"></nav>
+              <div class="seller-main" data-seller-main></div>
+              <nav class="seller-tabs" data-seller-tabs aria-label="Seller desk"></nav>
+            </div>
+            <section class="list-wizard" data-list-wizard hidden></section>
           </div>
         </div>
       </section>
@@ -375,7 +348,7 @@
       </div>
     </footer>
 
-    <script type="module" src="js/main.js?v=drop2"></script>
+    <script type="module" src="js/main.js?v=desk1"></script>
     <script type="module" src="js/back-top.js"></script>
   </body>
 </html>
