@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Orders: imMBA</title>
+    <link rel="icon" href="images/logo.png" type="image/png" />
+    <link rel="stylesheet" href="css/styles.css?v=secure1" />
+  </head>
+  <body>
+    <main id="main" class="section">
+      <h1>Your orders</h1>
+      <div data-orders></div>
+      <p><a href="cart.html">Cart</a></p>
+    </main>
+    <script type="module">
+      import { rpc } from "./js/supabase.js?v=secure1";
+      const root = document.querySelector("[data-orders]");
+      try {
+        const rows = (await rpc("my_orders")) || [];
+        root.innerHTML = rows.length
+          ? rows.map((row) => `<article><strong>${row.order.status}</strong><p>NT$ ${row.order.amount_total}</p></article>`).join("")
+          : "<p>No orders yet.</p>";
+      } catch (error) {
+        root.textContent = error.message;
+      }
+    </script>
+  </body>
+</html>

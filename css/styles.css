@@ -3554,6 +3554,68 @@ a.news-card {
   background: var(--office-fill, #e7dcc8);
 }
 
+.office-mark {
+  display: grid;
+  place-items: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 0.7rem;
+  color: var(--text);
+  background:
+    linear-gradient(180deg, rgba(255, 250, 242, 0.9), rgba(231, 220, 200, 0.55)),
+    #efe6d6;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.office-mark svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.office-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.7rem;
+  padding: 0 0.7rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, #9fe870 62%, #fff);
+  font-size: 0.78rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.office-ref {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.82rem;
+}
+
+.office-blank {
+  padding: 1.4rem 0.9rem !important;
+  color: var(--text-muted);
+}
+
+.office-review {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 16rem;
+}
+
+.office-review input {
+  width: 100%;
+  min-height: 2.4rem;
+  padding: 0 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+  border-radius: 12px;
+  background: rgba(255, 250, 242, 0.8);
+  color: inherit;
+  font: inherit;
+}
+
+.office-page .office-review .admin-actions {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
 .office-page .admin-table td small {
   display: block;
   margin-top: 0.2rem;

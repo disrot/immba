@@ -1,4 +1,5 @@
-const DB_NAME = "immba-analytics-db";
+import { rpc } from "./supabase.js?v=secure1";
+import { sanitizeEvent, trackingAllowed } from "./privacy.js";
 const STORE = "events";
 const VISITOR_KEY = "immba-vid";
 const SESSION_KEY = "immba-sid";
@@ -246,16 +247,21 @@ const countryFromSignals = (tz, locale) => {
 };
 
 const record = (type, extra = {}) => {
-  if (shouldSkip()) return;
+  if (shouldSkip() || type === "click") return;
+  const signals = {
+    optOut: localStorage.getItem("immba-privacy-opt-out") === "1",
+    dnt: navigator.doNotTrack || window.doNotTrack || "0",
+    gpc: navigator.globalPrivacyControl === true,
+  };
+  if (!trackingAllowed(signals)) return;
   const host = refHost();
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
   const locale = navigator.language || "";
   const event = {
     id: uid(),
     t: Date.now(),
-    type,
-    path: currentPath(),
-    title: document.title.replace(/\s*[—|:].*$/, "").trim() || document.title,
+    type: type === "click" ? "view" : type,
+    path: currentPath().split("?")[0].split("#")[0],
     visitor: visitorId(),
     session: sessionId(),
     lang: document.body?.dataset.lang === "zh" ? "zh" : "en",
@@ -265,13 +271,30 @@ const record = (type, extra = {}) => {
     engine: searchEngineFromHost(host),
     ref: host,
     country: countryFromSignals(tz, locale),
-    tz,
-    locale,
-    ...extra,
   };
   remember(event);
   putEvent(event).catch(() => {});
+  if (type === "click") return;
+  queue.push(sanitizeEvent({
+    path: event.path,
+    event_type: type === "beat" ? "beat" : "view",
+    referrer_host: host,
+    lang: event.lang,
+    device: event.device,
+    os_family: event.os,
+    country: event.country,
+    visitor_key: event.visitor,
+  }));
+  window.clearTimeout(flushTimer);
+  flushTimer = window.setTimeout(() => {
+    const batch = queue.splice(0, 20);
+    if (batch.length) void rpc("analytics_ingest", { p_events: batch }).catch(() => {});
+  }, 1500);
+  void extra;
 };
+
+let queue = [];
+let flushTimer = 0;
 
 const clickLabel = (el) => {
   const named =
@@ -356,6 +379,49 @@ const sessionBag = (events) => {
 };
 
 export const summarizeAnalytics = async (range = "7d") => {
+  try {
+    const server = await rpc("analytics_report", { p_range: range === "all" ? "90d" : "7d" });
+    if (server && Number(server.views) > 0) {
+      const days = (server.days || []).map((day) => ({
+        label: day.day,
+        count: Number(day.count) || 0,
+        visits: Number(day.visits) || 0,
+        visitors: Number(day.visitors) || 0,
+        clicks: 0,
+        bounce: 0,
+        exit: 0,
+        time: 0,
+      }));
+      const pages = (server.pages || []).map((row) => ({ name: row.label, count: Number(row.count) || 0 }));
+      return {
+        live: Number(server.live) || 0,
+        views: Number(server.views) || 0,
+        visits: Number(server.views) || 0,
+        visitors: Number(server.visitors) || 0,
+        clicks: 0,
+        events: Number(server.views) || 0,
+        returning: 0,
+        bounceRate: 0,
+        exitRate: 0,
+        avgTime: 0,
+        pages,
+        targets: [],
+        people: [],
+        days,
+        os: [],
+        sources: [],
+        countries: [],
+        engines: [],
+        langs: [],
+        devices: [],
+        recent: [],
+        referrers: [],
+        shared: true,
+      };
+    }
+  } catch {
+    /* The office still renders this browser's history if the shared report is unavailable. */
+  }
   const now = Date.now();
   const from =
     range === "today" ? startOfDay(now) : range === "all" ? 0 : now - 7 * 24 * 60 * 60 * 1000;

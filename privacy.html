@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy: imMBA</title>
+    <link rel="icon" href="images/logo.png" type="image/png" />
+    <link rel="stylesheet" href="css/styles.css?v=secure1" />
+  </head>
+  <body>
+    <main id="main" class="section">
+      <p class="label">Privacy</p>
+      <h1>Site measurement</h1>
+      <p>
+        Shared analytics stores a page name, coarse device, language, and a random visitor key. It does not store your email,
+        account, form entries, search queries, click text, full browser string, or IP address. Do Not Track and Global Privacy Control are honored.
+      </p>
+      <button type="button" class="btn btn-primary" data-privacy-opt>Opt out on this browser</button>
+      <p data-privacy-status></p>
+      <p><a href="index.html">Back to imMBA</a></p>
+    </main>
+    <script type="module">
+      const key = "immba-privacy-opt-out";
+      const status = document.querySelector("[data-privacy-status]");
+      const paint = () => {
+        status.textContent = localStorage.getItem(key) === "1" ? "This browser is opted out." : "This browser can send anonymous page views.";
+      };
+      document.querySelector("[data-privacy-opt]").addEventListener("click", () => {
+        const next = localStorage.getItem(key) === "1" ? "0" : "1";
+        localStorage.setItem(key, next);
+        paint();
+      });
+      paint();
+    </script>
+  </body>
+</html>

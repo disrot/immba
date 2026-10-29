@@ -1,6 +1,5 @@
 import { LOCAL_FACULTY } from "./faculty-data.js";
-import { getSupabase, isCloud, rest, uploadFacultyPhoto } from "./supabase.js?v=auth3";
-import { logAudit } from "./audit-store.js?v=audit1";
+import { getSupabase, isCloud, rest, rpc, uploadFacultyPhoto } from "./supabase.js?v=secure1";
 
 const CACHE = "immba-faculty-rows";
 
@@ -85,7 +84,7 @@ const writeCache = (rows) => {
 const sortRows = (rows) =>
   [...rows].sort((a, b) => (a.sort_order - b.sort_order) || String(a.name).localeCompare(String(b.name)));
 
-const cloudFaculty = (path, options = {}) => rest(path, { ...options, anon: true });
+const cloudFaculty = (path, options = {}) => rest(path, options);
 
 const listCloudFaculty = async () => {
   const rows = await cloudFaculty("faculty?select=*&order=sort_order.asc,name.asc");
@@ -137,22 +136,7 @@ export const upsertFaculty = async (row) => {
     id: row.id || `f-${Date.now()}`,
   });
   if (isCloud()) {
-    const existing = await cloudFaculty(`faculty?id=eq.${encodeURIComponent(next.id)}&select=*`);
-    const before = existing?.[0] || null;
-    if (existing?.length) {
-      await cloudFaculty(`faculty?id=eq.${encodeURIComponent(next.id)}`, { method: "PATCH", body: next });
-    } else {
-      await cloudFaculty("faculty", { method: "POST", body: next });
-    }
-    void logAudit({
-      module: "CMS_PAGES",
-      action: before ? "UPDATE" : "CREATE",
-      entityType: "faculty",
-      entityId: next.id,
-      entityLabel: next.name || next.id,
-      oldValues: before,
-      newValues: next,
-    });
+    await rpc("office_save_faculty", { p_row: next });
     return listCloudFaculty();
   }
   const rows = await listFacultyRows();
@@ -164,27 +148,13 @@ export const upsertFaculty = async (row) => {
 
 export const deleteFaculty = async (id) => {
   if (isCloud()) {
-    const existing = await cloudFaculty(`faculty?id=eq.${encodeURIComponent(id)}&select=*`);
-    await cloudFaculty(`faculty?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
-    void logAudit({
-      module: "CMS_PAGES",
-      action: "DELETE",
-      entityType: "faculty",
-      entityId: id,
-      entityLabel: existing?.[0]?.name || id,
-      oldValues: existing?.[0] || null,
-      isDeleted: true,
-    });
+    await rpc("office_delete_faculty", { p_id: id });
     return listCloudFaculty();
   }
   return writeCache((await listFacultyRows()).filter((row) => row.id !== id));
 };
 
-const patchSort = (id, sort_order) =>
-  cloudFaculty(`faculty?id=eq.${encodeURIComponent(id)}`, {
-    method: "PATCH",
-    body: { sort_order, updated_at: new Date().toISOString() },
-  });
+const patchSort = (rows) => rpc("office_reorder_faculty", { p_rows: rows });
 
 export const previewReorder = (rows, id, direction) => {
   const next = sortRows(rows).map((row) => ({ ...row }));
@@ -205,8 +175,9 @@ export const reorderFaculty = async (id, direction) => {
   if (isCloud()) {
     const before = new Map(current.map((row) => [row.id, Number(row.sort_order)]));
     const changed = rows.filter((row) => before.get(row.id) !== Number(row.sort_order));
-    if (changed[0]) await patchSort(changed[0].id, 10000);
-    await Promise.all(changed.map((row) => patchSort(row.id, row.sort_order)));
+    if (changed.length) {
+      await patchSort(changed.map((row) => ({ id: row.id, sort_order: row.sort_order })));
+    }
     return listCloudFaculty();
   }
   return writeCache(rows);
@@ -224,8 +195,7 @@ export const seedLocalFaculty = async () => {
 };
 
 export const uploadPhoto = async (file) => {
-  const name = `${Date.now()}-${file.name || "photo.jpg"}`;
-  if (isCloud()) return uploadFacultyPhoto(file, name);
+  if (isCloud()) return uploadFacultyPhoto(file);
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(new Error("read"));

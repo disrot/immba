@@ -1,5 +1,5 @@
 import { isAdminAuthed } from "./auth.js?v=auth3";
-import { getSupabase, saveSupabaseConnection } from "./supabase.js?v=auth3";
+import { getSupabase } from "./supabase.js?v=secure1";
 import {
   cloudStatus,
   deleteFaculty,
@@ -123,10 +123,7 @@ if (!root) {
 
     connect?.addEventListener("submit", (event) => {
       event.preventDefault();
-      saveSupabaseConnection(connect.elements.namedItem("url").value, connect.elements.namedItem("key").value);
-      paintConnection();
-      setStatus("Connection saved in this browser. Run schema.sql in Supabase, then seed.");
-      void reload();
+      setStatus("This office uses the project Supabase connection. A browser override is not used.");
     });
 
     root.querySelector("[data-faculty-new]")?.addEventListener("click", () => {

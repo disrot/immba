@@ -1,29 +1,22 @@
-import { authApi, getAuthSession, isCloud, rest, saveAuthSession } from "./supabase.js?v=login9";
+import { authApi, getAuthSession, hydrateSession, isCloud, saveAuthSession, supabase } from "./supabase.js?v=secure1";
 
-const SESSION_KEY = "immba-admin-session";
-const SESSION_OK = "1";
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "123456";
 const DOUBLE_CLICK_MS = 320;
-const OFFICE_OK = "immba-office-ok";
 const BLOCKED_KEY = "immba-blocked-notice";
 export const OFFICE_CONTACT = "imMBA@mail.fju.edu.tw";
 
 const SITE = () => `${location.origin}${location.pathname.replace(/[^/]+$/, "")}`;
 const HERE = () => `${location.origin}${location.pathname}`;
 
-export const isLocalAdmin = () =>
-  sessionStorage.getItem(SESSION_KEY) === SESSION_OK || localStorage.getItem(SESSION_KEY) === SESSION_OK;
+export const isLocalAdmin = () => false;
 
 export const currentProfile = () => getAuthSession();
 
 export const isAdminAuthed = () => {
-  if (isLocalAdmin()) return true;
   const role = getAuthSession()?.role;
   return role === "admin" || role === "super_admin";
 };
 
-export const isSuperAdmin = () => getAuthSession()?.role === "super_admin" || isLocalAdmin();
+export const isSuperAdmin = () => getAuthSession()?.role === "super_admin";
 
 export const OFFICE_PAGES = [
   { key: "analytics", en: "Web Analytics", zh: "網站分析" },
@@ -35,26 +28,24 @@ export const OFFICE_PAGES = [
   { key: "audit", en: "Audit", zh: "稽核" },
   { key: "news", en: "News", zh: "公告" },
   { key: "compose", en: "Compose", zh: "撰寫" },
+  { key: "orders", en: "Orders", zh: "訂單" },
+  { key: "workflows", en: "Workflows", zh: "申請" },
 ];
 
 export const ALL_OFFICE_PAGES = OFFICE_PAGES.map((page) => page.key);
-const DEFAULT_ADMIN_PAGES = ALL_OFFICE_PAGES.filter((key) => key !== "access" && key !== "audit");
 
 export const pagesForRole = (role, pages) => {
   if (role === "super_admin") return [...ALL_OFFICE_PAGES];
   if (role !== "admin") return [];
-  const selected = Array.isArray(pages) ? pages.filter((key) => ALL_OFFICE_PAGES.includes(key)) : [];
-  return selected.length ? selected : [...DEFAULT_ADMIN_PAGES];
+  return Array.isArray(pages) ? pages.filter((key) => ALL_OFFICE_PAGES.includes(key)) : [];
 };
 
 export const allowedOfficePages = () => {
-  if (isLocalAdmin()) return [...ALL_OFFICE_PAGES];
   const session = getAuthSession();
   return pagesForRole(session?.role, session?.pages);
 };
 
 export const isSellerAuthed = () => {
-  if (isLocalAdmin()) return false;
   const session = getAuthSession();
   const role = session?.role;
   if (role === "admin" || role === "super_admin" || role === "pending" || role === "rejected") return false;
@@ -62,22 +53,9 @@ export const isSellerAuthed = () => {
   return role === "marketplace" || intent === "marketplace";
 };
 
-export const loginAdmin = (user, pass, remember) => {
-  if (user === ADMIN_USER && pass === ADMIN_PASS) {
-    logoutAdmin();
-    const store = remember ? localStorage : sessionStorage;
-    store.setItem(SESSION_KEY, SESSION_OK);
-    localStorage.setItem(OFFICE_OK, "1");
-    return true;
-  }
-  return false;
-};
-
 export const logoutAdmin = () => {
-  sessionStorage.removeItem(SESSION_KEY);
-  localStorage.removeItem(SESSION_KEY);
-  localStorage.removeItem(OFFICE_OK);
   saveAuthSession(null);
+  void supabase.auth.signOut();
 };
 
 export const hasBlockedNotice = () =>
@@ -91,28 +69,27 @@ export const kickBlockedSession = () => {
 };
 
 export const watchOfficeAccess = () => {
-  if (window.__immbaWatchOffice || isLocalAdmin()) return;
+  if (window.__immbaWatchOffice) return;
   window.__immbaWatchOffice = true;
   const tick = async () => {
     const session = getAuthSession();
     if (!session?.access_token || !session.user?.id) return;
     if (session.role === "marketplace" || session.intent === "marketplace") return;
     try {
-      const rows = await rest(`profiles?id=eq.${session.user.id}&select=role,pages`);
-      const live = rows?.[0];
+      const before = JSON.stringify([session.role, session.pages || []]);
+      const live = await hydrateSession();
       if (!live || live.role === "rejected") {
         kickBlockedSession();
         return;
       }
-      if (live.role !== session.role || JSON.stringify(live.pages || []) !== JSON.stringify(session.pages || [])) {
-        saveAuthSession({ ...session, role: live.role, pages: pagesForRole(live.role, live.pages) });
-        if (
-          document.querySelector("[data-admin-guard]") &&
-          live.role !== "admin" &&
-          live.role !== "super_admin"
-        ) {
-          window.location.replace(routeAfterAuth({ ...session, role: live.role }));
-        }
+      const after = JSON.stringify([live.role, live.pages || []]);
+      if (before !== after) window.dispatchEvent(new Event("immba:access"));
+      if (
+        document.querySelector("[data-admin-guard]") &&
+        live.role !== "admin" &&
+        live.role !== "super_admin"
+      ) {
+        window.location.replace(routeAfterAuth(live));
       }
     } catch {
       /* Keep the current page if the profile read is briefly unavailable. */
@@ -125,67 +102,32 @@ export const watchOfficeAccess = () => {
   });
 };
 
-const clearLocalOffice = () => {
-  sessionStorage.removeItem(SESSION_KEY);
-  localStorage.removeItem(SESSION_KEY);
-};
-
 const loadProfile = async (session) => {
-  clearLocalOffice();
-  const token = session.access_token;
   const metaIntent = session.user?.user_metadata?.intent === "marketplace" ? "marketplace" : "staff";
   let intent = metaIntent;
   let role = intent === "marketplace" ? "marketplace" : "pending";
   let email = session.user?.email || "";
-  const readOwn = () => rest(`profiles?id=eq.${session.user.id}&select=*`, { token });
-  let rows = [];
+  let pages = [];
   try {
-    rows = (await readOwn()) || [];
+    const live = await hydrateSession();
+    if (live?.role) {
+      role = live.role;
+      intent = live.intent || intent;
+      email = live.email || email;
+      pages = pagesForRole(role, live.pages);
+    }
   } catch {
-    rows = [];
-  }
-  if (!rows[0] && session.user?.id) {
-    try {
-      await rest("profiles", {
-        method: "POST",
-        token,
-        body: {
-          id: session.user.id,
-          email,
-          role,
-          intent,
-          display_name: session.user?.user_metadata?.display_name || "",
-        },
-      });
-      rows = (await readOwn()) || [];
-    } catch {
-      /* Trigger may already have created the row, or schema-auth.sql is missing. */
-    }
-  }
-  if (rows[0]) {
-    intent = rows[0].intent === "marketplace" || metaIntent === "marketplace" ? "marketplace" : rows[0].intent || intent;
-    role = intent === "marketplace" ? "marketplace" : rows[0].role;
-    email = rows[0].email || email;
-    if (intent === "marketplace" && rows[0].role !== "marketplace") {
-      try {
-        await rest(`profiles?id=eq.${session.user.id}`, {
-          method: "PATCH",
-          token,
-          body: { role: "marketplace", intent: "marketplace" },
-        });
-      } catch {
-        /* Desk access still follows metadata intent even if the patch is blocked. */
-      }
-    }
+    role = getAuthSession()?.role || role;
+    pages = pagesForRole(role, getAuthSession()?.pages);
   }
   const next = {
-    access_token: token,
+    access_token: session.access_token,
     refresh_token: session.refresh_token,
     user: session.user,
     role,
     intent,
     email,
-    pages: pagesForRole(role, rows[0]?.pages),
+    pages,
   };
   if (role === "rejected") sessionStorage.setItem(BLOCKED_KEY, "1");
   saveAuthSession(next);
@@ -194,18 +136,16 @@ const loadProfile = async (session) => {
 
 export const signUpAccount = async ({ email, password, intent, displayName }) => {
   const redirectTo = intent === "marketplace" ? `${SITE()}marketplace.html` : `${SITE()}pending.html`;
-  return authApi(`signup?redirect_to=${encodeURIComponent(redirectTo)}`, {
+  const data = await authApi("signup", {
     body: {
       email,
       password,
+      emailRedirectTo: redirectTo,
       data: { intent, display_name: displayName || "" },
     },
-  }).then(async (data) => {
-    if (data.access_token && data.user) {
-      await loadProfile(data);
-    }
-    return { ...data, redirectTo };
   });
+  if (data.access_token && data.user) await loadProfile(data);
+  return { ...data, redirectTo };
 };
 
 export const signInAccount = async (email, password) => {
@@ -214,17 +154,17 @@ export const signInAccount = async (email, password) => {
 };
 
 export const resetPassword = async (email, redirectTo = HERE()) =>
-  authApi(`recover?redirect_to=${encodeURIComponent(redirectTo)}`, { body: { email } });
+  authApi("recover", { body: { email, redirectTo } });
 
 export const consumeAuthHash = async () => {
   const hash = new URLSearchParams(location.hash.replace(/^#/, ""));
-  const token = hash.get("access_token");
-  const refresh = hash.get("refresh_token");
-  if (!token) return null;
+  const recovery = hash.get("type") === "recovery" || new URLSearchParams(location.search).get("type") === "recovery";
+  if (!location.hash.includes("access_token") && !location.search.includes("code=")) return null;
+  const { data, error } = await supabase.auth.getSession();
   history.replaceState(null, "", location.pathname + location.search);
-  const user = await authApi("user", { method: "GET", token });
-  const session = await loadProfile({ access_token: token, refresh_token: refresh, user });
-  session.recovery = hash.get("type") === "recovery";
+  if (error || !data.session) return null;
+  const session = await loadProfile(data.session);
+  session.recovery = recovery;
   return session;
 };
 
@@ -375,10 +315,11 @@ export const initLoginForm = () => {
 
   const sellerForm = form.dataset.intent === "marketplace";
 
-  if (isLocalAdmin() && !sellerForm) {
-    window.location.replace("dashboard.html");
-    return;
-  }
+  void hydrateSession().then((existing) => {
+    if (!existing?.access_token || location.hash.includes("access_token")) return;
+    const dest = routeAfterAuth(existing);
+    if (!sellerForm) window.location.replace(dest);
+  });
   const existing = getAuthSession();
   if (existing?.access_token && !location.hash.includes("access_token")) {
     const dest = routeAfterAuth(existing);
@@ -395,14 +336,8 @@ export const initLoginForm = () => {
     const mode = form.dataset.mode || "signin";
     const email = String(form.elements.namedItem("email")?.value || form.elements.namedItem("username")?.value || "").trim();
     const pass = String(form.elements.namedItem("password")?.value || "");
-    const remember = Boolean(form.elements.namedItem("remember")?.checked);
     const intent = String(form.dataset.intent || form.elements.namedItem("intent")?.value || "staff");
     const displayName = String(form.elements.namedItem("displayName")?.value || "").trim();
-
-    if (mode === "signin" && loginAdmin(email, pass, remember)) {
-      window.location.replace("dashboard.html");
-      return;
-    }
 
     if (!isCloud()) {
       showLoginError(form, "Connect Supabase to register, verify email, or reset a password.");
@@ -418,7 +353,6 @@ export const initLoginForm = () => {
           }
           await authApi("user", {
             method: "PUT",
-            token: getAuthSession()?.access_token,
             body: { password: pass },
           });
           location.replace(routeAfterAuth(getAuthSession()));
@@ -519,14 +453,18 @@ export const initPendingPage = () => {
 
 export const guardAdminPage = () => {
   if (!document.querySelector("[data-admin-guard], [data-admin-form]")) return;
-  if (!isAdminAuthed()) {
-    const dest = getAuthSession()?.access_token ? routeAfterAuth(getAuthSession()) : "login.html";
-    window.location.replace(dest === "dashboard.html" ? "login.html" : dest);
-    return;
-  }
-  document.querySelector("[data-admin-logout]")?.addEventListener("click", () => {
-    logoutAdmin();
-    window.location.href = "login.html";
-  });
-  watchOfficeAccess();
+  const finish = () => {
+    if (!isAdminAuthed()) {
+      const dest = getAuthSession()?.access_token ? routeAfterAuth(getAuthSession()) : "login.html";
+      window.location.replace(dest === "dashboard.html" ? "login.html" : dest);
+      return;
+    }
+    document.querySelector("[data-admin-logout]")?.addEventListener("click", () => {
+      logoutAdmin();
+      window.location.href = "login.html";
+    });
+    watchOfficeAccess();
+    window.dispatchEvent(new Event("immba:access"));
+  };
+  void hydrateSession().then(finish).catch(finish);
 };

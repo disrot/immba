@@ -1,5 +1,4 @@
-import { getAuthSession, rest } from "./supabase.js?v=news2";
-import { logAudit } from "./audit-store.js?v=audit1";
+import { getAuthSession, rest, rpc } from "./supabase.js?v=secure1";
 
 export const DEGREES = ["Bachelor", "Master", "Doctoral", "Other"];
 
@@ -62,9 +61,9 @@ const DEGREE_ALIASES = {
   other: "Other",
 };
 
-const cloud = (path, options = {}) => rest(path, { ...options, anon: true });
+const cloud = (path, options = {}) => rest(path, options);
 
-export const actorEmail = () => getAuthSession()?.email || (localStorage.getItem("immba-admin-session") === "1" || sessionStorage.getItem("immba-admin-session") === "1" ? "local-admin" : "office");
+export const actorEmail = () => getAuthSession()?.email || "office";
 
 export const normalizeDegree = (value) => {
   const key = String(value || "").trim().toLowerCase();
@@ -131,74 +130,17 @@ export const listAudit = async () => {
   return Array.isArray(rows) ? rows : [];
 };
 
-const writeAudit = async ({ action, record, before, after, summary }) => {
-  await cloud("alumni_audit", {
-    method: "POST",
-    body: {
-      actor_email: actorEmail(),
-      action,
-      record_id: record?.id || record?.student_id || "",
-      record_label: record?.full_name || record?.student_id || "",
-      summary,
-      before: before || null,
-      after: after || null,
-    },
-  });
-  void logAudit({
-    module: "STUDENT_RECORDS",
-    action,
-    entityType: "alumni",
-    entityId: record?.id || record?.student_id || "",
-    entityLabel: record?.full_name || record?.student_id || "",
-    oldValues: before || null,
-    newValues: after || null,
-    metadata: { summary },
-    isDeleted: action === "DELETE",
-  });
-};
-
-const diffSummary = (before, after) => {
-  const changed = FIELDS.filter((field) => String(before?.[field.key] || "") !== String(after?.[field.key] || "")).map(
-    (field) => `${field.label}: ${before?.[field.key] || "—"} → ${after?.[field.key] || "—"}`
-  );
-  return changed.join("; ") || "Record updated";
-};
-
 export const upsertAlumni = async (input) => {
   const next = payload(input);
   if (!next.full_name || !next.student_id) throw new Error("Name and student ID are required.");
   if (!DEGREES.includes(next.degree_program)) throw new Error("Degree program must be Bachelor, Master, Doctoral, or Other.");
   const id = String(input.id || "").trim();
-  if (id) {
-    const existing = (await cloud(`alumni?id=eq.${encodeURIComponent(id)}&select=*`)) || [];
-    const before = existing[0] ? normalizeAlumni(existing[0]) : null;
-    const saved = await cloud(`alumni?id=eq.${encodeURIComponent(id)}`, { method: "PATCH", body: next });
-    const after = normalizeAlumni((saved && saved[0]) || { ...before, ...next, id });
-    await writeAudit({
-      action: "UPDATE",
-      record: after,
-      before,
-      after,
-      summary: before ? diffSummary(before, after) : "Record updated",
-    });
-    return after;
-  }
-  const saved = await cloud("alumni", { method: "POST", body: next });
-  const after = normalizeAlumni((saved && saved[0]) || next);
-  await writeAudit({ action: "CREATE", record: after, after, summary: `New record ${after.full_name} (${after.student_id})` });
-  return after;
+  const saved = await rpc("office_save_alumni", { p_row: id ? { ...next, id } : next });
+  return normalizeAlumni(saved || { ...next, id });
 };
 
 export const deleteAlumni = async (id) => {
-  const existing = (await cloud(`alumni?id=eq.${encodeURIComponent(id)}&select=*`)) || [];
-  const before = existing[0] ? normalizeAlumni(existing[0]) : { id };
-  await cloud(`alumni?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
-  await writeAudit({
-    action: "DELETE",
-    record: before,
-    before,
-    summary: `Deleted ${before.full_name || before.student_id}`,
-  });
+  await rpc("office_delete_alumni", { p_id: id });
 };
 
 export const parseCsv = (text) => {

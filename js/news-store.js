@@ -1,4 +1,4 @@
-import { isCloud, rest, uploadNewsPhoto } from "./supabase.js?v=news2";
+import { isCloud, rest, rpc, uploadNewsPhoto } from "./supabase.js?v=secure1";
 
 export const NEWS_STORAGE_KEY = "immba-admin-news-v1";
 
@@ -267,9 +267,10 @@ const fromRow = (row, index = 0) =>
     title: { en: row.title_en, zh: row.title_zh },
     content: { en: row.content_en, zh: row.content_zh },
     photos: Array.isArray(row.photos) ? row.photos : [],
+    revision: Number(row.revision) || 1,
   }, index);
 
-const cloudNews = (path, options = {}) => rest(path, { ...options, anon: true });
+const cloudNews = (path, options = {}) => rest(path, options);
 
 const listCloudNews = async () => {
   const rows = await cloudNews("news?select=*&order=sort_order.asc,date.desc");
@@ -293,7 +294,7 @@ const publishPhotos = async (item) => {
     }
     try {
       const file = dataUrlToFile(photo.src, photo.name);
-      const src = file ? await uploadNewsPhoto(file, `${item.id}-${Date.now()}-${photo.name || "photo.jpg"}`) : photo.src;
+      const src = file ? await uploadNewsPhoto(file) : photo.src;
       photos.push({ src, name: photo.name || "" });
     } catch {
       /* Keep data URLs off the cloud row so a large photo cannot block the post. */
@@ -328,23 +329,7 @@ const writeLocalNews = async (items) => {
 const writeCloudNews = async (items) => {
   const published = [];
   for (const item of items) {
-    published.push(await publishPhotos(item));
-  }
-  const existing = await listCloudNews();
-  const keep = new Set(published.map((item) => item.id));
-  for (const row of existing) {
-    if (!keep.has(row.id)) {
-      await cloudNews(`news?id=eq.${encodeURIComponent(row.id)}`, { method: "DELETE" });
-    }
-  }
-  for (const item of published) {
-    const payload = toRow(item);
-    const found = existing.find((row) => row.id === item.id);
-    if (found) {
-      await cloudNews(`news?id=eq.${encodeURIComponent(item.id)}`, { method: "PATCH", body: payload });
-    } else {
-      await cloudNews("news", { method: "POST", body: payload });
-    }
+    published.push(await upsertCloudRow(item));
   }
   return published;
 };
@@ -410,13 +395,11 @@ const upsertCloudRow = async (item) => {
     ...toRow(published),
     photos: (published.photos || []).filter((photo) => photo.src && !String(photo.src).startsWith("data:")),
   };
-  const existing = await cloudNews(`news?id=eq.${encodeURIComponent(published.id)}&select=id`);
-  if (existing?.length) {
-    await cloudNews(`news?id=eq.${encodeURIComponent(published.id)}`, { method: "PATCH", body: payload });
-  } else {
-    await cloudNews("news", { method: "POST", body: payload });
-  }
-  return fromRow(payload);
+  const saved = await rpc("office_save_news", {
+    p_row: payload,
+    p_expected_revision: item.revision ?? null,
+  });
+  return fromRow(saved || payload);
 };
 
 export const hydrateNews = async () => {
@@ -426,27 +409,16 @@ export const hydrateNews = async () => {
   if (isCloud()) {
     try {
       let rows = await listCloudNews();
-      if (!rows.length) {
+      if (!rows.length && office) {
         const seed = fallbackNews(local);
-        if (office) {
-          try {
-            rows = await writeCloudNews(seed);
-          } catch (error) {
-            console.warn("news cloud seed failed", error);
-            rows = seed;
-          }
-        } else {
+        try {
+          rows = await writeCloudNews(seed);
+        } catch (error) {
+          console.warn("news cloud seed failed", error);
           rows = seed;
         }
-      } else if (local?.length) {
-        const ids = new Set(rows.map((item) => item.id));
-        for (const item of local.filter((row) => !ids.has(row.id))) {
-          try {
-            rows.push(await upsertCloudRow(item));
-          } catch (error) {
-            console.warn("news extra upload failed", item.id, error);
-          }
-        }
+      } else if (!rows.length) {
+        rows = fallbackNews(local);
       }
       if (rows.length) {
         cachedNews = rows.map(normalize);
@@ -522,17 +494,30 @@ export const upsertNews = async (item) => {
     ...item,
     title: { ...(prev.title || {}), ...(item?.title || {}) },
     content: { ...(prev.content || {}), ...(item?.content || {}) },
+    revision: prev.revision,
   });
+  if (isCloud()) {
+    const saved = await upsertCloudRow(nextItem);
+    if (index >= 0) list[index] = saved;
+    else list.push(saved);
+    cachedNews = list.map(normalize);
+    await writeLocalNews(cachedNews);
+    return cachedNews;
+  }
   if (index >= 0) list[index] = nextItem;
   else list.push(nextItem);
-  logNews(index >= 0 ? "UPDATE" : "CREATE", prev?.id ? prev : null, nextItem);
   return saveNews(list);
 };
 
-export const deleteNews = (id) => {
+export const deleteNews = async (id) => {
   const before = loadNews().find((item) => item.id === id);
-  logNews("DELETE", before, null);
-  return saveNews(loadNews().filter((item) => item.id !== id));
+  if (isCloud()) {
+    await rpc("office_delete_news", { p_id: id, p_expected_revision: before?.revision ?? null });
+  }
+  const next = loadNews().filter((item) => item.id !== id);
+  cachedNews = next;
+  await writeLocalNews(next);
+  return next;
 };
 
 const translateChunk = async (text, pair) => {

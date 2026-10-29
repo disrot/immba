@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout: imMBA</title>
+    <link rel="icon" href="images/logo.png" type="image/png" />
+    <link rel="stylesheet" href="css/styles.css?v=secure1" />
+  </head>
+  <body>
+    <main id="main" class="section">
+      <h1>Checkout</h1>
+      <p data-checkout-copy></p>
+      <p><a href="orders.html">View orders</a></p>
+    </main>
+    <script>
+      const status = new URLSearchParams(location.search).get("status");
+      document.querySelector("[data-checkout-copy]").textContent =
+        status === "success"
+          ? "Stripe sent you back here. The order is paid only after the signed webhook is recorded. This page does not mark anything paid."
+          : "Checkout was cancelled. Any reserved inventory is released when the hold expires.";
+    </script>
+  </body>
+</html>

@@ -14,16 +14,12 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=block1" />
+    <link rel="stylesheet" href="css/styles.css?v=orders1" />
   </head>
   <body class="office-page" data-title-key="dash.title">
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
     <script>
       (function () {
-        var localOk =
-          sessionStorage.getItem("immba-admin-session") === "1" ||
-          localStorage.getItem("immba-admin-session") === "1" ||
-          localStorage.getItem("immba-office-ok") === "1";
         var role = "";
         var intent = "";
         try {
@@ -33,7 +29,7 @@
         } catch (error) {
           role = "";
         }
-        if (localOk) return;
+        if (role === "admin" || role === "super_admin") return;
         if (role === "marketplace" || intent === "marketplace") {
           location.replace("marketplace.html");
           return;
@@ -88,6 +84,14 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 8.5v7M8.5 12h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
             <span data-i18n="office.tabCompose">Compose</span>
           </button>
+          <button type="button" class="office-tab" data-office-tab="orders">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5h10v15.2l-1.7-1.1L13.5 20l-1.8-1.4L9.8 20 8.2 18.6 7 19.7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.4 9h5.2M9.4 12.4h5.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span data-i18n="office.tabOrders">Orders</span>
+          </button>
+          <button type="button" class="office-tab" data-office-tab="workflows">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4.2" width="12" height="15.6" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 4.2h6v2.3H9z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12.4l2 2 4.2-4.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span data-i18n="office.tabWorkflows">Workflows</span>
+          </button>
         </nav>
         <button type="button" class="office-tab office-tab-exit" data-admin-logout>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7 8.2A7 7 0 1 0 17 8.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -108,6 +112,8 @@
               <option value="audit" data-i18n="office.tabAudit">Audit</option>
               <option value="news" data-i18n="office.tabNews">News</option>
               <option value="compose" data-i18n="admin.new">New announcement</option>
+              <option value="orders" data-i18n="office.tabOrders">Orders</option>
+              <option value="workflows" data-i18n="office.tabWorkflows">Workflows</option>
             </select>
           </label>
           <p class="office-live" data-office-only="analytics"><span data-i18n="dash.live">Live now</span> <strong data-dash-live>0</strong></p>
@@ -487,20 +493,6 @@
             </p>
             <p class="admin-status" data-faculty-status></p>
             <p class="faculty-cloud" data-faculty-cloud></p>
-            <details class="faculty-advanced">
-              <summary data-i18n="admin.facultyAdvanced">Advanced connection</summary>
-              <form class="admin-shared faculty-connect" data-faculty-connect>
-                <label>
-                  Project URL
-                  <input type="url" name="url" placeholder="https://xxxx.supabase.co" autocomplete="off" />
-                </label>
-                <label>
-                  Anon key
-                  <input type="password" name="key" placeholder="anon public key" autocomplete="off" />
-                </label>
-                <button type="submit" class="btn btn-ghost" data-i18n="admin.facultyConnect">Save connection</button>
-              </form>
-            </details>
             <div class="admin-toolbar">
               <button type="button" class="btn btn-primary office-equal" data-faculty-new data-i18n="admin.facultyNew">New faculty</button>
               <button type="button" class="btn btn-ghost office-equal" data-faculty-seed data-i18n="admin.facultySeed">Seed from local prototype</button>
@@ -727,15 +719,52 @@
               </div>
             </form>
           </section>
+          <section class="office-panel office-news" data-office-panel="orders" hidden>
+            <p class="office-lede" data-i18n="orders.lede">Platform payments stay in one Stripe account. A seller is paid only after staff records a settlement.</p>
+            <p class="admin-status" data-orders-status></p>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th data-i18n="orders.thStatus">Status</th>
+                    <th data-i18n="orders.thAmount">Amount</th>
+                    <th data-i18n="orders.thWhen">Placed</th>
+                    <th data-i18n="orders.thRef">Reference</th>
+                  </tr>
+                </thead>
+                <tbody data-orders-list></tbody>
+              </table>
+            </div>
+          </section>
+          <section class="office-panel office-news" data-office-panel="workflows" hidden>
+            <p class="office-lede" data-i18n="workflows.lede">Admissions, exchange, and graduation reviews. Notes written here are visible to the applicant.</p>
+            <p class="admin-status" data-workflows-status></p>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th data-i18n="workflows.thKind">Application</th>
+                    <th data-i18n="workflows.thApplicant">Applicant</th>
+                    <th data-i18n="workflows.thStatus">Status</th>
+                    <th data-i18n="workflows.thReview">Review</th>
+                  </tr>
+                </thead>
+                <tbody data-workflows-list></tbody>
+              </table>
+            </div>
+          </section>
         </main>
       </div>
     </div>
-    <script type="module" src="js/main.js?v=block1"></script>
+    <script type="module" src="js/main.js?v=secure1"></script>
     <script type="module" src="js/admin-news.js?v=news2"></script>
     <script type="module" src="js/admin-faculty.js?v=order1"></script>
     <script type="module" src="js/admin-access.js?v=block1"></script>
     <script type="module" src="js/admin-listings.js?v=notice4"></script>
     <script type="module" src="js/admin-alumni.js?v=drop2"></script>
     <script type="module" src="js/admin-audit.js?v=audit2"></script>
+    <script type="module" src="js/office-extra.js?v=secure2"></script>
   </body>
 </html>

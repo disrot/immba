@@ -1,7 +1,6 @@
 import { ALL_OFFICE_PAGES, OFFICE_PAGES, isSuperAdmin, pagesForRole } from "./auth.js?v=block1";
-import { getAuthSession, rest, rpc } from "./supabase.js?v=audit2";
+import { getAuthSession, rest, rpc } from "./supabase.js?v=secure1";
 import { bindPanelDrop } from "./ui-drop.js?v=drop2";
-import { logAudit } from "./audit-store.js?v=audit2";
 
 const ROLES = [
   { key: "pending", en: "Waiting", zh: "等候核准" },
@@ -120,17 +119,8 @@ if (!root) {
     }
   };
 
-  const saveRow = async (id, body, before, after) => {
-    await rest(`profiles?id=eq.${id}`, { method: "PATCH", body });
-    await logAudit({
-      module: "AUTH",
-      action: "UPDATE",
-      entityType: "profiles",
-      entityId: id,
-      entityLabel: before.email || id,
-      oldValues: { role: before.role, pages: pagesForRole(before.role, before.pages) },
-      newValues: after,
-    });
+  const saveRow = async (id, role, pages) => {
+    await rpc("admin_update_profile", { p_id: id, p_role: role, p_pages: pages });
     await reload();
   };
 
@@ -143,22 +133,9 @@ if (!root) {
     if (!window.confirm(zh() ? `刪除 ${current.email || "此帳號"}？對方會立即被登出。` : `Delete ${current.email || "this account"}? They will be signed out at once.`)) {
       return;
     }
-    try {
       try {
         await rpc("office_delete_account", { p_id: id });
-      } catch {
-        await rest(`profiles?id=eq.${id}`, { method: "DELETE" });
-      }
-      await logAudit({
-        module: "AUTH",
-        action: "DELETE",
-        entityType: "profiles",
-        entityId: id,
-        entityLabel: current.email || id,
-        oldValues: { role: current.role, email: current.email },
-        isDeleted: true,
-      });
-      await reload();
+        await reload();
     } catch (error) {
       if (status) status.textContent = error.message || "Could not delete that account.";
     }
@@ -176,19 +153,15 @@ if (!root) {
       if (roleInput) {
         const next = roleInput.checked ? roleInput.getAttribute("data-access-perm") : "pending";
         if (current.role === next) return;
-        await saveRow(id, { role: next, pages: pagesForRole(next, current.pages) }, current, {
-          role: next,
-          pages: pagesForRole(next, current.pages),
-        });
+        await saveRow(id, next, pagesForRole(next, current.pages));
         return;
       }
       if (pageInput) {
         if (current.role === "pending" || current.role === "rejected") return;
         const box = wrap.querySelector("[data-drop-panel]");
         let pages = [...box.querySelectorAll("[data-access-page]:checked")].map((input) => input.getAttribute("data-access-page"));
-        if (current.role === "super_admin") pages = ALL_OFFICE_PAGES.filter((key) => pages.includes(key));
-        if (!pages.length) pages = ["analytics"];
-        await saveRow(id, { pages }, current, { role: current.role, pages });
+        if (current.role === "super_admin") pages = [...ALL_OFFICE_PAGES];
+        await saveRow(id, current.role, pages);
       }
     } catch (error) {
       if (status) status.textContent = error.message || "Update failed. Run schema-auth.sql to add pages.";

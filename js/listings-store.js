@@ -1,5 +1,4 @@
-import { getAuthSession, isCloud, rest, uploadMarketPhoto } from "./supabase.js?v=notice1";
-import { logAudit } from "./audit-store.js?v=audit1";
+import { getAuthSession, isCloud, rest, rpc, uploadMarketPhoto } from "./supabase.js?v=secure1";
 
 const toItem = (row) => ({
   id: row.id,
@@ -62,39 +61,12 @@ export const listRemovedNotices = async () => {
 
 export const ackRemovedNotices = async (ids) => {
   if (!ids?.length) return;
-  await Promise.all(
-    ids.map((id) =>
-      rest(`listings?id=eq.${encodeURIComponent(id)}`, {
-        method: "PATCH",
-        body: { seller_seen: true },
-      })
-    )
-  );
+  await rpc("market_ack_removed", { p_ids: ids });
 };
 
 export const removeListing = async (id) => {
   if (!id) throw new Error("Missing listing.");
-  try {
-    await rest(`listings?id=eq.${encodeURIComponent(id)}`, {
-      method: "PATCH",
-      body: {
-        removed: true,
-        seller_seen: false,
-        removed_at: new Date().toISOString(),
-      },
-    });
-  } catch {
-    await rest(`listings?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
-  }
-  void logAudit({
-    module: "CMS_PAGES",
-    action: "DELETE",
-    entityType: "listings",
-    entityId: id,
-    entityLabel: id,
-    isDeleted: true,
-    newValues: { id, removed: true },
-  });
+  await rpc("office_remove_listing", { p_id: id });
 };
 
 export const deleteListing = removeListing;
@@ -105,18 +77,7 @@ export const createListing = async (input) => {
     throw new Error("Sign in as a marketplace seller first.");
   }
   let image_url = input.image_url || "";
-  if (input.file) {
-    try {
-      image_url = await uploadMarketPhoto(input.file, `market-${Date.now()}-${input.file.name}`);
-    } catch {
-      image_url = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onerror = () => reject(new Error("read"));
-        reader.onload = () => resolve(String(reader.result || ""));
-        reader.readAsDataURL(input.file);
-      });
-    }
-  }
+  if (input.file) image_url = await uploadMarketPhoto(input.file);
   const row = {
     seller_id: session.user.id,
     title: input.title,
@@ -128,19 +89,8 @@ export const createListing = async (input) => {
     kind: input.kind || "book",
     tag: input.tag || "elective",
     image_url,
-    sold: false,
-    removed: false,
-    seller_seen: true,
+    inventory_on_hand: Number(input.inventory_on_hand) || 1,
   };
-  const saved = await rest("listings", { method: "POST", body: row });
-  const created = (saved || [row]).map?.(toItem)?.[0] || toItem({ ...row, id: `tmp-${Date.now()}` });
-  void logAudit({
-    module: "CMS_PAGES",
-    action: "CREATE",
-    entityType: "listings",
-    entityId: created.id,
-    entityLabel: created.title || row.title,
-    newValues: { ...row, id: created.id },
-  });
-  return created;
+  const saved = await rpc("market_create_listing", { p_row: row });
+  return toItem(saved || { ...row, id: `tmp-${Date.now()}` });
 };

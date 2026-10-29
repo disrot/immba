@@ -1,6 +1,6 @@
 import { summarizeAnalytics, clearAnalytics, shortVisitor } from "./analytics.js";
 import { worldMapSvg } from "./world-map.js";
-import { allowedOfficePages } from "./auth.js?v=block1";
+import { allowedOfficePages } from "./auth.js?v=secure1";
 
 const COLORS = ["#163300", "#8c6a3a", "#5c5346", "#c4a574", "#3d4a36"];
 
@@ -404,6 +404,7 @@ const initOfficeTabs = (root) => {
   window.addEventListener("hashchange", () => apply(location.hash.replace("#", "")));
   window.addEventListener("resize", () => placeBubble(true));
   window.addEventListener("immba:lang", () => requestAnimationFrame(() => placeBubble(true)));
+  window.addEventListener("immba:access", () => apply(location.hash.replace("#", "") || "analytics"));
   apply(location.hash.replace("#", "") || "analytics");
   requestAnimationFrame(() => placeBubble(true));
 };
