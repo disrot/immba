@@ -26,7 +26,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=desk1" />
+    <link rel="stylesheet" href="css/styles.css?v=trade8" />
   </head>
   <body data-title-key="market.accountTitle" data-desc-key="market.accountMeta">
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
@@ -178,6 +178,8 @@
     <main id="main">
       <section class="shop-page">
         <div class="container shop-plp shop-account-page">
+          <div class="account-split">
+          <div class="account-split-main">
           <p class="shop-kicker"><a href="marketplace.html" data-i18n="market.headline">Marketplace</a></p>
           <h1 class="shop-hero-title" data-i18n="market.accountTitle">Seller account</h1>
           <p class="login-lede" data-login-lede data-i18n="market.accountLede">Sign in to post a listing.</p>
@@ -229,6 +231,48 @@
                 </div>
               </form>
             </section>
+          </div>
+          </div>
+          <aside class="seller-story" data-seller-story>
+            <h2 data-i18n="market.sellSimple">Selling is simple</h2>
+            <div class="seller-story-card">
+              <div class="seller-story-progress" role="tablist" aria-label="Seller benefits">
+                <button type="button" role="tab" data-story="0" aria-selected="true" data-i18n-attr="aria-label:market.sell1Title" aria-label="Photograph, list, sell"><i></i></button>
+                <button type="button" role="tab" data-story="1" aria-selected="false" data-i18n-attr="aria-label:market.sell2Title" aria-label="Meet on campus"><i></i></button>
+                <button type="button" role="tab" data-story="2" aria-selected="false" data-i18n-attr="aria-label:market.sell3Title" aria-label="Keep what you earn"><i></i></button>
+              </div>
+              <button type="button" class="seller-story-pause" data-story-pause aria-pressed="false" data-i18n-attr="aria-label:market.storyPause" aria-label="Pause">
+                <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6v12M16 6v12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+                <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7.5v9l8-4.5-8-4.5z" fill="currentColor"/></svg>
+              </button>
+              <div class="seller-story-slides">
+                <article data-slide="0" class="is-on">
+                  <img src="images/marketplace/sell-list.jpg" alt="" width="824" height="1024" />
+                  <div class="seller-story-copy">
+                    <p>01</p>
+                    <h3 data-i18n="market.sell1Title">Photograph, list, sell</h3>
+                    <p data-i18n="market.sell1Body">A few photos, a price, and the book is on the cohort shelf.</p>
+                  </div>
+                </article>
+                <article data-slide="1">
+                  <img src="images/marketplace/sell-meet.jpg" alt="" width="824" height="1024" />
+                  <div class="seller-story-copy">
+                    <p>02</p>
+                    <h3 data-i18n="market.sell2Title">Meet on campus</h3>
+                    <p data-i18n="market.sell2Body">Hand the book over at the College of Management. No shipping label.</p>
+                  </div>
+                </article>
+                <article data-slide="2">
+                  <img src="images/marketplace/sell-keep.jpg" alt="" width="824" height="1024" />
+                  <div class="seller-story-copy">
+                    <p>03</p>
+                    <h3 data-i18n="market.sell3Title">Keep what you earn</h3>
+                    <p data-i18n="market.sell3Body">No selling fee. The price you set is the price you receive.</p>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </aside>
           </div>
           <div data-market-desk hidden>
             <div class="seller-app" data-seller-hub>
@@ -348,7 +392,7 @@
       </div>
     </footer>
 
-    <script type="module" src="js/main.js?v=desk1"></script>
+    <script type="module" src="js/main.js?v=trade7"></script>
     <script type="module" src="js/back-top.js"></script>
   </body>
 </html>

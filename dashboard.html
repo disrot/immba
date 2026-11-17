@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=orders1" />
+    <link rel="stylesheet" href="css/styles.css?v=trade3" />
   </head>
   <body class="office-page" data-title-key="dash.title">
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
@@ -720,8 +720,29 @@
             </form>
           </section>
           <section class="office-panel office-news" data-office-panel="orders" hidden>
+            <p class="office-lede">Campus orders on this browser. Staff can search and filter them. Monitoring does not change the order.</p>
+            <div class="trade-tools">
+              <label>
+                <span class="sr-only">Order ID</span>
+                <input data-trade-search type="search" placeholder="Search order ID, buyer, or seller">
+              </label>
+              <label>
+                <span class="sr-only">Status</span>
+                <select data-trade-status>
+                  <option value="all">All statuses</option>
+                  <option value="open">Incomplete</option>
+                  <option value="waiting_payment">Waiting for payment confirmation</option>
+                  <option value="payment_confirmed">Payment confirmed</option>
+                  <option value="ready_to_ship">Ready to ship</option>
+                  <option value="shipped">Shipped</option>
+                  <option value="completed">Completed</option>
+                  <option value="abnormal">Needs a look</option>
+                </select>
+              </label>
+            </div>
+            <div data-trade-monitor></div>
             <p class="office-lede" data-i18n="orders.lede">Platform payments stay in one Stripe account. A seller is paid only after staff records a settlement.</p>
-            <p class="admin-status" data-orders-status></p>
+            <p class="admin-status" data-orders-status>Loading platform orders…</p>
             <div class="admin-table-wrap">
               <table class="admin-table">
                 <thead>
@@ -758,13 +779,13 @@
         </main>
       </div>
     </div>
-    <script type="module" src="js/main.js?v=secure1"></script>
+    <script type="module" src="js/main.js?v=trade2"></script>
     <script type="module" src="js/admin-news.js?v=news2"></script>
     <script type="module" src="js/admin-faculty.js?v=order1"></script>
     <script type="module" src="js/admin-access.js?v=block1"></script>
     <script type="module" src="js/admin-listings.js?v=notice4"></script>
     <script type="module" src="js/admin-alumni.js?v=drop2"></script>
     <script type="module" src="js/admin-audit.js?v=audit2"></script>
-    <script type="module" src="js/office-extra.js?v=secure2"></script>
+    <script type="module" src="js/office-extra.js?v=trade1"></script>
   </body>
 </html>

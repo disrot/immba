@@ -26,7 +26,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=atelier2" />
+    <link rel="stylesheet" href="css/styles.css?v=trade6" />
   </head>
   <body data-title-key="market.pageTitle" data-desc-key="market.meta">
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
@@ -181,13 +181,33 @@
           <header class="shop-mast">
             <div>
               <p class="shop-kicker">imMBA</p>
-              <h1 class="shop-hero-title" data-i18n="market.headline">Marketplace</h1>
+              <h1 class="shop-hero-title" data-i18n="market.headline">Textbooks from your cohort</h1>
               <p class="shop-lede" data-i18n="market.lede">Course books and packets, passed from one imMBA cohort to the next.</p>
             </div>
-            <a class="shop-bag" href="cart.html" data-i18n="market.bag">Bag</a>
+            <div class="shop-mast-actions">
+              <div data-market-mode></div>
+              <a class="shop-icon has-label" href="market-account.html" data-shop-account aria-label="Log in">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.2 19.2c1.4-2.8 3.8-4.2 6.8-4.2s5.4 1.4 6.8 4.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <span data-shop-account-label>Log in</span>
+              </a>
+              <a class="shop-icon shop-icon-bag" href="cart.html" aria-label="Bag">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l-.8 10.2a1.5 1.5 0 0 1-1.5 1.3H8.8a1.5 1.5 0 0 1-1.5-1.3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8.5V7.2A3 3 0 0 1 12 4.2 3 3 0 0 1 15 7.2v1.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </a>
+            </div>
           </header>
           <div class="shop-account" data-market-account></div>
           <div class="shop-toolbar">
+            <label class="shop-tool shop-search">
+              <span class="sr-only">Search</span>
+              <input data-shop-search type="search" placeholder="Search title or SKU">
+            </label>
+            <label class="shop-tool">
+              <span class="sr-only">Availability</span>
+              <select data-shop-stock>
+                <option value="all">All availability</option>
+                <option value="in">In stock</option>
+              </select>
+            </label>
             <label class="shop-tool">
               <span class="sr-only" data-i18n="market.filter">Filter by</span>
               <select data-shop-filter>
@@ -335,7 +355,7 @@
       </div>
     </footer>
 
-    <script type="module" src="js/main.js?v=desk1"></script>
+    <script type="module" src="js/main.js?v=trade6"></script>
     <script type="module" src="js/back-top.js"></script>
   </body>
 </html>

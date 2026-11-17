@@ -2,10 +2,10 @@ import { renderNewsArticle, renderNewsCards } from "./news-ui.js";
 import { hydrateNews } from "./news-store.js?v=news2";
 import { applyOfficialLinks } from "./official.js";
 import { initGallery, refreshGalleryCaptions } from "./gallery.js";
-import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage, watchOfficeAccess } from "./auth.js?v=signup1";
+import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage, watchOfficeAccess } from "./auth.js?v=gate1";
 import { initFacultyDirectory } from "./faculty.js?v=notice3";
-import { initMarketplace, initListing } from "./marketplace.js?v=atelier1";
-import { initMarketAccount } from "./market-account.js?v=desk1";
+import { initMarketplace, initListing } from "./marketplace.js?v=trade6";
+import { initMarketAccount } from "./market-account.js?v=trade6";
 import { initAnalytics } from "./analytics.js";
 import { initAdminDash } from "./admin-dash.js?v=pages1";
 import { initPageHero } from "./page-hero.js?v=shop1";
@@ -306,7 +306,9 @@ const translations = {
     "exchange.partnersLabel": "Featured partners",
     "market.pageTitle": "Marketplace",
     "market.meta": "Student-to-student course packets, textbooks, and materials for Fu Jen imMBA.",
-    "market.headline": "Marketplace",
+    "market.headline": "Textbooks from your cohort",
+    "bag.pageTitle": "Your bag",
+    "orders.pageTitle": "Your orders",
     "market.lede": "Course books and packets, passed from one imMBA cohort to the next.",
     "market.bag": "Bag",
     "market.promise1": "Student to student",
@@ -336,9 +338,18 @@ const translations = {
       "A student-to-student board for course books and materials used in the English-taught imMBA curriculum. Listings below are representative placeholders based on core and spotlight courses.",
     "market.cta": "Browse the marketplace",
     "market.sellHint": "Students can register as a marketplace seller to post a listing.",
-    "market.accountTitle": "Seller account",
+    "market.accountTitle": "Your account",
     "market.accountMeta": "Register, verify email, sign in, or reset a password to post a marketplace listing.",
     "market.accountLede": "Sign in to post a listing.",
+    "market.sellSimple": "Selling is simple",
+    "market.sell1Title": "Photograph, list, sell",
+    "market.sell1Body": "A few photos, a price, and the book is on the cohort shelf.",
+    "market.sell2Title": "Meet on campus",
+    "market.sell2Body": "Hand the book over at the College of Management. No shipping label.",
+    "market.sell3Title": "Keep what you earn",
+    "market.sell3Body": "No selling fee. The price you set is the price you receive.",
+    "market.storyPause": "Pause",
+    "market.storyPlay": "Play",
     "market.sellerIn": "Seller sign in",
     "market.desk": "Seller desk",
     "market.backShop": "Back to Marketplace",
@@ -971,7 +982,9 @@ const translations = {
     "exchange.partnersLabel": "夥伴學校",
     "market.pageTitle": "教材市集",
     "market.meta": "輔仁大學 imMBA 學生教材、課程包與用書流通市集。",
-    "market.headline": "教材市集",
+    "market.headline": "這一屆的教科書",
+    "bag.pageTitle": "你的袋子",
+    "orders.pageTitle": "你的訂單",
     "market.lede": "課程用書與教材，由一屆 imMBA 同學交到下一屆。",
     "market.bag": "袋子",
     "market.promise1": "同學之間",
@@ -1001,9 +1014,18 @@ const translations = {
       "供 imMBA 英語課程教材與用書流通的學生市集。以下為依核心與焦點課程整理的代表項目。",
     "market.cta": "進入教材市集",
     "market.sellHint": "同學可註冊為市集賣方後刊登教材。",
-    "market.accountTitle": "賣方帳號",
+    "market.accountTitle": "我的帳號",
     "market.accountMeta": "註冊、驗證信箱、登入或重設密碼後即可刊登教材。",
     "market.accountLede": "登入後即可刊登教材。",
+    "market.sellSimple": "刊登很簡單",
+    "market.sell1Title": "拍照、刊登、賣出",
+    "market.sell1Body": "拍幾張照片、定個價格，教材就出現在這一屆的書架上。",
+    "market.sell2Title": "校園面交",
+    "market.sell2Body": "在管理學院把書交給同學，不必寄送。",
+    "market.sell3Title": "價款全數留給你",
+    "market.sell3Body": "沒有平台手續費。你定的價格就是你收到的。",
+    "market.storyPause": "暫停",
+    "market.storyPlay": "播放",
     "market.sellerIn": "賣方登入",
     "market.desk": "賣方工作台",
     "market.backShop": "返回教材市集",

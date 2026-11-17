@@ -1,4 +1,5 @@
 import { rpc } from "./supabase.js?v=secure1";
+import { allOrders, isAbnormal, money as tradeMoney, statusText, when as tradeWhen } from "./trade.js?v=trade1";
 
 const esc = (value) =>
   String(value ?? "")
@@ -54,10 +55,50 @@ const formMark = `<span class="office-mark" aria-hidden="true"><svg viewBox="0 0
 
 const emptyRow = (cols, text) => `<tr><td class="office-blank" colspan="${cols}">${esc(text)}</td></tr>`;
 
+const paintTradeMonitor = () => {
+  const root = document.querySelector("[data-trade-monitor]");
+  if (!root) return;
+  const query = (document.querySelector("[data-trade-search]")?.value || "").trim().toLowerCase();
+  const filter = document.querySelector("[data-trade-status]")?.value || "all";
+  let rows = allOrders();
+  if (query) {
+    rows = rows.filter((order) =>
+      [order.id, order.buyer, order.buyerEmail, order.sellerName, order.sellerId].join(" ").toLowerCase().includes(query)
+    );
+  }
+  if (filter === "open") rows = rows.filter((order) => order.status !== "completed");
+  else if (filter === "abnormal") rows = rows.filter(isAbnormal);
+  else if (filter !== "all") rows = rows.filter((order) => order.status === filter);
+  root.innerHTML = rows.length
+    ? rows
+        .map((order) => {
+          const flag = isAbnormal(order) ? `<span class="trade-flag">${esc(t("Needs a look", "需要查看"))}</span>` : "";
+          const open = order.status !== "completed" ? `<span class="trade-flag">${esc(t("Incomplete", "未完成"))}</span>` : "";
+          return `<article class="trade-card">
+            <header>
+              <p class="trade-id">${esc(order.id)}</p>
+              <strong>${esc(statusText(order.status, zh()))}</strong>
+            </header>
+            <p>${esc(order.buyer)} → ${esc(order.sellerName)}</p>
+            <p>${esc(tradeWhen(order.createdAt, zh()))}</p>
+            <p>${esc((order.items || []).map((item) => item.title).join(", "))}</p>
+            <p class="trade-money">${esc(tradeMoney(order.total, zh()))} ${flag} ${open}</p>
+          </article>`;
+        })
+        .join("")
+    : `<p class="seller-empty">${esc(t("No campus orders in this browser yet.", "這個瀏覽器還沒有校園訂單。"))}</p>`;
+};
+
+document.querySelector("[data-trade-search]")?.addEventListener("input", paintTradeMonitor);
+document.querySelector("[data-trade-status]")?.addEventListener("change", paintTradeMonitor);
+
 const paintOrders = async () => {
   const status = document.querySelector("[data-orders-status]");
   const list = document.querySelector("[data-orders-list]");
+  paintTradeMonitor();
   if (!list) return;
+  if (status) status.textContent = t("Loading platform orders…", "正在載入平台訂單…");
+  list.innerHTML = `<tr><td class="office-blank" colspan="5">${esc(t("Loading platform orders…", "正在載入平台訂單…"))}</td></tr>`;
   try {
     const orders = await rpc("office_list_orders");
     const rows = Array.isArray(orders) ? orders : [];

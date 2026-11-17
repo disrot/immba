@@ -1,4 +1,7 @@
+import { isSellerAuthed } from "./auth.js?v=notice4";
+import { getAuthSession } from "./supabase.js?v=secure1";
 import { listCloudListings } from "./listings-store.js?v=notice3";
+import { availableQty, defaultOnHand, marketMode, setMarketMode } from "./trade.js?v=trade1";
 
 export const PACKETS = [
   {
@@ -346,6 +349,53 @@ const TAG_LABEL = {
 
 export const listingHref = (id) => `listing.html?id=${encodeURIComponent(id)}`;
 
+const viewerSignedIn = () => Boolean(getAuthSession()?.email || getAuthSession()?.access_token);
+
+const openListingGate = () => {
+  let gate = document.querySelector("[data-listing-gate]");
+  if (!gate) {
+    gate = document.createElement("div");
+    gate.className = "listing-gate";
+    gate.setAttribute("data-listing-gate", "");
+    gate.setAttribute("role", "dialog");
+    gate.setAttribute("aria-modal", "true");
+    document.body.append(gate);
+    gate.addEventListener("click", (event) => {
+      if (event.target === gate || event.target.closest("[data-gate-close]")) closeListingGate();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !gate.hidden) closeListingGate();
+    });
+  }
+  const zh = document.body?.dataset.lang === "zh";
+  gate.innerHTML = `
+    <div class="listing-gate-card">
+      <button type="button" class="listing-gate-close" data-gate-close aria-label="${zh ? "關閉" : "Close"}">×</button>
+      <img src="images/logo.png" alt="" width="64" height="64">
+      <h2>${zh ? "登入後才能看這本書" : "Log in to view this listing"}</h2>
+      <p>${zh ? "登入後才能看教材、價格和取件方式。" : "Sign in to see the book, the price, and how to pick it up."}</p>
+      <a class="pdp-bag" href="market-account.html">${zh ? "登入" : "Log in"}</a>
+      <a class="listing-gate-alt" href="market-account.html?mode=register">${zh ? "註冊" : "Sign up"}</a>
+    </div>`;
+  gate.hidden = false;
+  document.body.classList.add("is-gated");
+  gate.querySelector(".pdp-bag")?.focus();
+};
+
+const closeListingGate = () => {
+  const gate = document.querySelector("[data-listing-gate]");
+  if (gate) gate.hidden = true;
+  document.body.classList.remove("is-gated");
+  if (document.querySelector("[data-pdp]")) location.href = "marketplace.html";
+};
+
+document.addEventListener("click", (event) => {
+  const link = event.target.closest("a[href*='listing.html']");
+  if (!link || viewerSignedIn()) return;
+  event.preventDefault();
+  openListingGate();
+});
+
 const currentLang = () => (document.body?.dataset.lang === "zh" ? "zh" : "en");
 
 const esc = (value) =>
@@ -371,17 +421,68 @@ const allPackets = () => {
   });
 };
 
+const sellerPackets = () => {
+  let rows = [];
+  try {
+    rows = JSON.parse(localStorage.getItem("immba-seller-books") || "[]");
+  } catch {
+    rows = [];
+  }
+  if (!Array.isArray(rows)) return [];
+  return rows
+    .filter((book) => book.status === "active")
+    .map((book) => {
+      const hand = Number(book.quantity || 1);
+      const left = availableQty(book.id, hand);
+      const blurb = book.description || `${book.author || ""} · ${book.edition || ""}`.trim();
+      const copy = {
+        title: book.title,
+        format: `${book.condition || "Used"} · campus pickup`,
+        style: book.condition || "Textbook",
+        blurb,
+        details: [book.course, book.professor, book.condition].filter(Boolean),
+        pickup: "Campus pickup after the seller confirms payment and shipment.",
+      };
+      return {
+        id: book.id,
+        sku: book.isbn || String(book.id).slice(0, 8),
+        image: book.photos?.[0] || "",
+        gallery: book.photos?.length ? book.photos : [book.photos?.[0]].filter(Boolean),
+        family: book.id,
+        price: Number(book.price) || 0,
+        tag: book.category || "elective",
+        kind: "book",
+        sold: left <= 0,
+        stock: left,
+        onHand: hand,
+        sellerId: book.sellerEmail || "local",
+        sellerName: book.sellerName || "Classmate",
+        en: copy,
+        zh: { ...copy, pickup: "賣方確認付款並出貨後，於校園面交。" },
+      };
+    });
+};
+
+const stockOf = (item) => {
+  if (item.stock != null && item.onHand != null) return item.stock;
+  return availableQty(item.id, item.sold ? 0 : defaultOnHand(item.id));
+};
+
 const cardHTML = (item) => {
   const copy = item[currentLang()];
   const lang = currentLang();
+  const left = stockOf(item);
+  const sold = left <= 0;
   const soldLabel = lang === "zh" ? "已售出" : "Sold out";
   const tag = TAG_LABEL[lang][item.tag] || "";
-  const price = item.sold ? `<span class="shop-sold">${soldLabel}</span>` : `<span class="shop-price">${money(item.price)}</span>`;
-  return `<a class="shop-card${item.sold ? " is-sold" : ""}" href="${listingHref(item.id)}">
-    <div class="shop-cover">
-      <img src="${esc(item.image)}" alt="" width="900" height="1120" loading="lazy">
-      ${item.sold ? `<span class="shop-badge">${soldLabel}</span>` : ""}
-    </div>
+  const price = sold
+    ? `<span class="shop-sold">${soldLabel}</span>`
+    : `<span class="shop-price">${money(item.price)}</span><span class="shop-stock">${lang === "zh" ? `剩 ${left} 本` : `${left} left`}</span>`;
+  const photo = item.image
+    ? `<img src="${esc(item.image)}" alt="" width="900" height="1120" loading="lazy">`
+    : `<span class="shop-cover-empty"></span>`;
+  return `<a class="shop-card${sold ? " is-sold" : ""}" href="${listingHref(item.id)}">
+    <div class="shop-cover">${photo}</div>
     <p class="shop-card-kicker">${esc(tag)}</p>
     <h2>${esc(copy.title)}</h2>
     <p class="shop-price-row">${price}</p>
@@ -395,17 +496,60 @@ export const initMarketplace = () => {
 
   const filter = root.querySelector("[data-shop-filter]");
   const sort = root.querySelector("[data-shop-sort]");
+  const search = root.querySelector("[data-shop-search]");
+  const stock = root.querySelector("[data-shop-stock]");
   const count = root.querySelector("[data-shop-count]");
   const grid = root.querySelector("[data-shop-grid]");
   const empty = root.querySelector("[data-shop-empty]");
+  const modeSlot = root.querySelector("[data-market-mode]");
   let extra = [];
 
-  const catalog = () => allPackets();
+  const catalog = () => {
+    const seen = new Set();
+    return [...sellerPackets(), ...allPackets()].filter((item) => {
+      if (seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
+  };
+
+  const paintMode = () => {
+    if (!modeSlot) return;
+    const lang = currentLang();
+    const account = root.querySelector("[data-shop-account]");
+    const bag = root.querySelector(".shop-icon-bag");
+    const signedIn = isSellerAuthed();
+    const accountLabel = signedIn ? (lang === "zh" ? "帳戶" : "Account") : lang === "zh" ? "登入" : "Log in";
+    if (account) account.setAttribute("aria-label", accountLabel);
+    const accountText = root.querySelector("[data-shop-account-label]");
+    if (accountText) accountText.textContent = accountLabel;
+    if (bag) bag.setAttribute("aria-label", lang === "zh" ? "袋子" : "Bag");
+    if (!signedIn) {
+      modeSlot.innerHTML = "";
+      return;
+    }
+    const seller = marketMode() === "seller";
+    modeSlot.innerHTML = `<div class="mode-switch" role="group" aria-label="${lang === "zh" ? "使用模式" : "Account mode"}">
+      <button type="button" data-set-mode="buyer" aria-pressed="${seller ? "false" : "true"}">${lang === "zh" ? "買家" : "Buyer"}</button>
+      <button type="button" data-set-mode="seller" aria-pressed="${seller ? "true" : "false"}">${lang === "zh" ? "賣方" : "Seller"}</button>
+    </div>`;
+  };
 
   const render = () => {
+    paintMode();
+    const lang = currentLang();
+    if (search) search.placeholder = lang === "zh" ? "搜尋書名或編號" : "Search title or SKU";
     const tag = filter?.value || "all";
     const order = sort?.value || "featured";
+    const query = (search?.value || "").trim().toLowerCase();
     let list = catalog().filter((item) => tag === "all" || item.tag === tag);
+    if (query) {
+      list = list.filter((item) => {
+        const copy = item[lang];
+        return copy.title.toLowerCase().includes(query) || String(item.sku || "").toLowerCase().includes(query);
+      });
+    }
+    if (stock?.value === "in") list = list.filter((item) => stockOf(item) > 0);
 
     if (order === "az") {
       list = [...list].sort((a, b) => a[currentLang()].title.localeCompare(b[currentLang()].title));
@@ -428,7 +572,18 @@ export const initMarketplace = () => {
 
   filter?.addEventListener("change", render);
   sort?.addEventListener("change", render);
+  stock?.addEventListener("change", render);
+  search?.addEventListener("input", render);
+  modeSlot?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-set-mode]");
+    if (!button) return;
+    setMarketMode(button.getAttribute("data-set-mode"));
+    if (button.getAttribute("data-set-mode") === "seller") location.href = "market-account.html";
+    else render();
+  });
   window.addEventListener("immba:lang", render);
+  window.addEventListener("immba:trade", render);
+  window.addEventListener("immba:mode", render);
   window.addEventListener("immba:listings", () => {
     void listCloudListings().then((rows) => {
       extra = extraCache = rows;
@@ -445,6 +600,7 @@ export const initMarketplace = () => {
 export const initListing = () => {
   const root = document.querySelector("[data-pdp]");
   if (!root || root.dataset.bound === "1") return;
+  if (!viewerSignedIn()) openListingGate();
   root.dataset.bound = "1";
 
   const params = new URLSearchParams(window.location.search);
@@ -472,6 +628,8 @@ export const initListing = () => {
     const lang = currentLang();
     const copy = item[lang];
     const tagLabel = TAG_LABEL[lang][item.tag] || "";
+    const left = stockOf(item);
+    const soldOut = left <= 0;
     const soldLabel = lang === "zh" ? "已售出" : "Sold out";
     const contact = lang === "zh" ? "寫信給賣方" : "Message the seller";
     const bagLabel = lang === "zh" ? "加入袋子" : "Add to bag";
@@ -525,7 +683,7 @@ export const initListing = () => {
 
     const mail = `mailto:imMBA@mail.fju.edu.tw?subject=${encodeURIComponent(`Marketplace: ${copy.title}`)}`;
     const bagHref = `cart.html?listing=${encodeURIComponent(item.id)}&qty=${qty}`;
-    const cta = item.sold
+    const cta = soldOut
       ? `<button type="button" class="pdp-bag" disabled>${soldLabel}</button>`
       : `<a class="pdp-bag" href="${bagHref}">${bagLabel}</a>
          <a class="pdp-mail" href="${mail}">${contact}</a>`;
@@ -534,23 +692,24 @@ export const initListing = () => {
       info.innerHTML = `
         <p class="pdp-kicker">${tagLabel}</p>
         <h1 class="pdp-title">${esc(copy.title)}</h1>
-        <p class="pdp-price">${item.sold ? soldLabel : money(item.price)}</p>
+        <p class="pdp-price">${soldOut ? soldLabel : money(item.price)}</p>
+        <p class="pdp-stock">${soldOut ? soldLabel : lang === "zh" ? `可售 ${left}` : `${left} available`}</p>
         <p class="pdp-lead">${esc(copy.blurb)}</p>
         <p class="pdp-sku">${skuLabel} ${esc(item.sku)}</p>
         ${variantRow}
         <div class="pdp-field">
           <p class="pdp-label">${qtyLabel}</p>
           <div class="pdp-qty">
-            <button type="button" data-qty="-1" ${qty <= 1 || item.sold ? "disabled" : ""} aria-label="Decrease quantity">−</button>
-            <span>${qty}</span>
-            <button type="button" data-qty="1" ${item.sold || item.kind === "digital" || qty >= 3 ? "disabled" : ""} aria-label="Increase quantity">+</button>
+            <button type="button" data-qty="-1" ${qty <= 1 || soldOut ? "disabled" : ""} aria-label="Decrease quantity">−</button>
+            <span class="trade-money">${qty}</span>
+            <button type="button" data-qty="1" ${soldOut || qty >= left ? "disabled" : ""} aria-label="Increase quantity">+</button>
           </div>
         </div>
         <div class="pdp-actions">${cta}</div>
         <ul class="pdp-notes">
           <li>${esc(copy.format)}</li>
           <li>${lang === "zh" ? "賣方為 imMBA 同學" : "Sold by an imMBA student"}</li>
-          <li>${lang === "zh" ? "結帳在 Stripe 上線前不會扣款" : "Payment stays off until Stripe is live"}</li>
+          <li>${lang === "zh" ? "下單後由賣方確認付款，再安排出貨" : "After you order, the seller confirms payment, then shipment"}</li>
         </ul>`;
     }
 
@@ -573,9 +732,9 @@ export const initListing = () => {
 
     if (dock) {
       dock.hidden = false;
-      dock.innerHTML = item.sold
+      dock.innerHTML = soldOut
         ? `<strong>${soldLabel}</strong><button type="button" class="pdp-bag" disabled>${soldLabel}</button>`
-        : `<strong>${money(item.price)}</strong><a class="pdp-bag" href="${bagHref}">${bagLabel}</a>`;
+        : `<strong class="trade-money">${money(item.price)}</strong><a class="pdp-bag" href="${bagHref}">${bagLabel}</a>`;
     }
 
     const also = allPackets()
@@ -596,8 +755,8 @@ export const initListing = () => {
       return;
     }
     const delta = event.target.closest("[data-qty]");
-    if (delta && item && !item.sold) {
-      qty = Math.min(3, Math.max(1, qty + Number(delta.getAttribute("data-qty"))));
+    if (delta && item && stockOf(item) > 0) {
+      qty = Math.min(stockOf(item), Math.max(1, qty + Number(delta.getAttribute("data-qty"))));
       render();
     }
   });

@@ -316,7 +316,8 @@ export const initLoginForm = () => {
   };
   modeButtons.forEach((btn) => btn.addEventListener("click", () => applyMode(btn.dataset.loginMode)));
   window.addEventListener("immba:lang", () => applyMode(form.dataset.mode || "signin"));
-  applyMode("signin");
+  const requested = new URLSearchParams(location.search).get("mode");
+  applyMode(requested === "register" ? "register" : "signin");
 
   void consumeAuthHash().then((session) => {
     if (session?.recovery) {

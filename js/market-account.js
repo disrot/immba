@@ -1,6 +1,7 @@
 import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=notice4";
 import { ackRemovedNotices, listRemovedNotices } from "./listings-store.js?v=notice3";
-import { initSellerHub } from "./seller-hub.js?v=desk1";
+import { initSellerHub } from "./seller-hub.js?v=trade1";
+import { marketMode, setMarketMode } from "./trade.js?v=trade1";
 
 const esc = (value) =>
   String(value ?? "")
@@ -20,27 +21,45 @@ export const initMarketAccount = () => {
   const seller = isSellerAuthed();
   const zh = () => document.body?.dataset.lang === "zh";
 
+  const modeSwitch = () => {
+    const buyer = marketMode() !== "seller";
+    return `<div class="mode-switch" role="group" aria-label="${zh() ? "買家或賣方" : "Buyer or seller"}">
+      <button type="button" data-account-mode="buyer" aria-pressed="${buyer ? "true" : "false"}">${zh() ? "買家" : "Buyer"}</button>
+      <button type="button" data-account-mode="seller" aria-pressed="${buyer ? "false" : "true"}">${zh() ? "賣方" : "Seller"}</button>
+    </div>`;
+  };
+
   if (bar && authBox) {
     bar.hidden = !seller;
     bar.innerHTML = seller
       ? `<p>${esc(session.email)}</p>
+         ${modeSwitch()}
          <span data-market-bell-slot></span>
          <a class="btn btn-ghost" href="marketplace.html" data-i18n="market.backShop">Back to Marketplace</a>
          <button type="button" class="btn btn-ghost" data-market-out>Sign out</button>`
       : "";
   } else if (bar) {
+    bar.hidden = !seller;
     bar.innerHTML = seller
       ? `<p>${esc(session.email)}</p>
          <span data-market-bell-slot></span>
-         <a class="btn btn-primary" href="market-account.html" data-i18n="market.desk">Seller desk</a>
+         <a class="btn btn-ghost" href="market-account.html">${zh() ? "帳號" : "Account"}</a>
          <button type="button" class="btn btn-ghost" data-market-out>Sign out</button>`
-      : `<p data-i18n="market.sellHint">Students can register as a marketplace seller to post a listing.</p>
-         <a class="btn btn-primary" href="market-account.html" data-i18n="market.sellerIn">Seller sign in</a>`;
+      : "";
   }
 
   if (authBox) authBox.hidden = seller;
   if (desk) desk.hidden = !seller;
   if (form) form.hidden = !seller;
+
+  bar?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-account-mode]");
+    if (!button || !bar.contains(button)) return;
+    setMarketMode(button.getAttribute("data-account-mode"));
+    bar.querySelectorAll("[data-account-mode]").forEach((item) => {
+      item.setAttribute("aria-pressed", item === button ? "true" : "false");
+    });
+  });
 
   document.querySelector("[data-market-out]")?.addEventListener("click", () => {
     logoutAdmin();
@@ -106,4 +125,51 @@ export const initMarketAccount = () => {
   });
 
   if (seller) initSellerHub();
+
+  const story = document.querySelector("[data-seller-story]");
+  if (story) {
+    story.hidden = seller;
+    if (!seller) {
+      const slides = [...story.querySelectorAll("[data-slide]")];
+      const tabs = [...story.querySelectorAll("[data-story]")];
+      const pauseBtn = story.querySelector("[data-story-pause]");
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let index = 0;
+      let paused = reduce;
+      let timer = 0;
+      const label = (playing) => {
+        pauseBtn?.setAttribute("aria-pressed", playing ? "false" : "true");
+        pauseBtn?.setAttribute("aria-label", zh() ? (playing ? "暫停" : "播放") : playing ? "Pause" : "Play");
+      };
+      const show = (next) => {
+        index = (next + slides.length) % slides.length;
+        slides.forEach((el, i) => el.classList.toggle("is-on", i === index));
+        tabs.forEach((el, i) => {
+          el.classList.toggle("is-on", i === index);
+          el.classList.toggle("is-done", i < index);
+          el.setAttribute("aria-selected", i === index ? "true" : "false");
+          const bar = el.querySelector("i");
+          if (bar && i === index) {
+            bar.style.animation = "none";
+            void bar.offsetWidth;
+            bar.style.animation = "";
+          }
+        });
+        window.clearTimeout(timer);
+        if (!paused) timer = window.setTimeout(() => show(index + 1), 6000);
+      };
+      tabs.forEach((tab) => tab.addEventListener("click", () => show(Number(tab.dataset.story))));
+      pauseBtn?.addEventListener("click", () => {
+        paused = !paused;
+        story.classList.toggle("is-paused", paused);
+        label(!paused);
+        window.clearTimeout(timer);
+        if (!paused) timer = window.setTimeout(() => show(index + 1), 6000);
+      });
+      if (paused) story.classList.add("is-paused");
+      label(!paused);
+      show(0);
+      window.addEventListener("immba:lang", () => label(!paused));
+    }
+  }
 };
