@@ -5,7 +5,7 @@ import { initGallery, refreshGalleryCaptions } from "./gallery.js";
 import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage, watchOfficeAccess } from "./auth.js?v=gate1";
 import { initFacultyDirectory } from "./faculty.js?v=notice3";
 import { initMarketplace, initListing } from "./marketplace.js?v=trade6";
-import { initMarketAccount } from "./market-account.js?v=trade6";
+import { initMarketAccount } from "./market-account.js?v=trade9";
 import { initAnalytics } from "./analytics.js";
 import { initAdminDash } from "./admin-dash.js?v=pages1";
 import { initPageHero } from "./page-hero.js?v=shop1";

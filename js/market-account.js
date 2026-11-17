@@ -40,11 +40,14 @@ export const initMarketAccount = () => {
       : "";
   } else if (bar) {
     bar.hidden = !seller;
+    const outLabel = zh() ? "登出" : "Sign out";
     bar.innerHTML = seller
-      ? `<p>${esc(session.email)}</p>
+      ? `<p class="shop-account-mail">${esc(session.email)}</p>
          <span data-market-bell-slot></span>
-         <a class="btn btn-ghost" href="market-account.html">${zh() ? "帳號" : "Account"}</a>
-         <button type="button" class="btn btn-ghost" data-market-out>Sign out</button>`
+         <button type="button" class="shop-icon shop-icon-out" data-market-out aria-label="${outLabel}">
+           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5.5H7.8A1.8 1.8 0 0 0 6 7.3v9.4a1.8 1.8 0 0 0 1.8 1.8H10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12.5 12H19M16.2 8.8 19.2 12l-3 3.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+           <span class="trade-step-tip">${outLabel}</span>
+         </button>`
       : "";
   }
 
