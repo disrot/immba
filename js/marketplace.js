@@ -1,7 +1,8 @@
 import { isSellerAuthed } from "./auth.js?v=notice4";
-import { getAuthSession } from "./supabase.js?v=secure1";
+import { getAuthSession, rpc } from "./supabase.js?v=secure1";
 import { listCloudListings } from "./listings-store.js?v=notice3";
-import { availableQty, defaultOnHand, marketMode, setMarketMode } from "./trade.js?v=trade1";
+import { BUYER_ITEM_FEE, DELIVERY_FEE, availableQty, defaultOnHand, marketMode, releaseExpired, setMarketMode } from "./trade.js?v=hold1";
+import { rotatedPackets } from "./shelf-rotation.js?v=pass1";
 
 export const PACKETS = [
   {
@@ -347,6 +348,46 @@ const TAG_LABEL = {
   zh: { core: "核心課程", spotlight: "焦點課程", elective: "選修" },
 };
 
+const PACKET_FACTS = {
+  ibm: ["IBM", "Used", "二手"],
+  ethics: ["ETH", "Digital", "數位"],
+  strategy: ["STR", "Digital", "數位"],
+  supply: ["OSC", "Used", "二手"],
+  marketing: ["MKT", "Digital", "數位"],
+  org: ["ORG", "Digital", "數位"],
+  finance: ["FIN", "Used", "二手"],
+  hr: ["HRM", "Digital", "數位"],
+  analytics: ["BAN", "Digital", "數位"],
+  ai: ["DIG", "Digital", "數位"],
+  "ibm-used": ["IBM", "Used", "二手"],
+  thesis: ["RES", "Digital", "數位"],
+};
+
+const COND_ZH = {
+  New: "全新",
+  "Like New": "近全新",
+  Good: "良好",
+  Fair: "普通",
+  Worn: "有使用痕跡",
+  Used: "二手",
+  Digital: "數位",
+  Item: "物品",
+};
+
+const withFacts = (item) => {
+  const facts = PACKET_FACTS[item.id];
+  if (!facts) return item;
+  const [course, condition, conditionZh] = facts;
+  return {
+    ...item,
+    course: item.course || course,
+    condition: item.condition || condition,
+    conditionZh: item.conditionZh || conditionZh,
+    firm: item.firm !== false,
+    sellerName: item.sellerName || "A classmate",
+  };
+};
+
 export const listingHref = (id) => `listing.html?id=${encodeURIComponent(id)}`;
 
 const viewerSignedIn = () => Boolean(getAuthSession()?.email || getAuthSession()?.access_token);
@@ -410,11 +451,15 @@ const money = (n) =>
 
 let extraCache = [];
 
-const packetById = (id) => extraCache.find((item) => item.id === id) || PACKETS.find((item) => item.id === id);
+const packetById = (id) =>
+  sellerPackets().find((item) => item.id === id) ||
+  rotatedPackets().find((item) => item.id === id) ||
+  extraCache.find((item) => item.id === id) ||
+  PACKETS.map(withFacts).find((item) => item.id === id);
 
 const allPackets = () => {
   const seen = new Set();
-  return [...extraCache, ...PACKETS].filter((item) => {
+  return [...extraCache, ...PACKETS.map(withFacts)].filter((item) => {
     if (seen.has(item.id)) return false;
     seen.add(item.id);
     return true;
@@ -434,14 +479,24 @@ const sellerPackets = () => {
     .map((book) => {
       const hand = Number(book.quantity || 1);
       const left = availableQty(book.id, hand);
-      const blurb = book.description || `${book.author || ""} · ${book.edition || ""}`.trim();
+      const note = String(book.description || "").trim();
+      const blurb = note || [book.author, book.edition].filter((part) => String(part || "").trim()).join(" · ");
       const copy = {
         title: book.title,
-        format: `${book.condition || "Used"} · campus pickup`,
+        format:
+          book.kind === "item"
+            ? book.delivery
+              ? "Item · delivery"
+              : "Item · campus pickup"
+            : book.delivery
+              ? `${book.condition || "Used"} · delivery`
+              : `${book.condition || "Used"} · campus pickup`,
         style: book.condition || "Textbook",
         blurb,
         details: [book.course, book.professor, book.condition].filter(Boolean),
-        pickup: "Campus pickup after the seller confirms payment and shipment.",
+        pickup: book.delivery
+          ? "Campus pickup, or delivery for NT$60 if you leave it checked in the bag."
+          : "Campus pickup after the seller confirms payment and shipment.",
       };
       return {
         id: book.id,
@@ -451,14 +506,29 @@ const sellerPackets = () => {
         family: book.id,
         price: Number(book.price) || 0,
         tag: book.category || "elective",
-        kind: "book",
+        kind: book.kind === "item" ? "item" : "book",
         sold: left <= 0,
         stock: left,
         onHand: hand,
         sellerId: book.sellerEmail || "local",
         sellerName: book.sellerName || "Classmate",
+        sellerPhoto: book.sellerPhoto || "",
+        course: book.course || "",
+        professor: book.professor || "",
+        condition: book.condition || (book.kind === "item" ? "Item" : "Used"),
+        firm: book.firm !== false,
+        delivery: Boolean(book.delivery),
+        bumped: Boolean(book.bumped),
+        posted: true,
+        author: book.author || "",
+        edition: book.edition || "",
+        isbn: book.isbn || "",
+        description: note,
         en: copy,
-        zh: { ...copy, pickup: "賣方確認付款並出貨後，於校園面交。" },
+        zh: {
+          ...copy,
+          pickup: book.delivery ? "可校園面交。若在袋子裡保留外送，另付 NT$60。" : "賣方確認付款並出貨後，於校園面交。",
+        },
       };
     });
 };
@@ -468,6 +538,85 @@ const stockOf = (item) => {
   return availableQty(item.id, item.sold ? 0 : defaultOnHand(item.id));
 };
 
+const bumpMark = (lang) =>
+  `<span class="shop-bump" aria-label="${lang === "zh" ? "已置頂" : "Bumped"}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2.2 4.6 13.4h6.1l-.9 8.4 9.6-12.6h-6.3z" fill="currentColor"/></svg></span>`;
+
+const conditionText = (item, lang) => {
+  if (lang === "zh") return item.conditionZh || COND_ZH[item.condition] || item.condition || "";
+  return item.condition || "";
+};
+
+const courseText = (item, lang) => {
+  const course = String(item.course || "").trim();
+  const title = String(item[lang]?.title || "").trim();
+  if (!course || course.toLowerCase() === title.toLowerCase()) return "";
+  return course;
+};
+
+const cardMeta = (item, lang) => [conditionText(item, lang), courseText(item, lang)].filter(Boolean).join(" · ");
+
+const sellerLabel = (item, lang) => {
+  const name = String(item.sellerName || "").trim();
+  const generic = !name || ["classmate", "a classmate", "cohort shelf", "immba shelf", "shelf", "local"].includes(name.toLowerCase());
+  if (generic) return lang === "zh" ? "一位同學" : "a classmate";
+  return name;
+};
+
+const localBagRows = () => {
+  try {
+    const rows = JSON.parse(localStorage.getItem("immba-local-bag") || "[]");
+    if (!Array.isArray(rows)) return [];
+    const now = Date.now();
+    return rows.filter((row) => !row.holdUntil || Number(row.holdUntil) > now);
+  } catch {
+    return [];
+  }
+};
+
+let bagServerSync = null;
+
+const paintBagCount = (count) => {
+  const n = Math.max(0, Number(count) || 0);
+  const lang = currentLang();
+  document.querySelectorAll(".shop-icon-bag").forEach((bag) => {
+    let badge = bag.querySelector("[data-bag-count]");
+    if (!badge) {
+      badge = document.createElement("span");
+      badge.className = "bag-badge";
+      badge.setAttribute("data-bag-count", "");
+      bag.append(badge);
+    }
+    badge.hidden = n <= 0;
+    badge.textContent = n > 9 ? "9+" : String(n);
+    bag.setAttribute("aria-label", lang === "zh" ? (n ? `袋子，${n} 件` : "袋子") : n ? `Bag, ${n} ${n === 1 ? "item" : "items"}` : "Bag");
+  });
+};
+
+export const paintBagBadge = async () => {
+  const rows = localBagRows();
+  const local = rows.reduce((sum, row) => sum + Math.max(0, Number(row.quantity) || 0), 0);
+  const seen = new Set(rows.map((row) => row.listing_id));
+  paintBagCount(local);
+  if (!getAuthSession()?.access_token || bagServerSync) return;
+  bagServerSync = rpc("cart_get")
+    .then((cart) => {
+      const extra = (cart?.items || []).reduce((sum, item) => {
+        if (seen.has(item.listing_id)) return sum;
+        return sum + Math.max(0, Number(item.quantity) || 0);
+      }, 0);
+      paintBagCount(local + extra);
+    })
+    .catch(() => {
+      bagServerSync = null;
+    });
+};
+
+const prettySeller = (item, lang) => {
+  const name = sellerLabel(item, lang);
+  if (name === "a classmate") return lang === "zh" ? "一位同學" : "A classmate";
+  return name;
+};
+
 const cardHTML = (item) => {
   const copy = item[currentLang()];
   const lang = currentLang();
@@ -475,17 +624,23 @@ const cardHTML = (item) => {
   const sold = left <= 0;
   const soldLabel = lang === "zh" ? "已售出" : "Sold out";
   const tag = TAG_LABEL[lang][item.tag] || "";
-  const price = sold
-    ? `<span class="shop-sold">${soldLabel}</span>`
-    : `<span class="shop-price">${money(item.price)}</span><span class="shop-stock">${lang === "zh" ? `剩 ${left} 本` : `${left} left`}</span>`;
+  const meta = cardMeta(item, lang);
+  const who = prettySeller(item, lang);
+  const byline = item.posted ? (lang === "zh" ? `${who} 刊登` : `Posted by ${who}`) : who;
+  const price = sold ? `<span class="shop-sold">${soldLabel}</span>` : `<span class="shop-price">${money(item.price)}</span>`;
   const photo = item.image
     ? `<img src="${esc(item.image)}" alt="" width="900" height="1120" loading="lazy">`
     : `<span class="shop-cover-empty"></span>`;
-  return `<a class="shop-card${sold ? " is-sold" : ""}" href="${listingHref(item.id)}">
-    <div class="shop-cover">${photo}</div>
-    <p class="shop-card-kicker">${esc(tag)}</p>
+  return `<a class="shop-card${sold ? " is-sold" : ""}${item.posted ? " is-posted" : ""}" href="${listingHref(item.id)}">
+    <div class="shop-cover">${item.bumped ? bumpMark(lang) : ""}${photo}</div>
+    <div class="shop-card-top">
+      <p class="shop-card-kicker">${esc(tag)}</p>
+      <p class="shop-price-row">${price}</p>
+    </div>
     <h2>${esc(copy.title)}</h2>
-    <p class="shop-price-row">${price}</p>
+    <p class="shop-seller">${item.sellerPhoto ? `<img src="${esc(item.sellerPhoto)}" alt="">` : ""}<span>${esc(byline)}</span></p>
+    ${meta ? `<p class="shop-meta">${esc(meta)}</p>` : ""}
+    ${sold ? "" : `<p class="shop-stock">${lang === "zh" ? `剩 ${left}` : `${left} left`}</p>`}
   </a>`;
 };
 
@@ -494,19 +649,27 @@ export const initMarketplace = () => {
   if (!root || root.dataset.bound === "1") return;
   root.dataset.bound = "1";
 
-  const filter = root.querySelector("[data-shop-filter]");
   const sort = root.querySelector("[data-shop-sort]");
   const search = root.querySelector("[data-shop-search]");
-  const stock = root.querySelector("[data-shop-stock]");
   const count = root.querySelector("[data-shop-count]");
   const grid = root.querySelector("[data-shop-grid]");
   const empty = root.querySelector("[data-shop-empty]");
   const modeSlot = root.querySelector("[data-market-mode]");
+  const pager = root.querySelector("[data-shop-pager]");
+  const rail = root.querySelector("[data-shop-rail]");
+  const heading = root.querySelector("[data-shop-heading]");
+  const trust = root.querySelector("[data-shop-trust]");
   let extra = [];
+  let page = 1;
+  let category = "all";
+  let condition = "all";
+  let priceBand = "all";
+  let railLang = "";
+  const pageSize = 9;
 
   const catalog = () => {
     const seen = new Set();
-    return [...sellerPackets(), ...allPackets()].filter((item) => {
+    return [...sellerPackets(), ...rotatedPackets(), ...allPackets()].filter((item) => {
       if (seen.has(item.id)) return false;
       seen.add(item.id);
       return true;
@@ -517,13 +680,12 @@ export const initMarketplace = () => {
     if (!modeSlot) return;
     const lang = currentLang();
     const account = root.querySelector("[data-shop-account]");
-    const bag = root.querySelector(".shop-icon-bag");
     const signedIn = isSellerAuthed();
     const accountLabel = signedIn ? (lang === "zh" ? "帳戶" : "Account") : lang === "zh" ? "登入" : "Log in";
     if (account) account.setAttribute("aria-label", accountLabel);
     const accountText = root.querySelector("[data-shop-account-label]");
     if (accountText) accountText.textContent = accountLabel;
-    if (bag) bag.setAttribute("aria-label", lang === "zh" ? "袋子" : "Bag");
+    void paintBagBadge();
     if (!signedIn) {
       modeSlot.innerHTML = "";
       return;
@@ -535,45 +697,139 @@ export const initMarketplace = () => {
     </div>`;
   };
 
-  const render = () => {
-    paintMode();
+  const paintRail = () => {
+    if (!rail) return;
     const lang = currentLang();
-    if (search) search.placeholder = lang === "zh" ? "搜尋書名或編號" : "Search title or SKU";
-    const tag = filter?.value || "all";
-    const order = sort?.value || "featured";
-    const query = (search?.value || "").trim().toLowerCase();
-    let list = catalog().filter((item) => tag === "all" || item.tag === tag);
-    if (query) {
-      list = list.filter((item) => {
-        const copy = item[lang];
-        return copy.title.toLowerCase().includes(query) || String(item.sku || "").toLowerCase().includes(query);
-      });
+    const t = (en, zh) => (lang === "zh" ? zh : en);
+    const options = (group, rows, current) =>
+      rows
+        .map(
+          ([value, en, zh]) =>
+            `<button type="button" data-shop-pick="${group}" data-value="${value}" aria-pressed="${current === value ? "true" : "false"}">${t(en, zh)}</button>`
+        )
+        .join("");
+    const block = (legend, group, rows, current) =>
+      `<fieldset><legend>${legend}</legend>${options(group, rows, current)}</fieldset>`;
+    if (railLang !== lang) {
+      railLang = lang;
+      rail.innerHTML = [
+        block(t("Category", "分類"), "cat", [
+          ["all", "All", "全部"],
+          ["core", "Core", "核心課程"],
+          ["spotlight", "Spotlight", "焦點課程"],
+          ["elective", "Elective", "選修"],
+        ], category),
+        block(t("Condition", "書況"), "cond", [
+          ["all", "All", "全部"],
+          ["Like New", "Like New", "近全新"],
+          ["Good", "Good", "良好"],
+          ["Fair", "Fair", "普通"],
+          ["Used", "Used", "二手"],
+          ["Digital", "Digital", "數位"],
+        ], condition),
+        block(t("Price", "價格"), "price", [
+          ["all", "All", "全部"],
+          ["under", "Under NT$150", "NT$150 以下"],
+          ["mid", "NT$150–300", "NT$150–300"],
+          ["over", "Over NT$300", "NT$300 以上"],
+        ], priceBand),
+      ].join("");
+      return;
     }
-    if (stock?.value === "in") list = list.filter((item) => stockOf(item) > 0);
-
-    if (order === "az") {
-      list = [...list].sort((a, b) => a[currentLang()].title.localeCompare(b[currentLang()].title));
-    } else if (order === "za") {
-      list = [...list].sort((a, b) => b[currentLang()].title.localeCompare(a[currentLang()].title));
-    } else if (order === "price-asc") {
-      list = [...list].sort((a, b) => a.price - b.price);
-    } else if (order === "price-desc") {
-      list = [...list].sort((a, b) => b.price - a.price);
-    }
-
-    const n = list.length;
-    if (count) {
-      count.textContent = currentLang() === "zh" ? `${n} 件商品` : `${n} items`;
-    }
-
-    grid.innerHTML = list.map(cardHTML).join("");
-    if (empty) empty.hidden = list.length > 0;
+    rail.querySelectorAll("[data-shop-pick]").forEach((button) => {
+      const group = button.getAttribute("data-shop-pick");
+      const value = button.getAttribute("data-value");
+      const current = group === "cat" ? category : group === "cond" ? condition : priceBand;
+      button.setAttribute("aria-pressed", current === value ? "true" : "false");
+    });
   };
 
-  filter?.addEventListener("change", render);
-  sort?.addEventListener("change", render);
-  stock?.addEventListener("change", render);
-  search?.addEventListener("input", render);
+  const priceOk = (price) =>
+    priceBand === "under" ? price < 150 : priceBand === "mid" ? price >= 150 && price <= 300 : priceBand === "over" ? price > 300 : true;
+
+  const render = ({ resetPage = false } = {}) => {
+    if (resetPage) page = 1;
+    releaseExpired();
+    paintMode();
+    paintRail();
+    const lang = currentLang();
+    if (search) search.placeholder = lang === "zh" ? "搜尋書名、課程或老師" : "Search title, course, or professor";
+    if (trust) trust.textContent = lang === "zh" ? "款項直接付給同學。" : "You pay the classmate directly.";
+    if (heading) heading.textContent = lang === "zh" ? "這一屆的教材" : "From this cohort";
+    const order = sort?.value || "featured";
+    const query = (search?.value || "").trim().toLowerCase();
+    let list = catalog().filter(
+      (item) => stockOf(item) > 0 && (category === "all" || item.tag === category) && (condition === "all" || item.condition === condition) && priceOk(item.price)
+    );
+    if (query) {
+      list = list.filter((item) => {
+        const copy = item[lang] || item.en || {};
+        const hay = [copy.title, item.en?.title, item.zh?.title, item.sku, item.course, item.professor, item.sellerName, copy.blurb]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return hay.includes(query);
+      });
+    }
+
+    const compare =
+      order === "az"
+        ? (a, b) => a[lang].title.localeCompare(b[lang].title)
+        : order === "za"
+          ? (a, b) => b[lang].title.localeCompare(a[lang].title)
+          : order === "price-asc"
+            ? (a, b) => a.price - b.price
+            : order === "price-desc"
+              ? (a, b) => b.price - a.price
+              : () => 0;
+    list = [...list].sort((a, b) => Number(Boolean(b.bumped)) - Number(Boolean(a.bumped)) || compare(a, b));
+
+    const n = list.length;
+    const pages = Math.max(1, Math.ceil(n / pageSize));
+    page = Math.min(page, pages);
+    if (count) {
+      const pageLabel = pages > 1 ? (lang === "zh" ? ` · 第 ${page} / ${pages} 頁` : ` · page ${page} of ${pages}`) : "";
+      const noun = lang === "zh" ? "件商品" : n === 1 ? "item" : "items";
+      count.textContent = lang === "zh" ? `${n} ${noun}${pageLabel}` : `${n} ${noun}${pageLabel}`;
+    }
+
+    const view = list.slice((page - 1) * pageSize, page * pageSize);
+    grid.innerHTML = view.map(cardHTML).join("");
+    if (empty) empty.hidden = list.length > 0;
+    if (pager) {
+      pager.hidden = pages < 2;
+      const button = (label, value, current = false, disabled = false) =>
+        `<button type="button" data-shop-page="${value}" ${current ? 'aria-current="page"' : ""} ${disabled ? "disabled" : ""}>${label}</button>`;
+      pager.innerHTML = [
+        button(lang === "zh" ? "上一頁" : "Previous", "prev", false, page === 1),
+        ...Array.from({ length: pages }, (_, index) => button(String(index + 1), String(index + 1), page === index + 1)),
+        button(lang === "zh" ? "下一頁" : "Next", "next", false, page === pages),
+      ].join("");
+    }
+  };
+
+  sort?.addEventListener("change", () => render({ resetPage: true }));
+  search?.addEventListener("input", () => render({ resetPage: true }));
+  rail?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-shop-pick]");
+    if (!button) return;
+    const group = button.getAttribute("data-shop-pick");
+    const value = button.getAttribute("data-value");
+    if (group === "cat") category = value;
+    if (group === "cond") condition = value;
+    if (group === "price") priceBand = value;
+    render({ resetPage: true });
+  });
+  pager?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-shop-page]");
+    if (!button || button.disabled) return;
+    const value = button.getAttribute("data-shop-page");
+    if (value === "prev") page -= 1;
+    else if (value === "next") page += 1;
+    else page = Number(value) || 1;
+    render();
+    root.querySelector(".shop-results-bar")?.scrollIntoView({ block: "nearest" });
+  });
   modeSlot?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-set-mode]");
     if (!button) return;
@@ -595,6 +851,7 @@ export const initMarketplace = () => {
     render();
   });
   render();
+  window.setInterval(() => render(), 30000);
 };
 
 export const initListing = () => {
@@ -649,9 +906,9 @@ export const initListing = () => {
     }
 
     if (stage) {
-      stage.innerHTML = activeSrc
-        ? `<img src="${esc(activeSrc)}" alt="${esc(copy.title)}" width="1200" height="1500">`
-        : "";
+      stage.innerHTML = `${item.bumped ? bumpMark(lang) : ""}${
+        activeSrc ? `<img src="${esc(activeSrc)}" alt="${esc(copy.title)}" width="1200" height="1500">` : ""
+      }`;
     }
     if (thumbs) {
       thumbs.hidden = shots.length < 2;
@@ -688,14 +945,39 @@ export const initListing = () => {
       : `<a class="pdp-bag" href="${bagHref}">${bagLabel}</a>
          <a class="pdp-mail" href="${mail}">${contact}</a>`;
 
+    const named = sellerLabel(item, lang);
+    const who = named === "a classmate" ? (lang === "zh" ? "一位同學" : "a classmate") : named;
+    const initial = who.replace(/^A /, "").slice(0, 1).toUpperCase();
+    const firmLine = item.firm === false ? (lang === "zh" ? "價格可議" : "Negotiable") : lang === "zh" ? "不二價" : "Firm price";
+    const payLine = lang === "zh" ? "款項直接付給這位同學。" : "You pay this classmate directly.";
+    const postedNote = String(item.description || copy.blurb || "").trim();
+    const facts = [
+      [lang === "zh" ? "課程" : "Course", item.course],
+      [lang === "zh" ? "老師" : "Professor", item.professor],
+      [lang === "zh" ? "書況" : "Condition", conditionText(item, lang)],
+      [lang === "zh" ? "作者" : "Author", item.author],
+      [lang === "zh" ? "版本" : "Edition", item.edition],
+      ["ISBN", item.isbn],
+    ].filter(([, value]) => String(value || "").trim());
+
     if (info) {
       info.innerHTML = `
         <p class="pdp-kicker">${tagLabel}</p>
         <h1 class="pdp-title">${esc(copy.title)}</h1>
         <p class="pdp-price">${soldOut ? soldLabel : money(item.price)}</p>
+        ${
+          soldOut
+            ? ""
+            : `<p class="pdp-fee">${lang === "zh" ? `結帳每本服務費 NT$${BUYER_ITEM_FEE}${item.delivery ? `，外送 NT$${DELIVERY_FEE}` : ""}` : `NT$${BUYER_ITEM_FEE} service fee per book at checkout${item.delivery ? `. Delivery is NT$${DELIVERY_FEE}` : ""}`}</p>`
+        }
+        <div class="pdp-seller">
+          <span class="pdp-avatar" aria-hidden="true">${item.sellerPhoto ? `<img src="${esc(item.sellerPhoto)}" alt="">` : esc(initial)}</span>
+          <div>
+            <p>${lang === "zh" ? `賣方是${who}` : `Sold by ${who}`}</p>
+            <p>${esc(firmLine)}<br>${esc(payLine)}</p>
+          </div>
+        </div>
         <p class="pdp-stock">${soldOut ? soldLabel : lang === "zh" ? `可售 ${left}` : `${left} available`}</p>
-        <p class="pdp-lead">${esc(copy.blurb)}</p>
-        <p class="pdp-sku">${skuLabel} ${esc(item.sku)}</p>
         ${variantRow}
         <div class="pdp-field">
           <p class="pdp-label">${qtyLabel}</p>
@@ -706,28 +988,19 @@ export const initListing = () => {
           </div>
         </div>
         <div class="pdp-actions">${cta}</div>
-        <ul class="pdp-notes">
-          <li>${esc(copy.format)}</li>
-          <li>${lang === "zh" ? "賣方為 imMBA 同學" : "Sold by an imMBA student"}</li>
-          <li>${lang === "zh" ? "下單後由賣方確認付款，再安排出貨" : "After you order, the seller confirms payment, then shipment"}</li>
-        </ul>`;
+        <p class="pdp-sku">${skuLabel} ${esc(item.sku)}</p>`;
     }
 
     if (story) {
       story.innerHTML = `
-        <details open>
-          <summary>${lang === "zh" ? "商品說明" : "Product details"}</summary>
-          <p>${esc(copy.blurb)}</p>
-          <ul class="pdp-bullets">${(copy.details || []).map((line) => `<li>${esc(line)}</li>`).join("")}</ul>
-        </details>
-        <details>
-          <summary>${lang === "zh" ? "取件" : "Order details"}</summary>
-          <p>${esc(copy.pickup)}</p>
-        </details>
-        <details>
-          <summary>${lang === "zh" ? "imMBA 的不同" : "The imMBA difference"}</summary>
-          <p>${lang === "zh" ? "教材跟著英語授課的課綱走，由同學交給下一屆，面交地點多在管理學院。" : "Materials follow the English-taught syllabus and move from one cohort to the next, usually by hand at the College of Management."}</p>
-        </details>`;
+        <h2>${item.posted ? (lang === "zh" ? `${esc(who)} 寫下的內容` : `What ${esc(who)} posted`) : lang === "zh" ? "商品說明" : "Product details"}</h2>
+        ${postedNote ? `<p class="pdp-lead">${esc(postedNote)}</p>` : ""}
+        ${
+          facts.length
+            ? `<dl class="pdp-facts">${facts.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl>`
+            : ""
+        }
+        <p class="pdp-pickup">${esc(copy.pickup)}</p>`;
     }
 
     if (dock) {
@@ -737,8 +1010,8 @@ export const initListing = () => {
         : `<strong class="trade-money">${money(item.price)}</strong><a class="pdp-bag" href="${bagHref}">${bagLabel}</a>`;
     }
 
-    const also = allPackets()
-      .filter((other) => other.id !== item.id)
+    const also = [...sellerPackets(), ...rotatedPackets(), ...allPackets()]
+      .filter((other, index, rows) => other.id !== item.id && stockOf(other) > 0 && rows.findIndex((row) => row.id === other.id) === index)
       .sort((a, b) => Number(b.tag === item.tag) - Number(a.tag === item.tag))
       .slice(0, 4);
     if (relatedGrid && relatedWrap) {
@@ -762,6 +1035,7 @@ export const initListing = () => {
   });
 
   window.addEventListener("immba:lang", render);
+  void paintBagBadge();
   const missing = () => {
     if (dock) dock.hidden = true;
     if (info) {

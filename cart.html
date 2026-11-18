@@ -26,9 +26,9 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=trade9" />
+    <link rel="stylesheet" href="css/styles.css?v=trade19" />
   </head>
-  <body data-title-key="bag.pageTitle">
+  <body class="bag-page" data-title-key="bag.pageTitle">
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
 
     <div class="notice-bar" data-notice>
@@ -100,6 +100,7 @@
             <a href="https://www.management.fju.edu.tw/" target="_blank" rel="noopener noreferrer" data-i18n="nav.college"
               >College of Management</a
             >
+            <a href="marketplace.html" data-i18n="nav.marketplace">Marketplace</a>
           </nav>
         </div>
 
@@ -163,6 +164,7 @@
         <a href="https://www.management.fju.edu.tw/" target="_blank" rel="noopener noreferrer" data-i18n="nav.college"
           >College of Management</a
         >
+        <a href="marketplace.html" data-i18n="nav.marketplace">Marketplace</a>
         <button type="button" class="lang-toggle lang-toggle-block" data-lang-toggle data-i18n="langButton">中文</button>
         <a
           class="btn btn-primary"
@@ -180,13 +182,16 @@
         <div class="container shop-plp">
           <header class="shop-mast">
             <div>
-              <p class="shop-kicker">imMBA</p>
               <h1 class="shop-hero-title">Review your bag</h1>
               <p class="shop-lede">Check the quantity, then place the order. The seller confirms payment, then shipment.</p>
             </div>
             <div class="shop-mast-actions">
-              <a class="shop-orders" href="marketplace.html">Marketplace</a>
-              <a class="shop-bag" href="orders.html">Orders</a>
+              <a class="shop-icon" href="marketplace.html" aria-label="Marketplace">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10.5 12 5l7 5.5V19a1 1 0 0 1-1 1h-4.2v-5.2H10.2V20H6a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+              </a>
+              <a class="shop-icon" href="orders.html" aria-label="Orders">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4.5h5.2L17 8.2V19.5H8z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M13.2 4.6V8.2H17M10 12.2h4.2M10 15.4h4.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </a>
             </div>
           </header>
           <div class="bag-layout">
@@ -194,7 +199,9 @@
               <div data-cart><p class="bag-empty">Loading your bag…</p></div>
             </section>
             <aside class="bag-summary">
-              <p>Nothing is charged on this page. The seller confirms the payment after you place the order.</p>
+              <h2>Order summary</h2>
+              <div data-bag-totals></div>
+              <p class="bag-note">You have 10 minutes to finish payment. After that the item returns to the marketplace. Each copy adds a NT$4 service fee. Delivery sits under the item, and is NT$60 if you leave it checked.</p>
               <button type="button" class="pdp-bag" data-place>Place order</button>
               <p data-cart-status></p>
             </aside>
@@ -310,8 +317,8 @@
       </div>
     </footer>
 
-    <script type="module" src="js/main.js?v=trade9"></script>
-    <script type="module" src="js/cart.js?v=trade2"></script>
+    <script type="module" src="js/main.js?v=audit1"></script>
+    <script type="module" src="js/cart.js?v=bag1"></script>
     <script type="module" src="js/back-top.js"></script>
   </body>
 </html>

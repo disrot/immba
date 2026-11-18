@@ -2,13 +2,13 @@ import { renderNewsArticle, renderNewsCards } from "./news-ui.js";
 import { hydrateNews } from "./news-store.js?v=news2";
 import { applyOfficialLinks } from "./official.js";
 import { initGallery, refreshGalleryCaptions } from "./gallery.js";
-import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage, watchOfficeAccess } from "./auth.js?v=gate1";
+import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage, watchOfficeAccess } from "./auth.js?v=office1";
 import { initFacultyDirectory } from "./faculty.js?v=notice3";
-import { initMarketplace, initListing } from "./marketplace.js?v=trade6";
-import { initMarketAccount } from "./market-account.js?v=trade9";
+import { initMarketplace, initListing, paintBagBadge } from "./marketplace.js?v=apple4";
+import { initMarketAccount } from "./market-account.js?v=apple4";
 import { initAnalytics } from "./analytics.js";
 import { initAdminDash } from "./admin-dash.js?v=pages1";
-import { initPageHero } from "./page-hero.js?v=shop1";
+import { initPageHero } from "./page-hero.js?v=audit1";
 import { initSelectDrops, refreshSelectDrop } from "./ui-drop.js?v=drop2";
 
 const translations = {
@@ -221,7 +221,9 @@ const translations = {
     "faculty.pageTitle": "Faculty Directory",
     "faculty.meta":
       "Full-time and part-time faculty of Fu Jen Catholic University’s International MBA (imMBA).",
-    "faculty.headline": "Faculty",
+    "faculty.headline": "Faculty who teach imMBA",
+    "loading.faculty": "Loading faculty…",
+    "loading.news": "Loading announcements…",
     "faculty.searchLabel": "Name",
     "faculty.search": "Search by name...",
     "faculty.typeLabel": "Faculty Type",
@@ -275,13 +277,13 @@ const translations = {
     "guide.card2.title": "Thesis advising",
     "guide.card2.body":
       "Wait for the official professor list each term, then contact an advisor. Enrolling in THESIS preserves the right to apply for defense that semester.",
-    "grad.pageTitle": "Graduation",
+    "grad.pageTitle": "Graduation requirements",
     "grad.meta": "Graduation requirements, thesis defense, and official forms for Fu Jen imMBA.",
     "grad.title": "42 credits and a thesis defense.",
     "grad.body":
       "Complete 23 required credits (11 absolutely required including a 6-credit thesis, plus 12 optionally required), 19 electives, and the final thesis defense. The minimum for graduation is 42 credits.",
     "grad.source": "Official Graduation page",
-    "dual.pageTitle": "Dual Degree",
+    "dual.pageTitle": "Two master's degrees in two years",
     "dual.meta":
       "Official dual master's degree options with University of Michigan-Flint, KEDGE Business School, and IQS School of Management.",
     "dual.partnersAria": "Partner schools",
@@ -345,9 +347,9 @@ const translations = {
     "market.sell1Title": "Photograph, list, sell",
     "market.sell1Body": "A few photos, a price, and the book is on the cohort shelf.",
     "market.sell2Title": "Meet on campus",
-    "market.sell2Body": "Hand the book over at the College of Management. No shipping label.",
-    "market.sell3Title": "Keep what you earn",
-    "market.sell3Body": "No selling fee. The price you set is the price you receive.",
+    "market.sell2Body": "Most books change hands between classes. Delivery is optional.",
+    "market.sell3Title": "You set the price",
+    "market.sell3Body": "Choose a price that feels fair. The exact amount you receive appears when you list.",
     "market.storyPause": "Pause",
     "market.storyPlay": "Play",
     "market.sellerIn": "Seller sign in",
@@ -403,7 +405,7 @@ const translations = {
       "As AI reshapes the business world, this course equips business students to apply AI and solve real-world problems.",
     "events.e3.tags": "#FJCU_imMBA #dual_master_degree",
     "news.title": "What’s happening in the program.",
-    "highlights.pageTitle": "Highlights",
+    "highlights.pageTitle": "Announcements and events",
     "highlights.meta": "Latest announcements and highlights from Fu Jen imMBA.",
     "highlights.lede": "All program announcements, newest first, with the same date, title, and official source as the original posts.",
     "highlights.all": "All highlights",
@@ -900,7 +902,9 @@ const translations = {
     "env.cta": "看看我們的學習環境",
     "faculty.pageTitle": "師資名錄",
     "faculty.meta": "輔仁大學國際經營管理碩士（imMBA）專任與兼任師資。",
-    "faculty.headline": "師資名錄",
+    "faculty.headline": "教 imMBA 的師資",
+    "loading.faculty": "正在載入師資…",
+    "loading.news": "正在載入公告…",
     "faculty.searchLabel": "姓名",
     "faculty.search": "依姓名搜尋…",
     "faculty.typeLabel": "職稱",
@@ -959,7 +963,7 @@ const translations = {
     "grad.body":
       "須完成必修 23 學分（絕對必修 11 學分含論文 6 學分，選必修 12 學分）、選修 19 學分，並通過論文口試。最低畢業學分為 42 學分。",
     "grad.source": "官方畢業與離校頁面",
-    "dual.pageTitle": "跨國雙碩士",
+    "dual.pageTitle": "兩年取得兩個碩士",
     "dual.meta": "輔仁大學 imMBA 與密西根大學 Flint 分校、KEDGE 高等商學院、IQS 管理學院的跨國雙碩士學位。",
     "dual.partnersAria": "合作學校",
     "dual.source": "官方跨國雙碩士頁面",
@@ -1021,9 +1025,9 @@ const translations = {
     "market.sell1Title": "拍照、刊登、賣出",
     "market.sell1Body": "拍幾張照片、定個價格，教材就出現在這一屆的書架上。",
     "market.sell2Title": "校園面交",
-    "market.sell2Body": "在管理學院把書交給同學，不必寄送。",
-    "market.sell3Title": "價款全數留給你",
-    "market.sell3Body": "沒有平台手續費。你定的價格就是你收到的。",
+    "market.sell2Body": "多半在課堂之間面交。外送可以選擇，不是必須。",
+    "market.sell3Title": "價格由你決定",
+    "market.sell3Body": "定一個你覺得合適的價格。實際收到的金額，會在刊登時顯示。",
     "market.storyPause": "暫停",
     "market.storyPlay": "播放",
     "market.sellerIn": "賣方登入",
@@ -1075,7 +1079,7 @@ const translations = {
     "events.e3.p4": "在 AI 改寫商業世界之際，本課程協助商管學生運用 AI、解決真實問題。",
     "events.e3.tags": "#FJCU_imMBA #dual_master_degree",
     "news.title": "學程最新消息。",
-    "highlights.pageTitle": "亮點特色",
+    "highlights.pageTitle": "公告與活動",
     "highlights.meta": "輔仁大學 imMBA 最新公告與亮點。",
     "highlights.lede": "全部學程公告，依最新日期排列，保留原文日期、標題與官方來源。",
     "highlights.all": "全部亮點",
@@ -1482,6 +1486,7 @@ initMarketAccount();
 enhanceFooter();
 initPageHero();
 initSelectDrops();
+if (/(?:^|\/)marketplace\.html$/.test(location.pathname)) document.body.classList.add("nav-collapsed");
 applyLang();
 hydrateNews().finally(() => applyLang());
 
@@ -1705,6 +1710,7 @@ const animateCount = (el) => {
 initGallery();
 initFacultyDirectory();
 initMarketplace();
+paintBagBadge();
 initListing();
 
 const counters = document.querySelectorAll(".stat-count");

@@ -26,7 +26,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=trade9" />
+    <link rel="stylesheet" href="css/styles.css?v=trade23" />
   </head>
   <body data-title-key="market.pageTitle" data-desc-key="market.meta">
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
@@ -100,6 +100,7 @@
             <a href="https://www.management.fju.edu.tw/" target="_blank" rel="noopener noreferrer" data-i18n="nav.college"
               >College of Management</a
             >
+            <a href="marketplace.html" aria-current="page" data-i18n="nav.marketplace">Marketplace</a>
           </nav>
         </div>
 
@@ -163,6 +164,7 @@
         <a href="https://www.management.fju.edu.tw/" target="_blank" rel="noopener noreferrer" data-i18n="nav.college"
           >College of Management</a
         >
+        <a href="marketplace.html" aria-current="page" data-i18n="nav.marketplace">Marketplace</a>
         <button type="button" class="lang-toggle lang-toggle-block" data-lang-toggle data-i18n="langButton">中文</button>
         <a
           class="btn btn-primary"
@@ -180,7 +182,6 @@
         <div class="container shop-plp">
           <header class="shop-mast">
             <div>
-              <p class="shop-kicker">imMBA</p>
               <h1 class="shop-hero-title" data-i18n="market.headline">Textbooks from your cohort</h1>
               <p class="shop-lede" data-i18n="market.lede">Course books and packets, passed from one imMBA cohort to the next.</p>
             </div>
@@ -196,55 +197,35 @@
             </div>
           </header>
           <div class="shop-account" data-market-account></div>
-          <div class="shop-toolbar">
+          <div class="shop-find">
             <label class="shop-tool shop-search">
               <span class="sr-only">Search</span>
-              <input data-shop-search type="search" placeholder="Search title or SKU">
+              <input data-shop-search type="search" placeholder="Search title, course, or professor">
             </label>
-            <label class="shop-tool">
-              <span class="sr-only">Availability</span>
-              <select data-shop-stock>
-                <option value="all">All availability</option>
-                <option value="in">In stock</option>
-              </select>
-            </label>
-            <label class="shop-tool">
-              <span class="sr-only" data-i18n="market.filter">Filter by</span>
-              <select data-shop-filter>
-                <option value="all" data-i18n="market.filterAll">All products</option>
-                <option value="core" data-i18n="market.filterCore">Core</option>
-                <option value="spotlight" data-i18n="market.filterSpot">Spotlight</option>
-                <option value="elective" data-i18n="market.filterElective">Elective</option>
-              </select>
-            </label>
-            <label class="shop-tool">
-              <span class="sr-only" data-i18n="market.sort">Sort by</span>
-              <select data-shop-sort>
-                <option value="featured" data-i18n="market.sortFeatured">Featured</option>
-                <option value="az" data-i18n="market.sortAz">Alphabetically, A–Z</option>
-                <option value="za" data-i18n="market.sortZa">Alphabetically, Z–A</option>
-                <option value="price-asc" data-i18n="market.sortLow">Price, low to high</option>
-                <option value="price-desc" data-i18n="market.sortHigh">Price, high to low</option>
-              </select>
-            </label>
-            <p class="shop-count" data-shop-count></p>
           </div>
-          <div class="shop-grid" data-shop-grid></div>
-          <p class="shop-empty" data-shop-empty hidden data-i18n="market.empty">No packets match these filters.</p>
-          <section class="shop-promises" aria-label="Marketplace">
-            <article>
-              <h2 data-i18n="market.promise1">Student to student</h2>
-              <p data-i18n="market.promise1b">Listings come from classmates, not a bookstore.</p>
-            </article>
-            <article>
-              <h2 data-i18n="market.promise2">Pickup or digital</h2>
-              <p data-i18n="market.promise2b">Meet on campus, or receive a file by email.</p>
-            </article>
-            <article>
-              <h2 data-i18n="market.promise3">English-taught shelf</h2>
-              <p data-i18n="market.promise3b">Materials follow the international curriculum.</p>
-            </article>
-          </section>
+          <p class="shop-trustline" data-shop-trust>You pay the classmate directly.</p>
+          <div class="shop-body">
+            <aside class="shop-rail" data-shop-rail></aside>
+            <div class="shop-results">
+              <div class="shop-results-bar">
+                <h2 data-shop-heading>From this cohort</h2>
+                <label class="shop-tool">
+                  <span class="sr-only" data-i18n="market.sort">Sort by</span>
+                  <select data-shop-sort>
+                    <option value="featured" data-i18n="market.sortFeatured">Featured</option>
+                    <option value="az" data-i18n="market.sortAz">Alphabetically, A–Z</option>
+                    <option value="za" data-i18n="market.sortZa">Alphabetically, Z–A</option>
+                    <option value="price-asc" data-i18n="market.sortLow">Price, low to high</option>
+                    <option value="price-desc" data-i18n="market.sortHigh">Price, high to low</option>
+                  </select>
+                </label>
+                <p class="shop-count" data-shop-count></p>
+              </div>
+              <div class="shop-grid" data-shop-grid></div>
+              <nav class="shop-pager" data-shop-pager hidden aria-label="Pages"></nav>
+              <p class="shop-empty" data-shop-empty hidden data-i18n="market.empty">No packets match these filters.</p>
+            </div>
+          </div>
         </div>
       </section>
     </main>
@@ -355,7 +336,7 @@
       </div>
     </footer>
 
-    <script type="module" src="js/main.js?v=trade9"></script>
+    <script type="module" src="js/main.js?v=apple4"></script>
     <script type="module" src="js/back-top.js"></script>
   </body>
 </html>

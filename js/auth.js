@@ -492,6 +492,29 @@ export const guardAdminPage = () => {
       logoutAdmin();
       window.location.href = "login.html";
     });
+    document.addEventListener("click", (event) => {
+      if (!document.querySelector("[data-admin-guard]")) return;
+      const link = event.target.closest("a[href]");
+      if (!link) return;
+      let url;
+      try {
+        url = new URL(link.href, location.href);
+      } catch {
+        return;
+      }
+      if (url.origin !== location.origin) return;
+      const file = url.pathname.split("/").pop() || "index.html";
+      if (file === "dashboard.html") return;
+      event.preventDefault();
+      logoutAdmin();
+      const dest = `${url.pathname}${url.search}${url.hash}`;
+      if (link.target === "_blank" || event.metaKey || event.ctrlKey) {
+        window.open(dest, "_blank", "noopener");
+        window.location.href = "login.html";
+        return;
+      }
+      window.location.href = dest;
+    });
     watchOfficeAccess();
     window.dispatchEvent(new Event("immba:access"));
   };

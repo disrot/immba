@@ -1,5 +1,5 @@
 import { getAuthSession } from "./supabase.js?v=secure1";
-import { buyerOrders, money, statusText, when } from "./trade.js?v=trade1";
+import { buyerOrders, money, statusText, when } from "./trade.js?v=hold1";
 
 const root = document.querySelector("[data-orders]");
 const zh = () => document.body?.dataset.lang === "zh";
@@ -58,21 +58,58 @@ const paint = () => {
           return `<article class="trade-card${order.id === placed ? " is-new" : ""}">
             <header>
               <p class="trade-id">${esc(order.id)}</p>
-              <strong>${esc(statusText(order.status, zh()))}</strong>
             </header>
             <p>${esc(when(order.createdAt, zh()))} · ${esc(order.sellerName)}</p>
             <ul class="trade-items">${items}</ul>
-            <p class="trade-money">${esc(money(order.total, zh()))}</p>
-            <ol class="trade-life">${timeline(order)}</ol>
+            ${
+              order.buyerFee == null
+                ? `<p class="trade-money">${esc(money(order.total, zh()))}</p>`
+                : `<div class="bag-fees">
+                    <p><span>${zh() ? "書籍" : "Books"}</span><span class="trade-money">${esc(money(order.goods, zh()))}</span></p>
+                    <p><span>${zh() ? "服務費" : "Service fee"}</span><span class="trade-money">${esc(money(order.buyerFee, zh()))}</span></p>
+                    <p><span>${zh() ? "外送" : "Delivery"}</span><span class="trade-money">${esc(money(order.deliveryFee, zh()))}</span></p>
+                    <p class="trade-total"><span>${zh() ? "合計" : "Total"}</span><span class="trade-money">${esc(money(order.total, zh()))}</span></p>
+                  </div>`
+            }
+            ${
+              order.status === "expired"
+                ? `<p>${zh() ? "超過 10 分鐘未完成付款，教材已回到市集。" : "Payment was not finished in 10 minutes, so the book is back on the marketplace."}</p>`
+                : `<p class="bag-hold" data-pay-by="${esc(order.payBy || "")}" ${order.status === "waiting_payment" && order.payBy ? "" : "hidden"}></p>
+                   <ol class="trade-life">${timeline(order)}</ol>`
+            }
           </article>`;
         })
         .join("")
     : `<p class="bag-empty">${zh() ? "還沒有訂單。完成的訂單會留在這裡。" : "No orders yet. Completed orders stay here."}</p>`;
 };
 
+const paintPay = () => {
+  document.querySelectorAll("[data-pay-by]").forEach((node) => {
+    const until = Date.parse(node.getAttribute("data-pay-by") || "");
+    if (!until || node.hidden) return;
+    const remain = Math.max(0, until - Date.now());
+    const clock = `${Math.floor(remain / 60000)}:${String(Math.floor((remain % 60000) / 1000)).padStart(2, "0")}`;
+    node.textContent = zh()
+      ? `請在 ${clock} 內完成付款，否則教材回到市集。`
+      : `Finish payment in ${clock} or the book returns to the marketplace.`;
+  });
+};
+
 paint();
-window.addEventListener("immba:trade", paint);
-window.addEventListener("immba:lang", paint);
+paintPay();
+window.addEventListener("immba:trade", () => {
+  paint();
+  paintPay();
+});
+window.setInterval(() => {
+  const due = [...document.querySelectorAll("[data-pay-by]")].some((node) => Date.parse(node.getAttribute("data-pay-by") || "") <= Date.now());
+  if (due) paint();
+  paintPay();
+}, 1000);
+window.addEventListener("immba:lang", () => {
+  paint();
+  paintPay();
+});
 root?.addEventListener("click", (event) => {
   const button = event.target.closest(".trade-step");
   root.querySelectorAll(".trade-step.is-open").forEach((item) => {

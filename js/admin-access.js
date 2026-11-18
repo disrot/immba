@@ -21,7 +21,10 @@ if (!root) {
 } else {
   const table = root.querySelector("[data-access-table]");
   const status = root.querySelector("[data-access-status]");
-  let rows = [];
+  const lede = root.querySelector("[data-access-lede]");
+  const lastHead = root.querySelector("[data-access-last]");
+  let allRows = [];
+  let view = "staff";
 
   const zh = () => document.body?.dataset.lang === "zh";
 
@@ -42,13 +45,83 @@ if (!root) {
     return zh() ? match.zh : match.en;
   };
 
+  const esc = (value) =>
+    String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+
+  const isMarket = (row) => row.role === "marketplace" || row.intent === "marketplace";
+  const rowsForView = () => (view === "market" ? allRows.filter(isMarket) : allRows.filter((row) => !isMarket(row)));
+
+  const paintSwitch = () => {
+    root.querySelectorAll("[data-access-mode]").forEach((button) => {
+      const on = button.getAttribute("data-access-mode") === view;
+      button.setAttribute("aria-pressed", on ? "true" : "false");
+      const mode = button.getAttribute("data-access-mode");
+      button.textContent =
+        mode === "market" ? (zh() ? "買家與賣方" : "Buyers and sellers") : zh() ? "職員" : "Staff";
+    });
+    if (lastHead) lastHead.textContent = view === "market" ? (zh() ? "註冊時間" : "Joined") : zh() ? "權限" : "Access";
+    if (lede) {
+      lede.textContent =
+        view === "market"
+          ? zh()
+            ? "已註冊、可以在市集買書或賣書的帳號。這裡只供查看。"
+            : "People registered to buy or sell on the marketplace. This list is for looking."
+          : zh()
+            ? "超級管理員、辦公室管理員，以及等候核准的職員。"
+            : "Super admins, office admins, and staff waiting for approval.";
+    }
+  };
+
   const paint = () => {
     if (!table) return;
+    paintSwitch();
+    const rows = rowsForView();
+    if (view === "market") {
+      table.innerHTML = rows
+        .map((row) => {
+          const when = row.created_at ? new Date(row.created_at).toLocaleString(zh() ? "zh-TW" : "en-US") : "";
+          return `<tr>
+            <td>${esc(row.email)}</td>
+            <td>${zh() ? "買家／賣方" : "Buyer / seller"}</td>
+            <td>${esc(row.display_name || (zh() ? "市集帳號" : "Marketplace"))}</td>
+            <td class="trade-money">${esc(when)}</td>
+          </tr>`;
+        })
+        .join("");
+      if (status) {
+        status.textContent = rows.length
+          ? zh()
+            ? `${rows.length} 個市集帳號。`
+            : `${rows.length} marketplace accounts.`
+          : zh()
+            ? "還沒有人註冊市集帳號。"
+            : "No one has registered a marketplace account yet.";
+      }
+      return;
+    }
+    if (status) {
+      const pending = rows.filter((row) => row.role === "pending").length;
+      status.textContent = rows.length
+        ? pending
+          ? zh()
+            ? `${pending} 人等候核准。`
+            : `${pending} waiting for approval.`
+          : zh()
+            ? "沒有等候中的職員。"
+            : "No staff waiting."
+        : zh()
+          ? "尚無帳號。新職員註冊後會出現在這裡。"
+          : "No accounts yet. New staff registrations appear here as pending.";
+    }
     table.innerHTML = rows
       .map((row) => {
         const pages = pagesForRole(row.role, row.pages);
         return `<tr>
-          <td>${row.email || ""}</td>
+          <td>${esc(row.email)}</td>
           <td>${roleLabel(row.role)}</td>
           <td>${intentLabel(row.intent)}</td>
           <td>
@@ -93,27 +166,16 @@ if (!root) {
   const reload = async () => {
     try {
       try {
-        rows = (await rest("profiles?select=id,email,role,intent,pages,created_at&order=created_at.desc")) || [];
+        allRows = (await rest("profiles?select=id,email,display_name,role,intent,pages,created_at&order=created_at.desc")) || [];
       } catch {
-        rows = (await rest("profiles?select=id,email,role,intent,created_at&order=created_at.desc")) || [];
+        try {
+          allRows = (await rest("profiles?select=id,email,role,intent,pages,created_at&order=created_at.desc")) || [];
+        } catch {
+          allRows = (await rest("profiles?select=id,email,role,intent,created_at&order=created_at.desc")) || [];
+        }
       }
-      rows = rows.filter((row) => row.role !== "marketplace" && row.intent !== "marketplace");
-      rows.sort((a, b) => Number(b.role === "pending") - Number(a.role === "pending"));
+      allRows.sort((a, b) => Number(b.role === "pending") - Number(a.role === "pending"));
       paint();
-      if (status) {
-        const pending = rows.filter((row) => row.role === "pending").length;
-        status.textContent = rows.length
-          ? pending
-            ? zh()
-              ? `${pending} 人等候核准。`
-              : `${pending} waiting for approval.`
-            : zh()
-              ? "沒有等候中的職員。"
-              : "No staff waiting."
-          : zh()
-            ? "尚無帳號。新職員註冊後會出現在這裡。"
-            : "No accounts yet. New staff registrations appear here as pending.";
-      }
     } catch (error) {
       if (status) status.textContent = error.message || "Could not load accounts. Run schema-auth.sql.";
     }
@@ -128,7 +190,7 @@ if (!root) {
     const btn = event.target.closest("[data-access-delete]");
     if (!btn) return;
     const id = btn.getAttribute("data-access-delete");
-    const current = rows.find((row) => row.id === id);
+    const current = allRows.find((row) => row.id === id);
     if (!current) return;
     if (!window.confirm(zh() ? `刪除 ${current.email || "此帳號"}？對方會立即被登出。` : `Delete ${current.email || "this account"}? They will be signed out at once.`)) {
       return;
@@ -147,7 +209,7 @@ if (!root) {
     const wrap = event.target.closest("[data-access-drop], [data-access-pages]");
     const id = wrap?.getAttribute("data-id");
     if (!id) return;
-    const current = rows.find((row) => row.id === id);
+    const current = allRows.find((row) => row.id === id);
     if (!current) return;
     try {
       if (roleInput) {
@@ -166,6 +228,13 @@ if (!root) {
     } catch (error) {
       if (status) status.textContent = error.message || "Update failed. Run schema-auth.sql to add pages.";
     }
+  });
+
+  root.querySelector("[data-access-view]")?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-access-mode]");
+    if (!button) return;
+    view = button.getAttribute("data-access-mode") || "staff";
+    paint();
   });
 
   window.addEventListener("immba:lang", paint);

@@ -1,7 +1,7 @@
 import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=notice4";
 import { ackRemovedNotices, listRemovedNotices } from "./listings-store.js?v=notice3";
-import { initSellerHub } from "./seller-hub.js?v=trade1";
-import { marketMode, setMarketMode } from "./trade.js?v=trade1";
+import { initSellerHub } from "./seller-hub.js?v=apple4";
+import { marketMode, setMarketMode } from "./trade.js?v=hold1";
 
 const esc = (value) =>
   String(value ?? "")
@@ -15,7 +15,8 @@ export const initMarketAccount = () => {
   const desk = document.querySelector("[data-market-desk]");
   const authBox = document.querySelector("[data-market-auth]");
   const form = document.querySelector("[data-market-form]");
-  if (!bar && !desk && !form) return;
+  const listingPage = document.body.hasAttribute("data-list-page");
+  if (!bar && !desk && !form && !listingPage) return;
 
   const session = currentProfile();
   const seller = isSellerAuthed();
@@ -31,12 +32,16 @@ export const initMarketAccount = () => {
 
   if (bar && authBox) {
     bar.hidden = !seller;
+    const outLabel = zh() ? "登出" : "Sign out";
     bar.innerHTML = seller
-      ? `<p>${esc(session.email)}</p>
+      ? `<p class="shop-account-mail">${esc(session.email)}</p>
          ${modeSwitch()}
          <span data-market-bell-slot></span>
          <a class="btn btn-ghost" href="marketplace.html" data-i18n="market.backShop">Back to Marketplace</a>
-         <button type="button" class="btn btn-ghost" data-market-out>Sign out</button>`
+         <button type="button" class="shop-icon shop-icon-out" data-market-out aria-label="${outLabel}">
+           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5.5H7.8A1.8 1.8 0 0 0 6 7.3v9.4a1.8 1.8 0 0 0 1.8 1.8H10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12.5 12H19M16.2 8.8 19.2 12l-3 3.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+           <span class="trade-step-tip">${outLabel}</span>
+         </button>`
       : "";
   } else if (bar) {
     bar.hidden = !seller;
@@ -125,7 +130,30 @@ export const initMarketAccount = () => {
   if (seller) void listRemovedNotices().then(paintBell);
   window.addEventListener("immba:lang", () => {
     if (seller) void listRemovedNotices().then(paintBell);
+    if (!listingPage || seller) return;
+    const gate = document.querySelector("[data-list-gate]");
+    const heading = document.querySelector("[data-list-title]");
+    if (heading) heading.textContent = zh() ? "建立刊登" : "Create a listing";
+    if (gate) {
+      gate.innerHTML = zh()
+        ? `請先在賣方書桌登入，再刊登。<a href="market-account.html">賣方登入</a>`
+        : `Sign in on the seller desk before posting. <a href="market-account.html">Seller sign in</a>`;
+    }
   });
+
+  if (listingPage) {
+    const wizard = document.querySelector("[data-list-wizard]");
+    const gate = document.querySelector("[data-list-gate]");
+    if (wizard) wizard.hidden = !seller;
+    if (gate) {
+      gate.hidden = seller;
+      gate.innerHTML = zh()
+        ? `請先在賣方書桌登入，再刊登。<a href="market-account.html">賣方登入</a>`
+        : `Sign in on the seller desk before posting. <a href="market-account.html">Seller sign in</a>`;
+    }
+    if (seller) initSellerHub();
+    return;
+  }
 
   if (seller) initSellerHub();
 
