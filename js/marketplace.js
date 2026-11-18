@@ -1,7 +1,7 @@
 import { isSellerAuthed } from "./auth.js?v=notice4";
 import { getAuthSession, rpc } from "./supabase.js?v=secure1";
 import { listCloudListings } from "./listings-store.js?v=notice3";
-import { BUYER_ITEM_FEE, DELIVERY_FEE, availableQty, defaultOnHand, marketMode, releaseExpired, setMarketMode } from "./trade.js?v=hold1";
+import { BUYER_ITEM_FEE, DELIVERY_FEE, availableQty, defaultOnHand, marketMode, releaseExpired, setMarketMode } from "./trade.js?v=hold3";
 import { rotatedPackets } from "./shelf-rotation.js?v=pass1";
 
 export const PACKETS = [
@@ -154,23 +154,22 @@ export const PACKETS = [
     price: 200,
     tag: "core",
     kind: "digital",
-    sold: true,
+    sold: false,
     en: {
       title: "Organization Design",
       format: "Digital packet",
       style: "Notes",
-      blurb:
-        "Lecture notes for Organization Design and Management. This copy has already been reserved by another student.",
-      details: ["Core required course", "Digital lecture notes", "Currently unavailable"],
-      pickup: "This listing is sold out. Watch the marketplace if a later cohort re-lists it.",
+      blurb: "Lecture notes for Organization Design and Management, from the English-taught section.",
+      details: ["Core required course", "Digital lecture notes", "Campus shelf"],
+      pickup: "Digital delivery by campus email after the order is accepted.",
     },
     zh: {
       title: "組織設計與管理",
       format: "數位教材包",
       style: "筆記",
-      blurb: "組織設計與管理課堂筆記。此份已由其他同學保留。",
-      details: ["核心必修", "數位課堂筆記", "目前無法購買"],
-      pickup: "已售出。若後續學長姐再上架，請留意市集。",
+      blurb: "組織設計與管理課堂筆記，來自英語授課班級。",
+      details: ["核心必修", "數位課堂筆記", "書架教材"],
+      pickup: "訂單接受後以校園信箱寄出。",
     },
   },
   {

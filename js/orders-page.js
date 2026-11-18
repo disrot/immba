@@ -1,5 +1,5 @@
 import { getAuthSession } from "./supabase.js?v=secure1";
-import { buyerOrders, money, statusText, when } from "./trade.js?v=hold1";
+import { buyerOrders, money, statusText, when } from "./trade.js?v=hold3";
 
 const root = document.querySelector("[data-orders]");
 const zh = () => document.body?.dataset.lang === "zh";
@@ -74,7 +74,11 @@ const paint = () => {
             ${
               order.status === "expired"
                 ? `<p>${zh() ? "超過 10 分鐘未完成付款，教材已回到市集。" : "Payment was not finished in 10 minutes, so the book is back on the marketplace."}</p>`
-                : `<p class="bag-hold" data-pay-by="${esc(order.payBy || "")}" ${order.status === "waiting_payment" && order.payBy ? "" : "hidden"}></p>
+                : `${
+                    order.sellerId === "shelf" && order.status !== "waiting_payment"
+                      ? `<p>${zh() ? "這筆書架教材已接受訂單並確認付款。" : "This shelf listing accepted the order and confirmed payment."}</p>`
+                      : `<p class="bag-hold" data-pay-by="${esc(order.payBy || "")}" ${order.status === "waiting_payment" && order.payBy ? "" : "hidden"}></p>`
+                  }
                    <ol class="trade-life">${timeline(order)}</ol>`
             }
           </article>`;

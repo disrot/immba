@@ -152,20 +152,21 @@ export const uploadFacultyPhoto = (file) => uploadImage("faculty-photos", file);
 export const uploadNewsPhoto = (file) => uploadImage("news-photos", file);
 export const uploadMarketPhoto = (file) => uploadImage("marketplace-photos", file);
 
-let hydrating = null;
+let hydrateGen = 0;
 export const hydrateSession = () => {
-  if (hydrating) return hydrating;
-  hydrating = (async () => {
+  const gen = ++hydrateGen;
+  return (async () => {
     const { data } = await supabase.auth.getSession();
     const session = data.session;
+    if (gen !== hydrateGen) return null;
     if (!session) {
       if (profileCache?.access_token) saveAuthSession(null);
-      hydrating = null;
       return null;
     }
     const { data: authz, error } = await supabase.rpc("get_my_authorization");
+    if (gen !== hydrateGen) return null;
     if (error || !authz) {
-      hydrating = null;
+      if (profileCache?.user?.id && profileCache.user.id !== session.user.id) return null;
       return profileCache;
     }
     const next = {
@@ -178,14 +179,10 @@ export const hydrateSession = () => {
       pages: Array.isArray(authz.pages) ? authz.pages : [],
       display_name: authz.display_name || "",
     };
+    if (gen !== hydrateGen) return null;
     saveAuthSession(next);
-    hydrating = null;
     return next;
-  })().catch((error) => {
-    hydrating = null;
-    throw error;
-  });
-  return hydrating;
+  })();
 };
 
 supabase.auth.onAuthStateChange((event, session) => {

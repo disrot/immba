@@ -8,7 +8,22 @@ const NEXT = {
   shipped: "completed",
 };
 
-const SHELF_OUT = new Set(["org"]);
+const GENERATED_IDS = new Set([
+  "ibm",
+  "ethics",
+  "strategy",
+  "supply",
+  "marketing",
+  "org",
+  "finance",
+  "hr",
+  "analytics",
+  "ai",
+  "ibm-used",
+  "thesis",
+]);
+
+export const isGeneratedListing = (id) => GENERATED_IDS.has(id) || String(id || "").startsWith("rot-");
 
 const read = () => {
   try {
@@ -36,7 +51,7 @@ export const setMarketMode = (mode) => {
   window.dispatchEvent(new CustomEvent("immba:mode"));
 };
 
-export const defaultOnHand = (id) => (SHELF_OUT.has(id) ? 0 : 3);
+export const defaultOnHand = () => 3;
 
 export const onHand = (id, fallback) => {
   const data = read();
@@ -48,7 +63,8 @@ export const purchasedQty = (id) => Number(read().purchased[id] || 0);
 
 export const availableQty = (id, fallbackOnHand) => {
   const data = fresh(read());
-  const hand = data.stock[id] != null ? Number(data.stock[id]) : fallbackOnHand == null ? defaultOnHand(id) : Number(fallbackOnHand);
+  if (isGeneratedListing(id)) return defaultOnHand();
+  const hand = data.stock[id] != null ? Number(data.stock[id]) : fallbackOnHand == null ? defaultOnHand() : Number(fallbackOnHand);
   return Math.max(0, hand - Number(data.purchased[id] || 0) - heldQty(data, id));
 };
 
@@ -95,6 +111,15 @@ const fresh = (data) => {
   }
   const purchased = { ...data.purchased };
   const orders = data.orders.map((order) => {
+    if (order.sellerId === "shelf" && order.status === "waiting_payment") {
+      changed = true;
+      return {
+        ...order,
+        status: "payment_confirmed",
+        payBy: "",
+        history: [...(order.history || []), { status: "payment_confirmed", at: new Date(now).toISOString() }],
+      };
+    }
     if (order.status !== "waiting_payment" || !order.payBy || Date.parse(order.payBy) > now) return order;
     changed = true;
     for (const item of order.items || []) {
@@ -191,14 +216,15 @@ export const placeOrders = ({ buyer, buyerEmail, lines }) => {
   const groups = new Map();
   for (const line of lines) {
     const qty = Math.max(1, Math.round(Number(line.qty) || 1));
-    const hand = data.stock[line.id] != null ? Number(data.stock[line.id]) : Number(line.onHand ?? defaultOnHand(line.id));
-    const left = Math.max(0, hand - Number(data.purchased[line.id] || 0));
+    const generatedLine = Boolean(line.generated) || line.sellerId === "shelf" || isGeneratedListing(line.id);
+    const hand = data.stock[line.id] != null ? Number(data.stock[line.id]) : Number(line.onHand ?? defaultOnHand());
+    const left = generatedLine ? qty : Math.max(0, hand - Number(data.purchased[line.id] || 0));
     if (qty > left) {
       const error = new Error(left ? `Only ${left} left for ${line.title}.` : `${line.title} is sold out.`);
       error.code = "stock";
       throw error;
     }
-    const sellerId = line.sellerId || "shelf";
+    const sellerId = line.sellerId || (line.generated ? "shelf" : "local");
     if (!groups.has(sellerId)) {
       groups.set(sellerId, {
         sellerId,
@@ -218,6 +244,7 @@ export const placeOrders = ({ buyer, buyerEmail, lines }) => {
       delete data.holds[item.id];
     }
     const quote = quoteLines(group.items);
+    const shelfOrder = group.sellerId === "shelf";
     const payByMs = group.items.reduce((soonest, item) => {
       const until = Number(item.holdUntil);
       if (!until || until <= Date.now()) return soonest;
@@ -245,13 +272,19 @@ export const placeOrders = ({ buyer, buyerEmail, lines }) => {
       deliveryFee: quote.deliveryFee,
       sellerNet: quote.sellerNet,
       total: quote.total,
-      status: "waiting_payment",
-      payBy: new Date(payByMs).toISOString(),
+      status: shelfOrder ? "payment_confirmed" : "waiting_payment",
+      payBy: shelfOrder ? "" : new Date(payByMs).toISOString(),
       createdAt: now,
-      history: [
-        { status: "placed", at: now },
-        { status: "waiting_payment", at: now },
-      ],
+      history: shelfOrder
+        ? [
+            { status: "placed", at: now },
+            { status: "waiting_payment", at: now },
+            { status: "payment_confirmed", at: now },
+          ]
+        : [
+            { status: "placed", at: now },
+            { status: "waiting_payment", at: now },
+          ],
     };
     data.orders.unshift(order);
     created.push(order);

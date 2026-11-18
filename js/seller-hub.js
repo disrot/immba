@@ -17,7 +17,7 @@ import {
   statusText,
   when,
   marketMode,
-} from "./trade.js?v=hold1";
+} from "./trade.js?v=hold3";
 
 const BOOKS_KEY = "immba-seller-books";
 const MEETS_KEY = "immba-seller-meetups";

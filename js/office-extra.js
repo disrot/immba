@@ -1,5 +1,5 @@
 import { rpc } from "./supabase.js?v=secure1";
-import { allOrders, isAbnormal, money as tradeMoney, statusText, when as tradeWhen } from "./trade.js?v=hold1";
+import { allOrders, isAbnormal, money as tradeMoney, statusText, when as tradeWhen } from "./trade.js?v=hold3";
 
 const esc = (value) =>
   String(value ?? "")

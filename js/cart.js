@@ -1,6 +1,7 @@
 import { getAuthSession, rpc } from "./supabase.js?v=secure1";
-import { PACKETS } from "./marketplace.js?v=trade1";
-import { HOLD_MS, availableQty, clearHold, defaultOnHand, holdListing, placeOrders, quoteLines, releaseExpired } from "./trade.js?v=hold1";
+import { PACKETS } from "./marketplace.js?v=apple6";
+import { rotatedPackets } from "./shelf-rotation.js?v=pass1";
+import { HOLD_MS, availableQty, clearHold, defaultOnHand, holdListing, placeOrders, quoteLines, releaseExpired } from "./trade.js?v=hold3";
 
 const list = document.querySelector("[data-cart]");
 const status = document.querySelector("[data-cart-status]");
@@ -24,16 +25,19 @@ const sellerBooks = () => {
 };
 
 const productFor = (id) => {
-  const packet = PACKETS.find((item) => item.id === id);
+  const packet = PACKETS.find((item) => item.id === id) || rotatedPackets().find((item) => item.id === id);
   if (packet) {
     return {
       id,
       title: packet.en.title,
       unit: packet.price,
       image: packet.image,
-      onHand: packet.sold ? 0 : defaultOnHand(id),
+      onHand: defaultOnHand(id),
       sellerId: "shelf",
-      sellerName: "imMBA shelf",
+      sellerName: packet.sellerName || "imMBA shelf",
+      delivery: Boolean(packet.delivery),
+      bumped: Boolean(packet.bumped),
+      generated: true,
     };
   }
   const book = sellerBooks().find((row) => row.id === id);
@@ -83,6 +87,7 @@ const holdLocal = (id, qty) => {
     onHand: product.onHand,
     sellerId: product.sellerId,
     sellerName: product.sellerName,
+    generated: Boolean(product.generated),
     deliveryOffered: Boolean(product.delivery),
     delivery: Boolean(product.delivery),
     bumped: Boolean(product.bumped),
@@ -258,6 +263,7 @@ list?.addEventListener("click", async (event) => {
 const receiveOrder = () =>
   new Promise((resolve) => {
     const zh = document.body?.dataset.lang === "zh";
+    const shelfOnly = shown.length > 0 && shown.every((item) => item.generated || item.sellerId === "shelf");
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const steps = zh
       ? ["連上 imMBA 書架", "連上賣方", "寫入你的訂單"]
@@ -271,7 +277,15 @@ const receiveOrder = () =>
       <div class="listing-gate-card order-receive">
         <img src="images/logo.png" alt="" width="64" height="64">
         <h2>${zh ? "正在收下你的訂單" : "We're receiving your order"}</h2>
-        <p>${zh ? "付款仍由賣方確認。" : "The seller still confirms payment."}</p>
+        <p>${
+          shelfOnly
+            ? zh
+              ? "書架教材會直接接受訂單與付款。"
+              : "Shelf listings accept the order and the payment."
+            : zh
+              ? "同學刊登仍由賣方確認付款。"
+              : "A classmate listing still waits for that seller to confirm payment."
+        }</p>
         <div class="order-progress" aria-hidden="true"><i data-order-bar></i></div>
         <p class="order-hint">${zh ? "點正在亮的那一行，就會往下。" : "Tap the highlighted line to move on."}</p>
         <ol class="order-steps">
@@ -354,8 +368,9 @@ document.querySelector("[data-place]")?.addEventListener("click", async () => {
           unit: item.unit_amount,
           image: item.image || product?.image || "",
           onHand: item.onHand ?? product?.onHand,
-          sellerId: item.sellerId || product?.sellerId || "shelf",
+          sellerId: item.sellerId || product?.sellerId || "local",
           sellerName: item.sellerName || product?.sellerName || "imMBA shelf",
+          generated: Boolean(item.generated || product?.generated),
           delivery: Boolean(item.delivery),
           bumped: Boolean(item.bumped),
           holdUntil: item.holdUntil,

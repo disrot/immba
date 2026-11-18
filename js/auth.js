@@ -1,4 +1,4 @@
-import { authApi, getAuthSession, hydrateSession, isCloud, saveAuthSession, supabase } from "./supabase.js?v=secure1";
+import { authApi, getAuthSession, hydrateSession, isCloud, saveAuthSession, supabase } from "./supabase.js?v=secure2";
 
 const DOUBLE_CLICK_MS = 320;
 const BLOCKED_KEY = "immba-blocked-notice";
@@ -110,7 +110,8 @@ const loadProfile = async (session) => {
   let pages = [];
   try {
     const live = await hydrateSession();
-    if (live?.role) {
+    const sameUser = !live?.user?.id || !session.user?.id || live.user.id === session.user.id;
+    if (sameUser && live?.role) {
       role = live.role;
       intent = live.intent || intent;
       email = live.email || email;
@@ -181,9 +182,9 @@ export const consumeAuthHash = async () => {
 export const routeAfterAuth = (session) => {
   const role = session?.role;
   const intent = session?.intent || session?.user?.user_metadata?.intent;
-  if (role === "admin" || role === "super_admin") return "dashboard.html";
-  if (role === "marketplace" || intent === "marketplace") return "marketplace.html";
   if (role === "rejected") return "pending.html?blocked=1";
+  if (role === "marketplace" || intent === "marketplace") return "marketplace.html";
+  if (role === "admin" || role === "super_admin") return "dashboard.html";
   return "pending.html";
 };
 
@@ -488,6 +489,7 @@ export const guardAdminPage = () => {
       window.location.replace(dest === "dashboard.html" ? "login.html" : dest);
       return;
     }
+    document.documentElement.dataset.officeReady = "1";
     document.querySelector("[data-admin-logout]")?.addEventListener("click", () => {
       logoutAdmin();
       window.location.href = "login.html";
