@@ -1,4 +1,5 @@
 import { summarizeAnalytics, clearAnalytics, shortVisitor } from "./analytics.js";
+import { initOfficeBento } from "./office-bento.js?v=bento1";
 import { worldMapSvg } from "./world-map.js";
 import { allowedOfficePages } from "./auth.js?v=secure1";
 
@@ -415,6 +416,7 @@ export const initAdminDash = () => {
   const root = document.querySelector("[data-office], [data-admin-dash]");
   if (!root || booted) return;
   booted = true;
+  initOfficeBento(root);
   root.querySelectorAll(".office-grid > .office-widget").forEach((card, index) => {
     card.style.setProperty("--i", String(index));
   });

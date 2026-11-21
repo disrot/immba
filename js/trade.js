@@ -44,7 +44,7 @@ const write = (data) => {
   window.dispatchEvent(new CustomEvent("immba:trade"));
 };
 
-export const marketMode = () => (localStorage.getItem(MODE_KEY) === "buyer" ? "buyer" : "seller");
+export const marketMode = () => (localStorage.getItem(MODE_KEY) === "seller" ? "seller" : "buyer");
 
 export const setMarketMode = (mode) => {
   localStorage.setItem(MODE_KEY, mode === "seller" ? "seller" : "buyer");
@@ -80,8 +80,8 @@ export const statusText = (status, zh) => {
     waiting_payment: zh ? "等待確認付款" : "Waiting for payment confirmation",
     expired: zh ? "已退回市集" : "Returned to the marketplace",
     payment_confirmed: zh ? "已確認付款" : "Payment confirmed",
-    ready_to_ship: zh ? "準備出貨" : "Ready to ship",
-    shipped: zh ? "已出貨" : "Shipped",
+    ready_to_ship: zh ? "可面交" : "Ready for hand-off",
+    shipped: zh ? "已面交" : "Handed off",
     completed: zh ? "已完成" : "Completed",
   };
   return labels[status] || status;
@@ -89,9 +89,9 @@ export const statusText = (status, zh) => {
 
 export const actionText = (status, zh) => {
   const labels = {
-    waiting_payment: zh ? "確認付款" : "Confirm payment",
-    payment_confirmed: zh ? "標為可出貨" : "Mark ready to ship",
-    ready_to_ship: zh ? "確認出貨" : "Confirm shipment",
+    waiting_payment: zh ? "確認已收款" : "Confirm payment received",
+    payment_confirmed: zh ? "標為可面交" : "Mark ready for hand-off",
+    ready_to_ship: zh ? "確認已面交" : "Confirm hand-off",
     shipped: zh ? "標為完成" : "Mark completed",
   };
   return labels[status] || "";
@@ -218,7 +218,8 @@ export const placeOrders = ({ buyer, buyerEmail, lines }) => {
     const qty = Math.max(1, Math.round(Number(line.qty) || 1));
     const generatedLine = Boolean(line.generated) || line.sellerId === "shelf" || isGeneratedListing(line.id);
     const hand = data.stock[line.id] != null ? Number(data.stock[line.id]) : Number(line.onHand ?? defaultOnHand());
-    const left = generatedLine ? qty : Math.max(0, hand - Number(data.purchased[line.id] || 0));
+    const listed = Math.max(1, Math.round(hand));
+    const left = generatedLine ? listed : Math.max(0, listed - Number(data.purchased[line.id] || 0));
     if (qty > left) {
       const error = new Error(left ? `Only ${left} left for ${line.title}.` : `${line.title} is sold out.`);
       error.code = "stock";

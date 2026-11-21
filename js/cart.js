@@ -1,7 +1,7 @@
 import { getAuthSession, rpc } from "./supabase.js?v=secure1";
-import { PACKETS } from "./marketplace.js?v=apple6";
-import { rotatedPackets } from "./shelf-rotation.js?v=pass1";
-import { HOLD_MS, availableQty, clearHold, defaultOnHand, holdListing, placeOrders, quoteLines, releaseExpired } from "./trade.js?v=hold3";
+import { PACKETS } from "./marketplace.js?v=apple7";
+import { rotatedPackets } from "./shelf-rotation.js?v=pass2";
+import { HOLD_MS, availableQty, clearHold, defaultOnHand, holdListing, isGeneratedListing, placeOrders, quoteLines, releaseExpired } from "./trade.js?v=stock1";
 
 const list = document.querySelector("[data-cart]");
 const status = document.querySelector("[data-cart-status]");
@@ -55,8 +55,6 @@ const productFor = (id) => {
   };
 };
 
-const imageFor = (id) => productFor(id)?.image || "";
-
 const readLocal = () => {
   try {
     const rows = JSON.parse(localStorage.getItem(LOCAL_BAG) || "[]");
@@ -100,7 +98,6 @@ const holdLocal = (id, qty) => {
 let shown = [];
 
 const zh = () => document.body?.dataset.lang === "zh";
-const nt = (value) => `NT$ ${Number(value || 0).toLocaleString(zh() ? "zh-TW" : "en-US")}`;
 
 const withDelivery = (item) => {
   const product = productFor(item.listing_id);
@@ -108,75 +105,201 @@ const withDelivery = (item) => {
   return {
     ...item,
     deliveryOffered: offered,
-    delivery: item.delivery != null ? Boolean(item.delivery) : offered,
+    delivery: offered ? (item.delivery != null ? Boolean(item.delivery) : false) : false,
     bumped: item.bumped != null ? Boolean(item.bumped) : Boolean(product?.bumped),
   };
 };
 
-const paintItems = (items) => {
-  shown = items.map(withDelivery);
-  const quote = quoteLines(
-    shown.map((item) => ({
+let cartView = null;
+let totalsView = null;
+let cartGen = 0;
+let totalsGen = 0;
+
+const forgetLine = async (id) => {
+  clearHold(id);
+  writeLocal(readLocal().filter((row) => row.listing_id !== id));
+  try {
+    await rpc("cart_upsert", { p_listing_id: id, p_quantity: 0 });
+  } catch {
+    /* Local shelf lines are only stored in this browser. */
+  }
+  paintItems(shown.filter((row) => row.listing_id !== id));
+};
+
+const stockCap = (item) => {
+  const listed = Math.max(1, Math.round(Number(item.onHand ?? productFor(item.listing_id)?.onHand) || defaultOnHand()));
+  if (isGeneratedListing(item.listing_id)) return listed;
+  const outside = availableQty(item.listing_id, listed);
+  return Math.max(1, Math.min(listed, outside + Number(item.quantity || 0)));
+};
+
+const commitQty = (id, quantity) => {
+  const item = shown.find((row) => row.listing_id === id);
+  if (!item) return;
+  if (quantity <= 0) {
+    queueMicrotask(() => forgetLine(id));
+    return;
+  }
+  const nextQty = Math.min(stockCap(item), Math.max(1, quantity));
+  const until = Number(item.holdUntil) > Date.now() ? Number(item.holdUntil) : Date.now() + HOLD_MS;
+  holdListing(id, nextQty, until);
+  const next = readLocal().filter((row) => row.listing_id !== id);
+  next.push({ ...item, quantity: nextQty, holdUntil: until, local: true });
+  writeLocal(next);
+  shown = shown.map((row) => (row.listing_id === id ? { ...row, quantity: nextQty, holdUntil: until } : row));
+  syncBag();
+};
+
+const quoteFor = (items) =>
+  quoteLines(
+    items.map((item) => ({
       qty: item.quantity,
       unit: item.unit_amount,
       delivery: item.delivery,
     }))
   );
-  list.innerHTML = shown.length
-    ? `${shown
-        .map((item) => {
-          const photo = item.image || imageFor(item.listing_id);
-          const left = availableQty(item.listing_id, item.onHand ?? productFor(item.listing_id)?.onHand) + Number(item.quantity);
-          const remain = Math.max(0, Number(item.holdUntil || 0) - Date.now());
-          const holdLabel = item.holdUntil
-            ? zh()
-              ? `保留 ${Math.floor(remain / 60000)}:${String(Math.floor((remain % 60000) / 1000)).padStart(2, "0")}，未完成付款會回到市集`
-              : `Hold ${Math.floor(remain / 60000)}:${String(Math.floor((remain % 60000) / 1000)).padStart(2, "0")}. Unpaid items return to the marketplace`
-            : "";
-          const thumb = photo
-            ? `<img src="${esc(photo)}" alt="">`
-            : `<span class="bag-fallback" aria-hidden="true"></span>`;
-          const delivery = item.deliveryOffered
-            ? `<label class="bag-delivery">
-                <input type="checkbox" data-bag-delivery="${esc(item.listing_id)}" ${item.delivery ? "checked" : ""}>
-                <span>${zh() ? "外送 NT$60" : "Delivery NT$60"}</span>
-              </label>`
-            : "";
-          return `<article class="bag-line">
-            ${thumb}
-            <div class="bag-copy">
-              <div class="bag-top">
-                <h2>${esc(item.title)}</h2>
-                <p class="bag-price trade-money">${nt(item.unit_amount)}</p>
-              </div>
-              <div class="bag-qty">
-                <button type="button" data-bag-qty="-1" data-id="${esc(item.listing_id)}" ${item.quantity <= 1 ? "disabled" : ""} aria-label="${zh() ? "減少數量" : "Decrease quantity"}">−</button>
-                <span class="bag-count">${esc(item.quantity)}</span>
-                <button type="button" data-bag-qty="1" data-id="${esc(item.listing_id)}" ${item.quantity >= left ? "disabled" : ""} aria-label="${zh() ? "增加數量" : "Increase quantity"}">+</button>
-              </div>
-              <p class="bag-fee">${zh() ? `服務費 NT$ ${4 * Number(item.quantity)}` : `Service fee NT$ ${4 * Number(item.quantity)}`}</p>
-              ${holdLabel ? `<p class="bag-hold" data-hold-id="${esc(item.listing_id)}" data-hold-until="${esc(item.holdUntil)}">${esc(holdLabel)}</p>` : ""}
-              ${delivery}
-              <button type="button" class="bag-remove" data-bag-remove="${esc(item.listing_id)}">${zh() ? "移除" : "Remove"}</button>
-            </div>
-          </article>`;
-        })
-        .join("")}`
-    : `<p class="bag-empty">${zh() ? "袋子是空的。" : "Your bag is empty."}</p>`;
+
+const totalRows = (quote) => [
+  { id: "goods", label: zh() ? "小計" : "Subtotal", amount: quote.goods },
+  { id: "fee", label: zh() ? "服務費" : "Service fee", amount: quote.buyerFee },
+  { id: "delivery", label: zh() ? "外送" : "Delivery", amount: quote.deliveryFee },
+  { id: "total", label: zh() ? "合計" : "Total", amount: quote.total, strong: true },
+];
+
+const cartProps = (items) => {
+  const lines = items.map((item) => {
+    const handoff = item.delivery
+      ? zh()
+        ? "外送 NT$60"
+        : "Delivery NT$60"
+      : zh()
+        ? "校園面交"
+        : "Campus hand-off";
+    const cap = stockCap(item);
+    return {
+      id: item.listing_id,
+      name: item.title,
+      detail: handoff,
+      price: Number(item.unit_amount) || 0,
+      image: item.image || productFor(item.listing_id)?.image || "",
+      max: cap,
+      quantity: Math.min(cap, Number(item.quantity) || 1),
+    };
+  });
+  return {
+    lines,
+    currency: "NT$",
+    digits: 0,
+    quantities: Object.fromEntries(lines.map((line) => [line.id, line.quantity])),
+    checkoutLabel: zh() ? "下單" : "Place order",
+    emptyLabel: zh() ? "袋子是空的" : "Your bag is empty",
+    limitFor: (max) => (zh() ? `最多 ${max}` : `Max ${max}`),
+    summaryFor: (count) => (zh() ? `袋子裡 ${count} 件` : `${count} in your bag`),
+    onQuantitiesChange: (next) => {
+      const changed = shown.find((item) => Number(next[item.listing_id] ?? 0) !== Number(item.quantity));
+      if (changed) commitQty(changed.listing_id, Number(next[changed.listing_id] ?? 0));
+    },
+    onCheckout: () => document.querySelector("[data-place]")?.click(),
+  };
+};
+
+const paintExtras = (items) => {
+  const extra = list.querySelector("[data-bag-extra]");
+  if (!extra) return;
+  const key = `${zh() ? "zh" : "en"}|${items.map((item) => `${item.listing_id}:${item.deliveryOffered ? 1 : 0}`).join("|")}`;
+  if (extra.dataset.key !== key) {
+    extra.dataset.key = key;
+    extra.innerHTML = items
+      .map((item) => {
+        const label = item.deliveryOffered
+          ? zh()
+            ? "外送 NT$60"
+            : "Delivery NT$60"
+          : zh()
+            ? "僅校園面交"
+            : "Campus hand-off only";
+        return `<label class="bag-delivery"><input type="checkbox" data-bag-delivery="${esc(item.listing_id)}" ${item.delivery ? "checked" : ""} ${item.deliveryOffered ? "" : "disabled"}><span>${esc(item.title)} · ${label}</span></label>`;
+      })
+      .join("");
+    return;
+  }
+  for (const item of items) {
+    const box = extra.querySelector(`[data-bag-delivery="${CSS.escape(item.listing_id)}"]`);
+    if (box) box.checked = Boolean(item.delivery);
+  }
+};
+
+const syncBag = () => {
+  const locale = zh() ? "zh-TW" : "en-US";
   const totals = document.querySelector("[data-bag-totals]");
   if (totals) {
-    totals.innerHTML = shown.length
-      ? `<div class="bag-fees">
-          <p><span>${zh() ? "小計" : "Subtotal"}</span><span class="trade-money">${nt(quote.goods)}</span></p>
-          <p><span>${zh() ? "服務費" : "Service fee"}</span><span class="trade-money">${nt(quote.buyerFee)}</span></p>
-          <p><span>${zh() ? "外送" : "Delivery"}</span><span class="trade-money">${nt(quote.deliveryFee)}</span></p>
-          <p class="trade-total"><span>${zh() ? "合計" : "Total"}</span><span class="trade-money">${nt(quote.total)}</span></p>
-        </div>`
-      : "";
+    if (!shown.length) {
+      totalsGen += 1;
+      totalsView?.unmount();
+      totalsView = null;
+      totals.replaceChildren();
+    } else if (totalsView) {
+      totalsView.update(totalRows(quoteFor(shown)), locale);
+    } else if (totals.dataset.mounting !== "1") {
+      totals.dataset.mounting = "1";
+      const generation = ++totalsGen;
+      void import("../src/bag-totals.tsx").then(({ mountTotals }) => {
+        delete totals.dataset.mounting;
+        if (generation !== totalsGen || !totals.isConnected || !shown.length) return;
+        totalsView = mountTotals(totals, totalRows(quoteFor(shown)), zh() ? "zh-TW" : "en-US");
+      });
+    }
   }
-  if (shown.length) list.innerHTML = `<div class="bag-lines">${list.innerHTML}</div>`;
+  if (shown.length && cartView) cartView.update(cartProps(shown));
   const button = document.querySelector("[data-place]");
-  if (button) button.disabled = items.length === 0;
+  if (button) button.disabled = shown.length === 0;
+};
+
+const paintItems = (items) => {
+  let trimmed = false;
+  shown = items.map(withDelivery).map((item) => {
+    const cap = stockCap(item);
+    const quantity = Math.min(cap, Math.max(1, Number(item.quantity) || 1));
+    if (quantity === Number(item.quantity)) return item;
+    trimmed = true;
+    const until = Number(item.holdUntil) > Date.now() ? Number(item.holdUntil) : Date.now() + HOLD_MS;
+    holdListing(item.listing_id, quantity, until);
+    return { ...item, quantity, holdUntil: until };
+  });
+  if (trimmed) {
+    const localIds = new Set(readLocal().map((row) => row.listing_id));
+    writeLocal(shown.filter((item) => item.local || localIds.has(item.listing_id)));
+  }
+  if (!shown.length) {
+    cartGen += 1;
+    totalsGen += 1;
+    cartView?.unmount();
+    cartView = null;
+    totalsView?.unmount();
+    totalsView = null;
+    if (list) list.innerHTML = `<p class="bag-empty">${zh() ? "袋子是空的。" : "Your bag is empty."}</p>`;
+    document.querySelector("[data-bag-totals]")?.replaceChildren();
+    const button = document.querySelector("[data-place]");
+    if (button) button.disabled = true;
+    return;
+  }
+  if (!list.querySelector("[data-cart-button]")) {
+    cartView?.unmount();
+    cartView = null;
+    list.innerHTML = `<div class="kokonut-surface" data-cart-button></div><div class="bag-extra" data-bag-extra></div>`;
+  }
+  paintExtras(shown);
+  syncBag();
+  if (!cartView && list.dataset.cartMounting !== "1") {
+    const host = list.querySelector("[data-cart-button]");
+    list.dataset.cartMounting = "1";
+    const generation = ++cartGen;
+    void import("../src/mount-cart.tsx").then(({ mountCart }) => {
+      delete list.dataset.cartMounting;
+      if (generation !== cartGen || !host?.isConnected || !shown.length) return;
+      cartView = mountCart(host, cartProps(shown));
+    });
+  }
 };
 
 const sweepLocal = () => {
@@ -231,33 +354,10 @@ list?.addEventListener("change", (event) => {
   paintItems(shown.map((row) => (row.listing_id === id ? { ...row, delivery: box.checked } : row)));
 });
 
-list?.addEventListener("click", async (event) => {
+list?.addEventListener("click", (event) => {
   const remove = event.target.closest("[data-bag-remove]");
-  if (remove) {
-    const id = remove.getAttribute("data-bag-remove");
-    clearHold(id);
-    writeLocal(readLocal().filter((row) => row.listing_id !== id));
-    try {
-      await rpc("cart_upsert", { p_listing_id: id, p_quantity: 0 });
-    } catch {
-      /* Local shelf lines are only stored in this browser. */
-    }
-    paintItems(shown.filter((row) => row.listing_id !== id));
-    return;
-  }
-  const button = event.target.closest("[data-bag-qty]");
-  if (!button) return;
-  const id = button.getAttribute("data-id");
-  const item = shown.find((row) => row.listing_id === id);
-  if (!item) return;
-  const left = availableQty(id, item.onHand ?? productFor(id)?.onHand) + Number(item.quantity);
-  const quantity = Math.min(left, Math.max(1, Number(item.quantity) + Number(button.getAttribute("data-bag-qty"))));
-  const until = Number(item.holdUntil) > Date.now() ? Number(item.holdUntil) : Date.now() + HOLD_MS;
-  holdListing(id, quantity, until);
-  const next = readLocal().filter((row) => row.listing_id !== id);
-  next.push({ ...item, quantity, holdUntil: until, local: true });
-  writeLocal(next);
-  paintItems(shown.map((row) => (row.listing_id === id ? { ...row, quantity } : row)));
+  if (!remove) return;
+  void forgetLine(remove.getAttribute("data-bag-remove"));
 });
 
 const receiveOrder = () =>
@@ -265,83 +365,78 @@ const receiveOrder = () =>
     const zh = document.body?.dataset.lang === "zh";
     const shelfOnly = shown.length > 0 && shown.every((item) => item.generated || item.sellerId === "shelf");
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const quote = quoteLines(shown);
+    const sellers = [...new Set(shown.map((item) => item.sellerName || "imMBA shelf"))];
+    const seller = sellers.length === 1 ? sellers[0] : zh ? "多位賣方" : "Several sellers";
     const steps = zh
-      ? ["連上 imMBA 書架", "連上賣方", "寫入你的訂單"]
-      : ["Connecting to the imMBA shelf", "Connecting to the seller", "Connecting to your order"];
+      ? [
+          { id: "shelf", title: "連上 imMBA 書架", detail: "確認教材還在架上" },
+          { id: "seller", title: "連上賣方", detail: seller },
+          { id: "order", title: "寫入你的訂單", detail: shelfOnly ? "書架會直接接受付款" : "同學刊登仍由賣方確認付款" },
+        ]
+      : [
+          { id: "shelf", title: "Connecting to the imMBA shelf", detail: "Checking the books are still there" },
+          { id: "seller", title: "Connecting to the seller", detail: seller },
+          { id: "order", title: "Connecting to your order", detail: shelfOnly ? "Shelf listings accept the payment" : "A classmate still confirms payment" },
+        ];
     const gate = document.createElement("div");
-    gate.className = "listing-gate";
+    gate.className = "listing-gate transfer-gate";
     gate.setAttribute("role", "dialog");
     gate.setAttribute("aria-modal", "true");
     gate.setAttribute("aria-label", zh ? "正在收下訂單" : "Receiving your order");
-    gate.innerHTML = `
-      <div class="listing-gate-card order-receive">
-        <img src="images/logo.png" alt="" width="64" height="64">
-        <h2>${zh ? "正在收下你的訂單" : "We're receiving your order"}</h2>
-        <p>${
-          shelfOnly
-            ? zh
-              ? "書架教材會直接接受訂單與付款。"
-              : "Shelf listings accept the order and the payment."
-            : zh
-              ? "同學刊登仍由賣方確認付款。"
-              : "A classmate listing still waits for that seller to confirm payment."
-        }</p>
-        <div class="order-progress" aria-hidden="true"><i data-order-bar></i></div>
-        <p class="order-hint">${zh ? "點正在亮的那一行，就會往下。" : "Tap the highlighted line to move on."}</p>
-        <ol class="order-steps">
-          ${steps
-            .map(
-              (label, index) => `<li data-order-step="${index}">
-                <button type="button" data-order-go="${index}">
-                  <span class="step-mark" aria-hidden="true"></span>
-                  <span>${label}</span>
-                </button>
-              </li>`
-            )
-            .join("")}
-        </ol>
-      </div>`;
+    gate.innerHTML = `<div data-transfer></div><p class="order-hint">${zh ? "點正在亮的那一行，就會往下。" : "Tap the highlighted line to move on."}</p>`;
     document.body.append(gate);
     document.body.classList.add("is-gated");
-    const bar = gate.querySelector("[data-order-bar]");
-    const items = [...gate.querySelectorAll("[data-order-step]")];
+    const ref = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
     let index = 0;
     let timer = 0;
     let settled = false;
+    let view = null;
+    const card = (status) => ({
+      from: { amount: quote.total, currency: "TWD", symbol: "NT$", bank: zh ? "你的袋子" : "Your bag" },
+      to: { amount: quote.total, currency: "TWD", symbol: "NT$", bank: seller, name: zh ? "你的訂單" : "Your order" },
+      rate: 1,
+      digits: 0,
+      locale: zh ? "zh-TW" : "en",
+      txnId: ref,
+      status,
+      progress: status === "completed" ? steps.length : index,
+      steps,
+      summary: zh ? `合計 NT$${quote.total}，含服務費與外送` : `NT$${quote.total} total, with the service fee and delivery`,
+      note: zh ? "點亮的步驟可以往下" : "The lit step moves you on",
+      labels: {
+        processing: zh ? "進行中" : "In progress",
+        completed: zh ? "已收下" : "Received",
+        failed: zh ? "失敗" : "Failed",
+      },
+      onStepClick: (step) => {
+        if (step === index) go(index + 1);
+      },
+    });
     const finish = () => {
       if (settled) return;
       settled = true;
       window.clearTimeout(timer);
       resolve();
     };
-    const paint = () => {
-      items.forEach((item, itemIndex) => {
-        const on = itemIndex === index;
-        item.classList.toggle("is-on", on);
-        item.classList.toggle("is-done", itemIndex < index);
-        const button = item.querySelector("button");
-        if (button) button.disabled = !on;
-      });
-      if (bar) bar.style.width = `${Math.round((index / steps.length) * 100)}%`;
-    };
     const go = (next) => {
       if (settled) return;
       window.clearTimeout(timer);
       index = next;
-      paint();
       if (index >= steps.length) {
-        if (bar) bar.style.width = "100%";
+        view?.update(card("completed"));
         timer = window.setTimeout(finish, reduce ? 120 : 420);
         return;
       }
+      view?.update(card("processing"));
       timer = window.setTimeout(() => go(index + 1), reduce ? 280 : 1400);
     };
-    gate.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-order-go]");
-      if (!button || Number(button.getAttribute("data-order-go")) !== index) return;
-      go(index + 1);
-    });
-    go(0);
+    void import("../src/transfer-gate.tsx")
+      .then(({ mountTransfer }) => {
+        view = mountTransfer(gate.querySelector("[data-transfer]"), card("processing"));
+        go(0);
+      })
+      .catch(() => finish());
   });
 
 document.querySelector("[data-place]")?.addEventListener("click", async () => {
@@ -402,17 +497,7 @@ window.addEventListener("immba:lang", () => {
 
 window.setInterval(() => {
   const now = Date.now();
-  if (readLocal().some((row) => row.holdUntil && Number(row.holdUntil) <= now)) {
-    void paint();
-    return;
-  }
-  document.querySelectorAll("[data-hold-until]").forEach((node) => {
-    const remain = Math.max(0, Number(node.getAttribute("data-hold-until")) - Date.now());
-    const clock = `${Math.floor(remain / 60000)}:${String(Math.floor((remain % 60000) / 1000)).padStart(2, "0")}`;
-    node.textContent = zh()
-      ? `保留 ${clock}，未完成付款會回到市集`
-      : `Hold ${clock}. Unpaid items return to the marketplace`;
-  });
+  if (readLocal().some((row) => row.holdUntil && Number(row.holdUntil) <= now)) void paint();
 }, 1000);
 
 const params = new URLSearchParams(location.search);

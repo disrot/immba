@@ -307,7 +307,8 @@ export const initLoginForm = () => {
     const lede = document.querySelector("[data-login-lede]");
     const submit = form.querySelector("[data-login-submit]") || form.querySelector(".login-submit");
     if (title) title.textContent = copy.title;
-    if (lede) lede.textContent = copy.lede;
+    const sellerDesk = form.dataset.intent === "marketplace";
+    if (lede && !(sellerDesk && isSellerAuthed())) lede.textContent = copy.lede;
     if (submit) submit.textContent = copy.submit;
     const err = form.querySelector("[data-login-error]");
     if (err && mode !== "newpass") {

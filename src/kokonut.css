@@ -1,0 +1,12 @@
+@source "./components/kokonutui";
+@layer theme, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@custom-variant dark (&:where(.dark, .dark *));
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* Keep the office cards light when the system is in dark mode. */
+.office-bento-root [class~="bg-white"] {
+  background-color: #fff;
+  border-color: #e4e4e7;
+}

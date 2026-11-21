@@ -1,3 +1,4 @@
+import { odo } from "./odometer.js?v=odo3";
 import { currentProfile } from "./auth.js?v=notice4";
 import { createListing } from "./listings-store.js?v=notice3";
 import {
@@ -17,7 +18,7 @@ import {
   statusText,
   when,
   marketMode,
-} from "./trade.js?v=hold3";
+} from "./trade.js?v=hold4";
 
 const BOOKS_KEY = "immba-seller-books";
 const MEETS_KEY = "immba-seller-meetups";
@@ -97,7 +98,36 @@ const lookupBook = (code) =>
     title: `Campus textbook ${code.slice(-4)}`,
     author: "Course reading",
     edition: "Current edition",
+    cover: "",
   };
+
+const lookupOpenLibrary = async (code) => {
+  const local = lookupBook(code);
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), 4000);
+  try {
+    const res = await fetch(`https://openlibrary.org/isbn/${encodeURIComponent(code)}.json`, { signal: controller.signal });
+    if (!res.ok) return local;
+    const data = await res.json();
+    let author = local.author;
+    const authorKey = data.authors?.[0]?.key;
+    if (authorKey) {
+      const authorRes = await fetch(`https://openlibrary.org${authorKey}.json`, { signal: controller.signal });
+      if (authorRes.ok) author = (await authorRes.json()).name || author;
+    }
+    const coverId = Array.isArray(data.covers) ? data.covers[0] : 0;
+    return {
+      title: data.title || local.title,
+      author,
+      edition: data.publish_date ? String(data.publish_date) : local.edition,
+      cover: coverId ? `https://covers.openlibrary.org/b/id/${coverId}-L.jpg` : "",
+    };
+  } catch {
+    return local;
+  } finally {
+    window.clearTimeout(timer);
+  }
+};
 
 const PROFILE_KEY = "immba-seller-profile";
 
@@ -107,7 +137,7 @@ const readSellerProfile = () => {
   try {
     const all = JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
     const row = all[profileEmail()];
-    return { name: row?.name || "", photo: row?.photo || "" };
+    return { name: row?.name || "", photo: row?.photo || "", variant: Number(row?.variant) || 0 };
   } catch {
     return { name: "", photo: "" };
   }
@@ -121,7 +151,11 @@ const writeSellerProfile = (next) => {
   } catch {
     all = {};
   }
-  const saved = { name: String(next.name || "").trim(), photo: next.photo || "" };
+  const saved = {
+    name: String(next.name || "").trim(),
+    photo: next.photo || "",
+    variant: Number(next.variant) || 0,
+  };
   all[email] = saved;
   localStorage.setItem(PROFILE_KEY, JSON.stringify(all));
   saveBooks(
@@ -136,11 +170,21 @@ const writeSellerProfile = (next) => {
 
 const sellerIdentity = () => {
   const profile = readSellerProfile();
-  const email = currentProfile()?.email || "";
+  const session = currentProfile();
+  const email = session?.email || "";
+  const handle = String(session?.display_name || "").trim() || (email ? email.split("@")[0] : "Classmate");
   return {
-    name: profile.name || (email ? email.split("@")[0] : "Classmate"),
+    name: profile.name || handle,
     photo: profile.photo || "",
   };
+};
+
+const ensureSellerName = () => {
+  const saved = readSellerProfile();
+  if (saved.name) return;
+  const name = sellerIdentity().name;
+  if (!name || name === "Classmate") return;
+  writeSellerProfile({ name, photo: saved.photo });
 };
 
 const emptyDraft = () => ({
@@ -218,7 +262,7 @@ const listingCard = (book) => `<article class="seller-row" data-book="${esc(book
   <div>
     <h3>${esc(book.title)}</h3>
     <p>${[book.course, book.professor].filter(Boolean).map(esc).join(" · ")}</p>
-    <p class="trade-money">${money(book.price)} · ${t("you receive", "你收到")} ${money(sellerTake(book.price, book.bumped).net)}</p>
+    <p class="trade-money">${odo(`book-${book.id}-price`, money(book.price))} · ${t("you receive", "你收到")} ${odo(`book-${book.id}-net`, money(sellerTake(book.price, book.bumped).net))}</p>
     <p>${esc(book.condition)}${book.bumped ? ` · ${t("bumped", "已置頂")}` : ""}${book.delivery ? ` · ${t("delivery", "外送")}` : ""} · ${esc(stockLine(book))}</p>
   </div>
   <div class="seller-row-actions">
@@ -266,7 +310,7 @@ const orderCard = (order, { act = true } = {}) => {
     </header>
     <p>${esc(order.buyer)} · ${esc(when(order.createdAt, zh()))}</p>
     <ul class="trade-items">${items}</ul>
-    <p class="trade-money">${t("Buyer pays", "買家支付")} ${esc(tradeMoney(order.total, zh()))}${order.sellerNet != null ? ` · ${t("you receive", "你收到")} ${esc(tradeMoney(sellerProceeds(order), zh()))}` : ""}</p>
+    <p class="trade-money">${t("Buyer pays", "買家支付")} ${odo(`order-${order.id}-pay`, tradeMoney(order.total, zh()))}${order.sellerNet != null ? ` · ${t("you receive", "你收到")} ${odo(`order-${order.id}-net`, tradeMoney(sellerProceeds(order), zh()))}` : ""}</p>
     ${act && action ? `<button type="button" class="btn btn-primary" data-advance="${esc(order.id)}">${esc(action)}</button>` : ""}
   </article>`;
 };
@@ -282,7 +326,7 @@ const paintBuyer = (root) => {
         <h2>${t("Your purchases", "我的訂單")}</h2>
         <p>${t("You are in buyer mode. The seller desk stays out of the way until you switch.", "目前是買家模式。切換後才會看到賣方書桌。")}</p>
       </div>
-      <button type="button" class="btn btn-primary" data-mode="seller">${t("Switch to seller", "切換為賣方")}</button>
+      <p>${t("Use Buyer or Seller above to change mode.", "用上方的「買家」或「賣方」切換。")}</p>
     </header>
     <div class="seller-list">
       ${
@@ -294,61 +338,155 @@ const paintBuyer = (root) => {
     </div>`;
 };
 
+const accountLede = () => {
+  const lede = document.querySelector("[data-login-lede]");
+  if (!lede) return;
+  lede.removeAttribute("data-i18n");
+  const copy =
+    marketMode() !== "seller"
+      ? ["Orders you placed with classmates.", "你向同學下的訂單。"]
+      : {
+          dashboard: ["Your listings, payments, and campus hand-offs.", "你的刊登、待確認的付款，以及校園面交。"],
+          listings: ["Books and items you have posted.", "你已經刊登的書和物品。"],
+          orders: ["Confirm payment, then mark the hand-off.", "先確認付款，再標示面交。"],
+          sales: ["What buyers have paid you.", "買家已經付給你的金額。"],
+          meetups: ["Where you meet the buyer.", "你和買家碰面的地方。"],
+        }[view] || ["Your seller desk.", "你的賣方書桌。"];
+  lede.textContent = t(copy[0], copy[1]);
+};
+
+let avatarView = null;
+let uploadView = null;
+let avatarGen = 0;
+let uploadGen = 0;
+
+const mountSellerAvatar = (root) => {
+  avatarView?.unmount();
+  avatarView = null;
+  const host = root.querySelector("[data-avatar-host]");
+  if (!host) return;
+  const generation = ++avatarGen;
+  const saved = readSellerProfile();
+  const zhOn = zh();
+  void import("../src/mount-avatar.tsx").then(({ mountAvatarPicker, faceDataUrl }) => {
+    if (generation !== avatarGen || !host.isConnected) return;
+    avatarView = mountAvatarPicker(host, {
+      defaultValue: {
+        displayName: saved.name || sellerIdentity().name,
+        variant: saved.variant,
+      },
+      title: zhOn ? "刊登上的名字" : "Your name on listings",
+      description: zhOn
+        ? "轉動頭像。買家會在你的刊登上看到這個名字和照片。"
+        : "Turn the portrait. Buyers see this name and face on everything you post.",
+      submitLabel: zhOn ? "儲存" : "Save",
+      onComplete: async (value) => {
+        const photo = await faceDataUrl(value);
+        writeSellerProfile({ name: value.displayName, photo, variant: value.variant });
+      },
+    });
+  });
+};
+
+const mountListingPhotos = (root) => {
+  uploadView?.unmount();
+  uploadView = null;
+  const host = root.querySelector("[data-file-upload]");
+  const room = 4 - draft.photos.length;
+  if (!host || room <= 0) return;
+  const generation = ++uploadGen;
+  const added = new Map();
+  void import("../src/mount-file-upload.tsx").then(({ mountFileUpload }) => {
+    if (generation !== uploadGen || !host.isConnected) return;
+    uploadView = mountFileUpload(host, {
+      acceptedFileTypes: ["image/*"],
+      maxFileSize: 2 * 1024 * 1024,
+      maxFiles: room,
+      multiple: true,
+      onUpload: (file, { onProgress }) =>
+        new Promise((resolve, reject) => {
+          onProgress(35);
+          const reader = new FileReader();
+          reader.onerror = () => reject(new Error(t("Could not read that photo.", "讀不到這張照片。")));
+          reader.onload = () => {
+            const url = String(reader.result || "");
+            if (!url || draft.photos.length >= 4) {
+              reject(new Error(t("Up to 4 photos.", "最多 4 張。")));
+              return;
+            }
+            draft.photos.push(url);
+            added.set(file, url);
+            onProgress(100);
+            const strip = root.querySelector(".wizard-photos");
+            const figure = document.createElement("figure");
+            const image = document.createElement("img");
+            image.src = url;
+            image.alt = "";
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.setAttribute("data-remove-photo", String(draft.photos.length - 1));
+            remove.setAttribute("aria-label", t("Remove photo", "移除照片"));
+            remove.textContent = "×";
+            figure.append(image, remove);
+            strip?.append(figure);
+            resolve();
+          };
+          reader.readAsDataURL(file);
+        }),
+      onFileRemove: (file) => {
+        const url = added.get(file);
+        if (!url) return;
+        const index = draft.photos.indexOf(url);
+        if (index >= 0) draft.photos.splice(index, 1);
+        window.setTimeout(() => paintWizard(), 0);
+      },
+    });
+  });
+};
+
 const paintHub = () => {
   const root = document.querySelector("[data-seller-main]");
   if (!root || wizardOn) return;
+  accountLede();
   if (marketMode() !== "seller") {
     paintBuyer(root);
     return;
   }
   paintNav();
+  ensureSellerName();
   const rows = books();
   const active = rows.filter((book) => book.status === "active");
   const orders = sellerOrders(currentProfile()?.email || "");
-  const pendingPay = orders.filter((order) => order.status === "waiting_payment" || order.status === "payment_confirmed");
-  const waitingShip = orders.filter((order) => order.status === "ready_to_ship");
+  const pendingPay = orders.filter((order) => order.status === "waiting_payment");
+  const waitingShip = orders.filter((order) => order.status === "payment_confirmed" || order.status === "ready_to_ship");
   const completed = orders.filter((order) => order.status === "completed");
   const meetups = seedMeetups();
 
+  avatarView?.unmount();
+  avatarView = null;
   if (view === "dashboard") {
     root.innerHTML = `
       <header class="seller-head">
         <div>
           <h2>${t("Seller desk", "賣方書桌")}</h2>
-          <p>${t("Inventory, payments to confirm, and books waiting to ship.", "庫存、待確認的付款，以及待出貨的書。")}</p>
+          <p>${t("Inventory, payments to confirm, and books waiting for hand-off.", "庫存、待確認的付款，以及待面交的書。")}</p>
         </div>
         <a class="btn btn-primary" href="list.html">${t("Create listing", "建立刊登")}</a>
       </header>
-      <section class="seller-card seller-profile">
-        <label class="profile-photo">
-          ${
-            readSellerProfile().photo
-              ? `<img src="${esc(readSellerProfile().photo)}" alt="">`
-              : `<span>${esc((readSellerProfile().name || t("You", "你")).slice(0, 1).toUpperCase())}</span>`
-          }
-          <input data-profile-photo type="file" accept="image/*" aria-label="${t("Profile photo", "個人照片")}">
-        </label>
-        <div>
-          <h3>${t("Your name on listings", "刊登上的名字")}</h3>
-          <p>${t("Buyers see this name and photo on everything you post.", "買家會在你刊登的商品上看到這個名字和照片。")}</p>
-          <div class="profile-name">
-            <input data-profile-name type="text" maxlength="40" value="${esc(readSellerProfile().name)}" placeholder="${t("Username", "使用者名稱")}">
-            <button type="button" class="btn btn-primary" data-profile-save>${t("Save", "儲存")}</button>
-          </div>
-        </div>
-      </section>
+      <section class="seller-card seller-profile kokonut-surface" data-avatar-host></section>
       <div class="seller-metrics">
         ${metric(t("Listed products", "刊登商品"), String(active.length))}
         ${metric(t("You receive this month", "本月實收"), money(monthSales(orders)))}
         ${metric(t("Pending payments", "待確認付款"), String(pendingPay.length))}
-        ${metric(t("Waiting to ship", "待出貨"), String(waitingShip.length))}
+        ${metric(t("Waiting for hand-off", "待面交"), String(waitingShip.length))}
         ${metric(t("Completed orders", "已完成訂單"), String(completed.length))}
       </div>
       <section class="seller-card">
         <h3>${t("Next hand-off", "下一場面交")}</h3>
         ${meetups[0] ? `<p><strong>${esc(meetups[0].buyer)}</strong> · ${esc(meetups[0].title)}</p><p>${esc(meetups[0].place)} · ${esc(meetups[0].when)}</p>` : `<p>${t("No meetups yet.", "還沒有面交。")}</p>`}
       </section>
-      <p><button type="button" class="btn btn-ghost" data-mode="buyer">${t("Switch to buyer", "切換為買家")}</button></p>`;
+    `;
+    mountSellerAvatar(root);
     return;
   }
 
@@ -370,15 +508,15 @@ const paintHub = () => {
   }
 
   if (view === "orders") {
-    const pay = orders.filter((order) => order.status === "waiting_payment" || order.status === "payment_confirmed");
-    const ship = orders.filter((order) => order.status === "ready_to_ship" || order.status === "shipped");
+    const pay = orders.filter((order) => order.status === "waiting_payment");
+    const ship = orders.filter((order) => order.status === "payment_confirmed" || order.status === "ready_to_ship" || order.status === "shipped");
     const done = orders.filter((order) => order.status === "completed");
     const block = (title, list) =>
       `<section class="seller-card"><h3>${title}</h3><div class="seller-list">${list.length ? list.map(orderCard).join("") : `<p class="seller-empty">${t("Nothing in this step.", "這一步目前沒有訂單。")}</p>`}</div></section>`;
     root.innerHTML = `
       <header class="seller-head"><h2>${t("Orders to process", "待處理訂單")}</h2></header>
       ${block(t("Payments to confirm", "待確認付款"), pay)}
-      ${block(t("Products to ship", "待出貨"), ship)}
+      ${block(t("Ready for hand-off", "待面交"), ship)}
       ${block(t("Completed records", "已完成紀錄"), done)}`;
     return;
   }
@@ -396,7 +534,7 @@ const paintHub = () => {
         ${metric(t("You receive this month", "本月實收"), money(monthSales(orders)))}
         ${metric(t("Completed orders", "已完成訂單"), String(completed.length))}
         ${metric(t("Pending payments", "待確認付款"), String(pendingPay.length))}
-        ${metric(t("Waiting to ship", "待出貨"), String(waitingShip.length))}
+        ${metric(t("Waiting for hand-off", "待面交"), String(waitingShip.length))}
       </div>
       <div class="seller-list">${orders.length ? orders.map(orderCard).join("") : `<p class="seller-empty">${t("Sales appear after a buyer places an order.", "買家下單後，紀錄會出現在這裡。")}</p>`}</div>`;
     return;
@@ -472,7 +610,7 @@ const priceGuide = () => {
   const receive =
     draft.price === ""
       ? t(`Type a price to see what you keep after the ${rate} fee.`, `輸入價格後，會顯示扣掉 ${rate} 後你收到的金額。`)
-      : `${t(`After the ${rate} fee you receive`, `扣掉 ${rate} 後你收到`)} <strong class="trade-money" data-receive>${money(net)}</strong> ${each}`;
+      : `${t(`After the ${rate} fee you receive`, `扣掉 ${rate} 後你收到`)} <strong class="trade-money" data-receive>${odo("seller-receive", money(net))}</strong> ${each}`;
   const suggestion =
     draft.kind === "item"
       ? ""
@@ -492,7 +630,7 @@ const previewCard = () => `<article class="shop-card seller-preview">
   <div class="shop-cover">${draft.bumped ? bumpMark() : ""}${draft.photos[0] ? `<img src="${esc(draft.photos[0])}" alt="">` : ""}</div>
   <p class="shop-card-kicker">${esc(draft.course || t("Course", "課程"))}</p>
   <h2>${esc(draft.title || t("Title", "書名"))}</h2>
-  <p class="shop-price-row">${draft.price === "" ? "NT$" : money(draft.price)}${draft.firm ? "" : ` · ${t("Negotiable", "可議價")}`}</p>
+  <p class="shop-price-row">${draft.price === "" ? "NT$" : odo("seller-preview", money(draft.price))}${draft.firm ? "" : ` · ${t("Negotiable", "可議價")}`}</p>
 </article>`;
 
 const choiceRow = (field, checked, title, detail = "") => `<label class="choice-row">
@@ -565,24 +703,26 @@ const paintWizard = () => {
     <div class="list-sheet">
       <div class="list-col">
         <h2>${t("Add photos", "加入照片")}</h2>
-        <div class="dropzone" data-drop>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8.5 9.2 6.8A1.5 1.5 0 0 1 10.5 6h3a1.5 1.5 0 0 1 1.3.8L16 8.5h1.2A1.8 1.8 0 0 1 19 10.3v6.4A1.8 1.8 0 0 1 17.2 18.5H6.8A1.8 1.8 0 0 1 5 16.7v-6.4A1.8 1.8 0 0 1 6.8 8.5H8z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="13" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
-          <button type="button" class="btn btn-primary" data-pick-photos>${t("+ Upload", "+ 上傳")}</button>
-          <p>${t("Drag images here or browse. Up to 4 photos.", "把照片拖到這裡，或按上傳。最多 4 張。")}</p>
-          <input data-photos class="sr-only" type="file" accept="image/*" multiple>
-        </div>
+        <div class="kokonut-surface" data-file-upload></div>
+        <p class="wizard-note">${t("Add a real cover if you have one. A valid ISBN can fetch the cover. Up to 4 photos.", "有書封就上傳。有效的 ISBN 也能帶入書封。最多 4 張。")}</p>
         <div class="wizard-photos">
           ${draft.photos.map((src, index) => `<figure><img src="${esc(src)}" alt=""><button type="button" data-remove-photo="${index}" aria-label="${t("Remove photo", "移除照片")}">×</button></figure>`).join("")}
         </div>
         ${
           draft.kind === "item"
             ? `<p class="wizard-note">${t("This listing has no ISBN.", "這則刊登沒有 ISBN。")} <a href="list.html">${t("This is a book", "這是一本書")}</a></p>`
+            : ""
+        }
+      </div>
+      <div class="list-col">
+        ${
+          draft.kind === "item"
+            ? ""
             : `<section class="list-id">
-                <h2>${t("Book details", "書籍資料")}</h2>
                 <label>${t("ISBN", "ISBN")}
                   <input data-field="isbn" value="${esc(draft.isbn)}" inputmode="numeric" autocomplete="off" placeholder="9780134891262">
                 </label>
-                <p class="wizard-note" data-isbn-note>${looking ? t("Looking up that ISBN…", "正在查詢 ISBN…") : t("A valid ISBN fills the title, author, and edition.", "有效的 ISBN 會帶入書名、作者與版次。")}</p>
+                <p class="wizard-note" data-isbn-note>${looking ? t("Looking up that ISBN…", "正在查詢 ISBN…") : t("A valid ISBN fills the title, author, and edition, and adds a cover if you have not uploaded one.", "有效的 ISBN 會帶入書名、作者、版次；若你還沒上傳照片，也會加上書封。")}</p>
                 <div class="wizard-split">
                   <label>${t("Author", "作者")}<input data-field="author" value="${esc(draft.author)}"></label>
                   <label>${t("Edition", "版次")}<input data-field="edition" value="${esc(draft.edition)}"></label>
@@ -590,8 +730,6 @@ const paintWizard = () => {
                 <p class="not-book"><a href="list.html?kind=item">${t("Not a book?", "不是書？")}</a></p>
               </section>`
         }
-      </div>
-      <div class="list-col">
         <label>${draft.kind === "item" ? t("Item name", "物品名稱") : t("Title", "書名")}
           <input data-field="title" value="${esc(draft.title)}" placeholder="${draft.kind === "item" ? t("Calculator, case, notes pack", "計算機、盒子、筆記包") : ""}">
         </label>
@@ -640,6 +778,7 @@ const paintWizard = () => {
       <button type="button" class="btn btn-ghost" data-wizard-cancel>${t("Cancel", "取消")}</button>
       <button type="button" class="btn btn-primary" data-wizard-publish ${!draft.bumped || draft.bumpTerms ? "" : "disabled"}>${t("Post listing", "刊登")}</button>
     </div>`;
+  mountListingPhotos(root);
 };
 
 const showWizard = (book) => {
@@ -698,40 +837,30 @@ const listingUpload = (work) =>
   new Promise((resolve) => {
     const item = draft.kind === "item";
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const zhOn = zh();
+    const price = Math.max(0, Math.round(Number(draft.price) || 0));
+    if (!draft.id) draft.id = crypto.randomUUID();
     const steps = [
-      item ? t("Saving your item", "正在儲存物品") : t("Saving your listing", "正在儲存刊登"),
-      t("Connecting to the server", "正在連線伺服器"),
-      t("Publishing it on the marketplace", "正在刊登到市集"),
+      {
+        id: "save",
+        title: item ? t("Saving your item", "正在儲存物品") : t("Saving your listing", "正在儲存刊登"),
+        detail: draft.title || t("Untitled", "未命名"),
+      },
+      { id: "server", title: t("Connecting to the server", "正在連線伺服器"), detail: t("Keeping this page open", "請留在這個頁面") },
+      {
+        id: "publish",
+        title: t("Publishing it on the marketplace", "正在刊登到市集"),
+        detail: item ? t("Your item joins the shelf", "物品會出現在市集") : t("Your listing joins the shelf", "刊登會出現在市集"),
+      },
     ];
     const gate = document.createElement("div");
-    gate.className = "listing-gate";
+    gate.className = "listing-gate transfer-gate";
     gate.setAttribute("role", "dialog");
     gate.setAttribute("aria-modal", "true");
     gate.setAttribute("aria-label", t("Please wait. Uploading your listing.", "請稍候，正在上傳刊登。"));
-    gate.innerHTML = `
-      <div class="listing-gate-card order-receive">
-        <img src="images/logo.png" alt="" width="64" height="64">
-        <h2>${t("Please wait", "請稍候")}</h2>
-        <p>${item ? t("Uploading your item and connecting it to the marketplace.", "正在上傳物品並連上市集。") : t("Uploading your listing and connecting it to the marketplace.", "正在上傳刊登並連上市集。")}</p>
-        <div class="order-progress" aria-hidden="true"><i data-order-bar></i></div>
-        <p class="order-hint">${t("Stay on this page while we reach the server.", "連線完成前請留在這個頁面。")}</p>
-        <ol class="order-steps">
-          ${steps
-            .map(
-              (label, index) => `<li data-order-step="${index}">
-                <button type="button" data-order-go="${index}">
-                  <span class="step-mark" aria-hidden="true"></span>
-                  <span>${label}</span>
-                </button>
-              </li>`
-            )
-            .join("")}
-        </ol>
-      </div>`;
+    gate.innerHTML = `<div data-transfer></div><p class="order-hint">${t("Tap the highlighted line to move on.", "點正在亮的那一行，就會往下。")}</p>`;
     document.body.append(gate);
     document.body.classList.add("is-gated");
-    const bar = gate.querySelector("[data-order-bar]");
-    const items = [...gate.querySelectorAll("[data-order-step]")];
     const job = Promise.resolve().then(work).then(
       () => ({ ok: true }),
       (error) => ({ ok: false, error })
@@ -739,22 +868,44 @@ const listingUpload = (work) =>
     let index = 0;
     let timer = 0;
     let settled = false;
-    const paint = () => {
-      items.forEach((item, itemIndex) => {
-        item.classList.toggle("is-on", itemIndex === index);
-        item.classList.toggle("is-done", itemIndex < index);
-        const button = item.querySelector("button");
-        if (button) button.disabled = itemIndex !== index;
-      });
-      if (bar) bar.style.width = `${Math.round((index / steps.length) * 100)}%`;
-    };
+    let view = null;
+    const card = (status) => ({
+      from: { amount: price, currency: "TWD", symbol: "NT$", bank: t("This desk", "這個書桌") },
+      to: {
+        amount: price,
+        currency: "TWD",
+        symbol: "NT$",
+        bank: t("Marketplace", "市集"),
+        name: draft.title || (item ? t("Your item", "你的物品") : t("Your listing", "你的刊登")),
+      },
+      rate: 1,
+      digits: 0,
+      locale: zhOn ? "zh-TW" : "en",
+      txnId: `LIST-${String(draft.id).slice(0, 6).toUpperCase()}`,
+      status,
+      progress: status === "completed" ? steps.length : index,
+      steps,
+      summary: item
+        ? t("Uploading your item and connecting it to the marketplace.", "正在上傳物品並連上市集。")
+        : t("Uploading your listing and connecting it to the marketplace.", "正在上傳刊登並連上市集。"),
+      note: t("Stay on this page", "請留在這個頁面"),
+      labels: {
+        processing: t("In progress", "進行中"),
+        completed: t("Posted", "已刊登"),
+        failed: t("Failed", "失敗"),
+      },
+      onStepClick: (step) => {
+        if (step === index) go(index + 1);
+      },
+    });
     const finish = () => {
       if (settled) return;
       settled = true;
       window.clearTimeout(timer);
-      if (bar) bar.style.width = "100%";
+      view?.update(card("completed"));
       job.then((result) => {
         window.setTimeout(() => {
+          view?.unmount();
           gate.remove();
           document.body.classList.remove("is-gated");
           resolve(result);
@@ -765,19 +916,24 @@ const listingUpload = (work) =>
       if (settled) return;
       window.clearTimeout(timer);
       index = next;
-      paint();
       if (index >= steps.length) {
         finish();
         return;
       }
+      view?.update(card("processing"));
       timer = window.setTimeout(() => go(index + 1), reduce ? 220 : 900);
     };
-    gate.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-order-go]");
-      if (!button || Number(button.getAttribute("data-order-go")) !== index) return;
-      go(index + 1);
-    });
-    go(0);
+    void import("../src/transfer-gate.tsx")
+      .then(({ mountTransfer }) => {
+        view = mountTransfer(gate.querySelector("[data-transfer]"), card("processing"));
+        go(0);
+      })
+      .catch(async () => {
+        const result = await job;
+        gate.remove();
+        document.body.classList.remove("is-gated");
+        resolve(result);
+      });
   });
 
 const publish = async () => {
@@ -1024,10 +1180,11 @@ const onWizardInput = async (event) => {
   if (note) note.textContent = t("Looking up that ISBN…", "正在查詢 ISBN…");
   const code = isbnDigits(draft.isbn);
   await new Promise((resolve) => window.setTimeout(resolve, 650));
-  const found = lookupBook(code);
+  const found = await lookupOpenLibrary(code);
   draft.title = found.title;
   draft.author = found.author;
   draft.edition = found.edition;
+  if (found.cover && !draft.photos.length) draft.photos = [found.cover];
   looking = false;
   paintWizard();
 };

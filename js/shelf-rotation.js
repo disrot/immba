@@ -76,7 +76,7 @@ export const rotatedPackets = () => {
       details: [course, condition[0], bumped ? "Bumped listing" : "Cohort shelf"],
       pickup: delivery
         ? "Campus pickup, or delivery for NT$60 if you leave it checked in the bag."
-        : "Campus pickup after the seller confirms payment.",
+        : "Campus hand-off after the seller confirms payment.",
     };
     return {
       id,
@@ -96,7 +96,7 @@ export const rotatedPackets = () => {
       professor: "",
       firm: true,
       sellerId: "shelf",
-      sellerName: "A classmate",
+      sellerName: "imMBA shelf",
       rotating: true,
       en: copy,
       zh: {

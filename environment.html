@@ -26,7 +26,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=trade18" />
+    <link rel="stylesheet" href="css/styles.css?v=env1" />
   </head>
   <body data-title-key="env.pageTitle" data-desc-key="env.meta">
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
@@ -188,10 +188,7 @@
           </p>
         </div>
 
-        <figure class="env-feature">
-          <img src="images/environment/md-1f.jpg" alt="" width="1113" height="1479" />
-          <figcaption data-i18n="env.cap.lobby">Cardinal Shan Building (MD), humanities lobby</figcaption>
-        </figure>
+        <div class="container env-lightbox kokonut-surface" data-lightbox-host></div>
 
         <div class="container env-split">
           <article class="about-story-card">
@@ -210,7 +207,11 @@
           </article>
         </div>
 
-        <div class="container env-gallery env-gallery-md">
+        <div class="container env-gallery env-gallery-md" hidden data-lightbox-sources>
+          <figure>
+            <img src="images/environment/md-1f.jpg" alt="" width="1113" height="1479" />
+            <figcaption data-i18n="env.cap.lobby">Cardinal Shan Building (MD), humanities lobby</figcaption>
+          </figure>
           <figure>
             <img src="images/environment/md-10f-av-classroom.jpg" alt="" width="1024" height="704" />
             <figcaption data-i18n="env.cap.av">MD 10F multifunctional AV classroom</figcaption>
@@ -245,17 +246,6 @@
               creating and learning feel more immediate.
             </p>
           </article>
-        </div>
-
-        <div class="container env-gallery env-gallery-wide">
-          <figure>
-            <img src="images/environment/gathering-orange-sofa.jpg" alt="" width="1024" height="576" />
-            <figcaption data-i18n="env.cap.orange">Orange curved sofa lounge</figcaption>
-          </figure>
-          <figure>
-            <img src="images/environment/gathering-plus-ottomans.jpg" alt="" width="1024" height="577" />
-            <figcaption data-i18n="env.cap.ottoman">Colorful plus-shaped ottomans</figcaption>
-          </figure>
         </div>
 
         <div class="container env-foot">
@@ -373,6 +363,7 @@
     </footer>
 
     <script type="module" src="js/main.js?v=audit1"></script>
+    <script type="module" src="./src/env-lightbox.tsx"></script>
     <script type="module" src="js/back-top.js"></script>
   </body>
 </html>

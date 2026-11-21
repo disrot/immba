@@ -211,6 +211,29 @@ if (!root) {
       }
     });
 
+    const uploadHost = root.querySelector("[data-faculty-upload]");
+    if (uploadHost) {
+      const { mountFileUpload } = await import("../src/mount-file-upload.tsx");
+      mountFileUpload(uploadHost, {
+        acceptedFileTypes: ["image/*"],
+        multiple: false,
+        maxFiles: 1,
+        onUpload: async (file, { onProgress }) => {
+          onProgress(40);
+          const input = field("photo");
+          const transfer = new DataTransfer();
+          transfer.items.add(file);
+          input.files = transfer.files;
+          const preview = root.querySelector("[data-faculty-preview]");
+          if (preview) {
+            preview.hidden = false;
+            preview.src = URL.createObjectURL(file);
+          }
+          onProgress(100);
+        },
+      });
+    }
+
     await reload();
     fill(null);
     setStatus("");

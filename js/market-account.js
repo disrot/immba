@@ -1,7 +1,7 @@
 import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=notice4";
 import { ackRemovedNotices, listRemovedNotices } from "./listings-store.js?v=notice3";
-import { initSellerHub } from "./seller-hub.js?v=apple6";
-import { marketMode, setMarketMode } from "./trade.js?v=hold3";
+import { initSellerHub } from "./seller-hub.js?v=odo3";
+import { marketMode, setMarketMode } from "./trade.js?v=hold4";
 
 const esc = (value) =>
   String(value ?? "")

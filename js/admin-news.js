@@ -195,20 +195,18 @@ if (!form || !table) {
     }
   });
 
-  form.addEventListener("change", async (event) => {
-    if (event.target?.name !== "photos") return;
-    const files = [...(event.target.files || [])].filter((file) => file.type.startsWith("image/"));
-    if (!files.length) return;
+  const attachPhotos = async (files) => {
+    const images = [...files].filter((file) => file.type.startsWith("image/"));
+    if (!images.length) return;
     const room = Math.max(0, MAX_PHOTOS - photos.length);
     if (!room) {
       setStatus(`You can attach up to ${MAX_PHOTOS} photos.`);
-      event.target.value = "";
       return;
     }
     setStatus("Adding photos…");
     try {
       const next = [];
-      for (const file of files.slice(0, room)) {
+      for (const file of images.slice(0, room)) {
         next.push(await compressImage(file));
       }
       photos = [...photos, ...next];
@@ -218,6 +216,26 @@ if (!form || !table) {
     } catch {
       setStatus("Could not read one of the photos. Try another file.");
     }
+  };
+
+  const newsUpload = document.querySelector("[data-news-upload]");
+  if (newsUpload) {
+    const { mountFileUpload } = await import("../src/mount-file-upload.tsx");
+    mountFileUpload(newsUpload, {
+      acceptedFileTypes: ["image/*"],
+      multiple: true,
+      maxFiles: MAX_PHOTOS,
+      onUpload: async (file, { onProgress }) => {
+        onProgress(30);
+        await attachPhotos([file]);
+        onProgress(100);
+      },
+    });
+  }
+
+  form.addEventListener("change", async (event) => {
+    if (event.target?.name !== "photos") return;
+    await attachPhotos(event.target.files || []);
     event.target.value = "";
   });
 

@@ -1,5 +1,6 @@
 import { getAuthSession } from "./supabase.js?v=secure1";
-import { buyerOrders, money, statusText, when } from "./trade.js?v=hold3";
+import { buyerOrders, money, statusText, when } from "./trade.js?v=hold4";
+import { odo } from "./odometer.js?v=odo3";
 
 const root = document.querySelector("[data-orders]");
 const zh = () => document.body?.dataset.lang === "zh";
@@ -51,7 +52,7 @@ const paint = () => {
               (item) => `<li>
                 ${item.image ? `<img src="${esc(item.image)}" alt="">` : `<span class="bag-fallback"></span>`}
                 <span>${esc(item.title)}</span>
-                <span class="trade-money">×${esc(item.qty)}</span>
+                <span class="trade-money">×${odo(`${order.id}-${item.id || item.title}-qty`, String(item.qty))}</span>
               </li>`
             )
             .join("");
@@ -63,12 +64,12 @@ const paint = () => {
             <ul class="trade-items">${items}</ul>
             ${
               order.buyerFee == null
-                ? `<p class="trade-money">${esc(money(order.total, zh()))}</p>`
+                ? `<p class="trade-money">${odo(`${order.id}-total`, money(order.total, zh()))}</p>`
                 : `<div class="bag-fees">
-                    <p><span>${zh() ? "書籍" : "Books"}</span><span class="trade-money">${esc(money(order.goods, zh()))}</span></p>
-                    <p><span>${zh() ? "服務費" : "Service fee"}</span><span class="trade-money">${esc(money(order.buyerFee, zh()))}</span></p>
-                    <p><span>${zh() ? "外送" : "Delivery"}</span><span class="trade-money">${esc(money(order.deliveryFee, zh()))}</span></p>
-                    <p class="trade-total"><span>${zh() ? "合計" : "Total"}</span><span class="trade-money">${esc(money(order.total, zh()))}</span></p>
+                    <p><span>${zh() ? "書籍" : "Books"}</span><span class="trade-money">${odo(`${order.id}-goods`, money(order.goods, zh()))}</span></p>
+                    <p><span>${zh() ? "服務費" : "Service fee"}</span><span class="trade-money">${odo(`${order.id}-fee`, money(order.buyerFee, zh()))}</span></p>
+                    <p><span>${zh() ? "外送" : "Delivery"}</span><span class="trade-money">${odo(`${order.id}-delivery`, money(order.deliveryFee, zh()))}</span></p>
+                    <p class="trade-total"><span>${zh() ? "合計" : "Total"}</span><span class="trade-money">${odo(`${order.id}-total`, money(order.total, zh()))}</span></p>
                   </div>`
             }
             ${

@@ -1,3 +1,5 @@
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { cpSync, existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -30,7 +32,13 @@ const htmlInput = (dir, acc = {}) => {
 export default defineConfig({
   base: "./",
   publicDir: "public",
-  plugins: [copyStaticImages()],
+  resolve: {
+    alias: [{ find: /^@\//, replacement: `${resolve("src")}/` }],
+  },
+  optimizeDeps: {
+    include: ["react", "react-dom", "react-dom/client", "motion/react", "lucide-react"],
+  },
+  plugins: [react(), tailwindcss(), copyStaticImages()],
   build: {
     outDir: "dist",
     assetsDir: "assets",

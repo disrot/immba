@@ -2,12 +2,12 @@ import { renderNewsArticle, renderNewsCards } from "./news-ui.js";
 import { hydrateNews } from "./news-store.js?v=news2";
 import { applyOfficialLinks } from "./official.js";
 import { initGallery, refreshGalleryCaptions } from "./gallery.js";
-import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage, watchOfficeAccess } from "./auth.js?v=office2";
+import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage, watchOfficeAccess } from "./auth.js?v=login1";
 import { initFacultyDirectory } from "./faculty.js?v=notice3";
-import { initMarketplace, initListing, paintBagBadge } from "./marketplace.js?v=apple6";
-import { initMarketAccount } from "./market-account.js?v=apple6";
+import { initMarketplace, initListing, paintBagBadge } from "./marketplace.js?v=odo3";
+import { initMarketAccount } from "./market-account.js?v=odo3";
 import { initAnalytics } from "./analytics.js";
-import { initAdminDash } from "./admin-dash.js?v=pages1";
+import { initAdminDash } from "./admin-dash.js?v=bento1";
 import { initPageHero } from "./page-hero.js?v=audit1";
 import { initSelectDrops, refreshSelectDrop } from "./ui-drop.js?v=drop2";
 
@@ -531,6 +531,8 @@ const translations = {
     "office.area": "Area",
     "office.web": "Web Analytics",
     "office.analytics": "Analytics",
+    "office.loadingTitle": "Opening the office…",
+    "office.loadingSub": "Checking your staff account",
     "office.people": "People",
     "office.overview": "Overview",
     "office.source": "Traffic overview",
@@ -1195,6 +1197,8 @@ const translations = {
     "office.area": "區塊",
     "office.web": "網站分析",
     "office.analytics": "分析",
+    "office.loadingTitle": "正在開啟後台…",
+    "office.loadingSub": "正在確認職員帳號",
     "office.people": "訪客",
     "office.overview": "總覽",
     "office.source": "流量來源",
@@ -1486,7 +1490,7 @@ initMarketAccount();
 enhanceFooter();
 initPageHero();
 initSelectDrops();
-if (/(?:^|\/)marketplace\.html$/.test(location.pathname)) document.body.classList.add("nav-collapsed");
+if (/(?:^|\/)(marketplace|listing|list|cart|orders|market-account)\.html$/.test(location.pathname)) document.body.classList.add("nav-collapsed");
 applyLang();
 hydrateNews().finally(() => applyLang());
 

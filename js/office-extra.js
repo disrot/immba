@@ -1,5 +1,5 @@
 import { rpc } from "./supabase.js?v=secure1";
-import { allOrders, isAbnormal, money as tradeMoney, statusText, when as tradeWhen } from "./trade.js?v=hold3";
+import { allOrders, isAbnormal, money as tradeMoney, statusText, when as tradeWhen } from "./trade.js?v=hold4";
 
 const esc = (value) =>
   String(value ?? "")
@@ -12,7 +12,7 @@ const zh = () => document.body?.dataset.lang === "zh";
 const t = (en, tw) => (zh() ? tw : en);
 
 const money = (amount) =>
-  `NT$ ${Number(amount || 0).toLocaleString(zh() ? "zh-TW" : "en-US")}`;
+  `NT$${Number(amount || 0).toLocaleString(zh() ? "zh-TW" : "en-US")}`;
 
 const when = (value) => {
   if (!value) return "";

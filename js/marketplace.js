@@ -1,8 +1,9 @@
 import { isSellerAuthed } from "./auth.js?v=notice4";
 import { getAuthSession, rpc } from "./supabase.js?v=secure1";
 import { listCloudListings } from "./listings-store.js?v=notice3";
-import { BUYER_ITEM_FEE, DELIVERY_FEE, availableQty, defaultOnHand, marketMode, releaseExpired, setMarketMode } from "./trade.js?v=hold3";
-import { rotatedPackets } from "./shelf-rotation.js?v=pass1";
+import { BUYER_ITEM_FEE, DELIVERY_FEE, availableQty, defaultOnHand, marketMode, releaseExpired, setMarketMode } from "./trade.js?v=hold4";
+import { rotatedPackets } from "./shelf-rotation.js?v=pass2";
+import { odo } from "./odometer.js?v=odo3";
 
 export const PACKETS = [
   {
@@ -348,18 +349,18 @@ const TAG_LABEL = {
 };
 
 const PACKET_FACTS = {
-  ibm: ["IBM", "Used", "二手"],
-  ethics: ["ETH", "Digital", "數位"],
-  strategy: ["STR", "Digital", "數位"],
-  supply: ["OSC", "Used", "二手"],
-  marketing: ["MKT", "Digital", "數位"],
-  org: ["ORG", "Digital", "數位"],
-  finance: ["FIN", "Used", "二手"],
-  hr: ["HRM", "Digital", "數位"],
-  analytics: ["BAN", "Digital", "數位"],
-  ai: ["DIG", "Digital", "數位"],
-  "ibm-used": ["IBM", "Used", "二手"],
-  thesis: ["RES", "Digital", "數位"],
+  ibm: ["IBM", "Good", "良好"],
+  ethics: ["ETH", "New", "全新"],
+  strategy: ["STR", "New", "全新"],
+  supply: ["OSC", "Good", "良好"],
+  marketing: ["MKT", "New", "全新"],
+  org: ["ORG", "New", "全新"],
+  finance: ["FIN", "Good", "良好"],
+  hr: ["HRM", "New", "全新"],
+  analytics: ["BAN", "New", "全新"],
+  ai: ["DIG", "New", "全新"],
+  "ibm-used": ["IBM", "Good", "良好"],
+  thesis: ["RES", "New", "全新"],
 };
 
 const COND_ZH = {
@@ -383,7 +384,7 @@ const withFacts = (item) => {
     condition: item.condition || condition,
     conditionZh: item.conditionZh || conditionZh,
     firm: item.firm !== false,
-    sellerName: item.sellerName || "A classmate",
+    sellerName: item.sellerName || "imMBA shelf",
   };
 };
 
@@ -495,7 +496,7 @@ const sellerPackets = () => {
         details: [book.course, book.professor, book.condition].filter(Boolean),
         pickup: book.delivery
           ? "Campus pickup, or delivery for NT$60 if you leave it checked in the bag."
-          : "Campus pickup after the seller confirms payment and shipment.",
+          : "Campus hand-off after the seller confirms payment.",
       };
       return {
         id: book.id,
@@ -526,7 +527,7 @@ const sellerPackets = () => {
         en: copy,
         zh: {
           ...copy,
-          pickup: book.delivery ? "可校園面交。若在袋子裡保留外送，另付 NT$60。" : "賣方確認付款並出貨後，於校園面交。",
+          pickup: book.delivery ? "可校園面交。若在袋子裡保留外送，另付 NT$60。" : "賣方確認付款後，於校園面交。",
         },
       };
     });
@@ -540,9 +541,14 @@ const stockOf = (item) => {
 const bumpMark = (lang) =>
   `<span class="shop-bump" aria-label="${lang === "zh" ? "已置頂" : "Bumped"}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2.2 4.6 13.4h6.1l-.9 8.4 9.6-12.6h-6.3z" fill="currentColor"/></svg></span>`;
 
+const CONDITION_ALIAS = { Used: "Good", Digital: "New" };
+
+const canonicalCondition = (value) => CONDITION_ALIAS[value] || value || "";
+
 const conditionText = (item, lang) => {
-  if (lang === "zh") return item.conditionZh || COND_ZH[item.condition] || item.condition || "";
-  return item.condition || "";
+  const condition = canonicalCondition(item.condition);
+  if (lang === "zh") return COND_ZH[condition] || item.conditionZh || condition;
+  return condition;
 };
 
 const courseText = (item, lang) => {
@@ -556,7 +562,7 @@ const cardMeta = (item, lang) => [conditionText(item, lang), courseText(item, la
 
 const sellerLabel = (item, lang) => {
   const name = String(item.sellerName || "").trim();
-  const generic = !name || ["classmate", "a classmate", "cohort shelf", "immba shelf", "shelf", "local"].includes(name.toLowerCase());
+  const generic = !name || ["classmate", "a classmate", "local"].includes(name.toLowerCase());
   if (generic) return lang === "zh" ? "一位同學" : "a classmate";
   return name;
 };
@@ -586,7 +592,7 @@ const paintBagCount = (count) => {
       bag.append(badge);
     }
     badge.hidden = n <= 0;
-    badge.textContent = n > 9 ? "9+" : String(n);
+    badge.innerHTML = odo(`bag-${bag.getAttribute("href") || "bag"}`, n > 9 ? "9+" : String(n));
     bag.setAttribute("aria-label", lang === "zh" ? (n ? `袋子，${n} 件` : "袋子") : n ? `Bag, ${n} ${n === 1 ? "item" : "items"}` : "Bag");
   });
 };
@@ -626,7 +632,9 @@ const cardHTML = (item) => {
   const meta = cardMeta(item, lang);
   const who = prettySeller(item, lang);
   const byline = item.posted ? (lang === "zh" ? `${who} 刊登` : `Posted by ${who}`) : who;
-  const price = sold ? `<span class="shop-sold">${soldLabel}</span>` : `<span class="shop-price">${money(item.price)}</span>`;
+  const price = sold
+    ? `<span class="shop-sold">${soldLabel}</span>`
+    : `<span class="shop-price">${odo(`card-${item.id}`, money(item.price))}</span>`;
   const photo = item.image
     ? `<img src="${esc(item.image)}" alt="" width="900" height="1120" loading="lazy">`
     : `<span class="shop-cover-empty"></span>`;
@@ -639,11 +647,12 @@ const cardHTML = (item) => {
     <h2>${esc(copy.title)}</h2>
     <p class="shop-seller">${item.sellerPhoto ? `<img src="${esc(item.sellerPhoto)}" alt="">` : ""}<span>${esc(byline)}</span></p>
     ${meta ? `<p class="shop-meta">${esc(meta)}</p>` : ""}
-    ${sold ? "" : `<p class="shop-stock">${lang === "zh" ? `剩 ${left}` : `${left} left`}</p>`}
+    ${sold ? "" : `<p class="shop-stock">${lang === "zh" ? `剩 ${odo(`stock-${item.id}`, String(left))}` : `${odo(`stock-${item.id}`, String(left))} left`}</p>`}
   </a>`;
 };
 
 export const initMarketplace = () => {
+  if (marketMode() !== "buyer") setMarketMode("buyer");
   const root = document.querySelector("[data-shop]");
   if (!root || root.dataset.bound === "1") return;
   root.dataset.bound = "1";
@@ -720,11 +729,11 @@ export const initMarketplace = () => {
         ], category),
         block(t("Condition", "書況"), "cond", [
           ["all", "All", "全部"],
+          ["New", "New", "全新"],
           ["Like New", "Like New", "近全新"],
           ["Good", "Good", "良好"],
           ["Fair", "Fair", "普通"],
-          ["Used", "Used", "二手"],
-          ["Digital", "Digital", "數位"],
+          ["Worn", "Worn", "有使用痕跡"],
         ], condition),
         block(t("Price", "價格"), "price", [
           ["all", "All", "全部"],
@@ -758,7 +767,7 @@ export const initMarketplace = () => {
     const order = sort?.value || "featured";
     const query = (search?.value || "").trim().toLowerCase();
     let list = catalog().filter(
-      (item) => stockOf(item) > 0 && (category === "all" || item.tag === category) && (condition === "all" || item.condition === condition) && priceOk(item.price)
+      (item) => stockOf(item) > 0 && (category === "all" || item.tag === category) && (condition === "all" || canonicalCondition(item.condition) === condition) && priceOk(item.price)
     );
     if (query) {
       list = list.filter((item) => {
@@ -963,7 +972,7 @@ export const initListing = () => {
       info.innerHTML = `
         <p class="pdp-kicker">${tagLabel}</p>
         <h1 class="pdp-title">${esc(copy.title)}</h1>
-        <p class="pdp-price">${soldOut ? soldLabel : money(item.price)}</p>
+        <p class="pdp-price">${soldOut ? soldLabel : odo(`pdp-${item.id}`, money(item.price))}</p>
         ${
           soldOut
             ? ""
@@ -982,7 +991,7 @@ export const initListing = () => {
           <p class="pdp-label">${qtyLabel}</p>
           <div class="pdp-qty">
             <button type="button" data-qty="-1" ${qty <= 1 || soldOut ? "disabled" : ""} aria-label="Decrease quantity">−</button>
-            <span class="trade-money">${qty}</span>
+            <span class="trade-money">${odo(`pdp-qty-${item.id}`, String(qty))}</span>
             <button type="button" data-qty="1" ${soldOut || qty >= left ? "disabled" : ""} aria-label="Increase quantity">+</button>
           </div>
         </div>
@@ -1006,7 +1015,7 @@ export const initListing = () => {
       dock.hidden = false;
       dock.innerHTML = soldOut
         ? `<strong>${soldLabel}</strong><button type="button" class="pdp-bag" disabled>${soldLabel}</button>`
-        : `<strong class="trade-money">${money(item.price)}</strong><a class="pdp-bag" href="${bagHref}">${bagLabel}</a>`;
+        : `<strong class="trade-money">${odo(`pdp-dock-${item.id}`, money(item.price))}</strong><a class="pdp-bag" href="${bagHref}">${bagLabel}</a>`;
     }
 
     const also = [...sellerPackets(), ...rotatedPackets(), ...allPackets()]

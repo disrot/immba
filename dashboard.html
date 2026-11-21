@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=trade13" />
+    <link rel="stylesheet" href="css/styles.css?v=brand3" />
     <style>
       html:not([data-office-ready]) .office { display: none !important; }
     </style>
@@ -44,6 +44,18 @@
         location.replace("login.html");
       })();
     </script>
+    <div class="k-loader" data-office-loader data-size="md">
+      <div class="k-loader-rings" aria-hidden="true">
+        <span class="k-loader-ring k-loader-ring-outer"></span>
+        <span class="k-loader-ring k-loader-ring-primary"></span>
+        <span class="k-loader-ring k-loader-ring-counter"></span>
+        <span class="k-loader-ring k-loader-ring-accent"></span>
+      </div>
+      <output class="k-loader-copy" aria-live="polite">
+        <span class="k-loader-title" data-i18n="office.loadingTitle">Opening the office…</span>
+        <span class="k-loader-subtitle" data-i18n="office.loadingSub">Checking your staff account</span>
+      </output>
+    </div>
     <div class="office" data-office data-admin-guard data-admin-dash>
       <aside class="office-rail" aria-label="Back-office">
         <a class="logo office-rail-logo" href="index.html#top" data-i18n-attr="aria-label:brand.name" aria-label="Fu Jen Catholic University International MBA (imMBA)">
@@ -137,7 +149,7 @@
         <main id="main" class="office-main">
           <section class="office-panel" data-office-panel="analytics">
             <p class="office-note" data-dash-empty hidden></p>
-            <div class="office-grid">
+            <div class="office-grid" data-office-widgets>
               <article class="office-widget office-c8">
                 <header class="office-card-top">
                   <div>
@@ -568,7 +580,8 @@
                 </label>
                 <label>
                   Photo file
-                  <input type="file" name="photo" accept="image/*" />
+                  <input type="file" name="photo" accept="image/*" hidden />
+                  <div class="kokonut-surface" data-faculty-upload></div>
                 </label>
                 <img class="faculty-admin-preview" data-faculty-preview alt="" hidden />
               </div>
@@ -683,7 +696,8 @@
               <div class="admin-photos">
                 <label>
                   <span data-i18n="admin.photos">Photos</span>
-                  <input type="file" name="photos" accept="image/*" multiple />
+                  <input type="file" name="photos" accept="image/*" multiple hidden />
+                  <div class="kokonut-surface" data-news-upload></div>
                 </label>
                 <p class="admin-photos-hint" data-i18n="admin.photosHint">
                   Attach JPEG, PNG, or WebP. Photos appear on the announcement page with both languages.
@@ -740,8 +754,8 @@
                   <option value="open">Incomplete</option>
                   <option value="waiting_payment">Waiting for payment confirmation</option>
                   <option value="payment_confirmed">Payment confirmed</option>
-                  <option value="ready_to_ship">Ready to ship</option>
-                  <option value="shipped">Shipped</option>
+                  <option value="ready_to_ship">Ready for hand-off</option>
+                  <option value="shipped">Handed off</option>
                   <option value="completed">Completed</option>
                   <option value="abnormal">Needs a look</option>
                 </select>
@@ -786,13 +800,14 @@
         </main>
       </div>
     </div>
-    <script type="module" src="js/main.js?v=office2"></script>
-    <script type="module" src="js/admin-news.js?v=news2"></script>
-    <script type="module" src="js/admin-faculty.js?v=order1"></script>
+    <script type="module" src="js/main.js?v=loader1"></script>
+    <script type="module" src="./src/dashboard-bento.tsx"></script>
+    <script type="module" src="js/admin-news.js?v=kit2"></script>
+    <script type="module" src="js/admin-faculty.js?v=kit2"></script>
     <script type="module" src="js/admin-access.js?v=access2"></script>
     <script type="module" src="js/admin-listings.js?v=notice4"></script>
     <script type="module" src="js/admin-alumni.js?v=drop2"></script>
     <script type="module" src="js/admin-audit.js?v=audit2"></script>
-    <script type="module" src="js/office-extra.js?v=hold3"></script>
+    <script type="module" src="js/office-extra.js?v=hold4"></script>
   </body>
 </html>
