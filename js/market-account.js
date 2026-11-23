@@ -1,6 +1,6 @@
 import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=notice4";
 import { ackRemovedNotices, listRemovedNotices } from "./listings-store.js?v=notice3";
-import { initSellerHub } from "./seller-hub.js?v=odo3";
+import { initSellerHub } from "./seller-hub.js?v=profile6";
 import { marketMode, setMarketMode } from "./trade.js?v=hold4";
 
 const esc = (value) =>
@@ -44,10 +44,13 @@ export const initMarketAccount = () => {
          </button>`
       : "";
   } else if (bar) {
-    bar.hidden = !seller;
+    const menu = document.querySelector("[data-market-profile]");
+    bar.hidden = !seller || Boolean(menu);
     const outLabel = zh() ? "登出" : "Sign out";
     bar.innerHTML = seller
-      ? `<p class="shop-account-mail">${esc(session.email)}</p>
+      ? menu
+        ? `<span data-market-bell-slot></span>`
+        : `<p class="shop-account-mail">${esc(session.email)}</p>
          <span data-market-bell-slot></span>
          <button type="button" class="shop-icon shop-icon-out" data-market-out aria-label="${outLabel}">
            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5.5H7.8A1.8 1.8 0 0 0 6 7.3v9.4a1.8 1.8 0 0 0 1.8 1.8H10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12.5 12H19M16.2 8.8 19.2 12l-3 3.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -87,6 +90,9 @@ export const initMarketAccount = () => {
     if (!slot) return;
     if (!seller || !rows.length) {
       slot.innerHTML = "";
+      if (document.querySelector("[data-market-profile]") && bar && !document.querySelector("[data-market-desk]")) {
+        bar.hidden = true;
+      }
       return;
     }
     const n = rows.length;
@@ -96,6 +102,9 @@ export const initMarketAccount = () => {
     const lede = zh()
       ? "後台已從市集下架你的刊登。"
       : "The office removed a listing of yours from Marketplace.";
+    if (bar && document.querySelector("[data-market-profile]") && !document.querySelector("[data-market-desk]")) {
+      bar.hidden = false;
+    }
     slot.innerHTML = `<div class="market-bell-wrap" data-market-bell>
       <button type="button" class="market-bell" aria-expanded="false" aria-label="${zh() ? "通知" : "Notifications"}">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a5 5 0 0 0-5 5v2.2c0 .8-.3 1.6-.9 2.2L5 15h14l-1.1-1.6a3.2 3.2 0 0 1-.9-2.2V9a5 5 0 0 0-5-5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 17.2a2.5 2.5 0 0 0 5 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>

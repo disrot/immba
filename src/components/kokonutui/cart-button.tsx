@@ -453,6 +453,8 @@ export interface CartButtonProps {
   onQuantitiesChange?: (quantities: Record<string, number>) => void;
   onCheckout?: (quantities: Record<string, number>) => void;
   checkoutLabel?: string;
+  /** The bag page already has its own place-order button. */
+  showCheckout?: boolean;
   emptyLabel?: string;
   /** Label for the stock cap, for example "Max 3". */
   limitFor?: (max: number) => string;
@@ -505,6 +507,7 @@ export default function CartButton({
   onQuantitiesChange,
   onCheckout,
   checkoutLabel = "Checkout",
+  showCheckout = true,
   emptyLabel = "Your cart is empty",
   limitFor,
   summaryFor,
@@ -595,19 +598,21 @@ export default function CartButton({
             <RollingNumber value={amount} />
           </p>
         </div>
-        <button
-          className={cn(
-            "h-9 rounded-full px-4 font-medium text-sm transition-colors duration-150",
-            count === 0
-              ? "cursor-not-allowed bg-zinc-100 text-zinc-400 dark:bg-zinc-900 dark:text-zinc-600"
-              : "bg-zinc-900 text-white hover:bg-zinc-800 active:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:active:bg-zinc-300 dark:hover:bg-zinc-200"
-          )}
-          disabled={count === 0}
-          onClick={() => onCheckout?.(quantities)}
-          type="button"
-        >
-          {checkoutLabel}
-        </button>
+        {showCheckout ? (
+          <button
+            className={cn(
+              "h-9 rounded-full px-4 font-medium text-sm transition-colors duration-150",
+              count === 0
+                ? "cursor-not-allowed bg-zinc-100 text-zinc-400 dark:bg-zinc-900 dark:text-zinc-600"
+                : "bg-zinc-900 text-white hover:bg-zinc-800 active:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:active:bg-zinc-300 dark:hover:bg-zinc-200"
+            )}
+            disabled={count === 0}
+            onClick={() => onCheckout?.(quantities)}
+            type="button"
+          >
+            {checkoutLabel}
+          </button>
+        ) : null}
       </div>
     </div>
   );

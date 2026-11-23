@@ -1,4 +1,5 @@
 import { odo } from "./odometer.js?v=odo3";
+import { bindSelectDrop } from "./ui-drop.js?v=drop3";
 import { currentProfile } from "./auth.js?v=notice4";
 import { createListing } from "./listings-store.js?v=notice3";
 import {
@@ -15,10 +16,10 @@ import {
   sellerTake,
   setMarketMode,
   setOnHand,
-  statusText,
   when,
   marketMode,
 } from "./trade.js?v=hold4";
+import { statusRail } from "./order-status.js?v=expand1";
 
 const BOOKS_KEY = "immba-seller-books";
 const MEETS_KEY = "immba-seller-meetups";
@@ -158,6 +159,7 @@ const writeSellerProfile = (next) => {
   };
   all[email] = saved;
   localStorage.setItem(PROFILE_KEY, JSON.stringify(all));
+  window.dispatchEvent(new CustomEvent("immba:seller-profile"));
   saveBooks(
     books().map((book) =>
       book.sellerEmail === email || book.sellerEmail === "local"
@@ -229,11 +231,20 @@ const navItems = () => {
   ];
 };
 
+const navIcon = (key) =>
+  ({
+    dashboard: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="13" y="4" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="4" y="13" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="13" y="13" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>`,
+    listings: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5.5h9.2L18 8.2V19H6z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>`,
+    orders: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h8M8 9.5h8M8 14h5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`,
+    sales: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 16.5 9.2 12l3 2.4L19 7.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    meetups: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="5.5" width="15" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8 4.5v3M16 4.5v3M4.5 10h15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`,
+  })[key] || "";
+
 const paintNav = () => {
   const items = navItems()
     .map(
       ([key, label]) =>
-        `<button type="button" data-seller-view="${key}" aria-current="${view === key ? "page" : "false"}">${label}</button>`
+        `<button type="button" data-seller-view="${key}" aria-current="${view === key ? "page" : "false"}">${navIcon(key)}<span>${label}</span></button>`
     )
     .join("");
   const side = document.querySelector("[data-seller-nav]");
@@ -306,16 +317,19 @@ const orderCard = (order, { act = true } = {}) => {
   return `<article class="trade-card" data-order="${esc(order.id)}">
     <header>
       <p class="trade-id">${esc(order.id)}</p>
-      <strong>${esc(statusText(order.status, zh()))}</strong>
     </header>
     <p>${esc(order.buyer)} · ${esc(when(order.createdAt, zh()))}</p>
     <ul class="trade-items">${items}</ul>
+    ${order.status === "expired" ? `<p>${t("Returned to the marketplace", "已退回市集")}</p>` : statusRail(order, zh())}
     <p class="trade-money">${t("Buyer pays", "買家支付")} ${odo(`order-${order.id}-pay`, tradeMoney(order.total, zh()))}${order.sellerNet != null ? ` · ${t("you receive", "你收到")} ${odo(`order-${order.id}-net`, tradeMoney(sellerProceeds(order), zh()))}` : ""}</p>
     ${act && action ? `<button type="button" class="btn btn-primary" data-advance="${esc(order.id)}">${esc(action)}</button>` : ""}
   </article>`;
 };
 
 const paintBuyer = (root) => {
+  document.querySelector(".shop-account-page .shop-hero-title")?.removeAttribute("hidden");
+  document.querySelector(".shop-account-page .shop-kicker")?.removeAttribute("hidden");
+  document.querySelector(".shop-account-page .login-lede")?.removeAttribute("hidden");
   document.querySelector("[data-seller-nav]")?.replaceChildren();
   document.querySelector("[data-seller-tabs]")?.replaceChildren();
   const email = currentProfile()?.email || "";
@@ -359,6 +373,24 @@ let avatarView = null;
 let uploadView = null;
 let avatarGen = 0;
 let uploadGen = 0;
+let profileEditing = false;
+
+const profileSettled = () => {
+  const saved = readSellerProfile();
+  return Boolean(saved.name && saved.photo);
+};
+
+const sellerIdentityCard = () => {
+  const saved = readSellerProfile();
+  return `<section class="seller-card seller-identity">
+    <img src="${esc(saved.photo)}" alt="">
+    <div>
+      <p>${t("Your name on listings", "刊登上的名字")}</p>
+      <strong>${esc(saved.name)}</strong>
+    </div>
+    <button type="button" class="btn btn-ghost" data-profile-edit>${t("Edit", "編輯")}</button>
+  </section>`;
+};
 
 const mountSellerAvatar = (root) => {
   avatarView?.unmount();
@@ -382,7 +414,10 @@ const mountSellerAvatar = (root) => {
       submitLabel: zhOn ? "儲存" : "Save",
       onComplete: async (value) => {
         const photo = await faceDataUrl(value);
+        if (!photo || !value.displayName) return;
         writeSellerProfile({ name: value.displayName, photo, variant: value.variant });
+        profileEditing = false;
+        paintHub();
       },
     });
   });
@@ -465,28 +500,41 @@ const paintHub = () => {
   avatarView?.unmount();
   avatarView = null;
   if (view === "dashboard") {
+    const settled = profileSettled() && !profileEditing;
+    const pageTitle = document.querySelector(".shop-account-page .shop-hero-title");
+    const pageKicker = document.querySelector(".shop-account-page .shop-kicker");
+    const pageLede = document.querySelector(".shop-account-page .login-lede");
+    pageTitle?.setAttribute("hidden", "");
+    pageKicker?.setAttribute("hidden", "");
+    pageLede?.setAttribute("hidden", "");
+    const showPicker = !settled || profileEditing;
     root.innerHTML = `
       <header class="seller-head">
         <div>
           <h2>${t("Seller desk", "賣方書桌")}</h2>
-          <p>${t("Inventory, payments to confirm, and books waiting for hand-off.", "庫存、待確認的付款，以及待面交的書。")}</p>
+          <p>${t("Track inventory, confirm payments, and manage campus hand-offs.", "看庫存、確認付款，並安排校園面交。")}</p>
         </div>
         <a class="btn btn-primary" href="list.html">${t("Create listing", "建立刊登")}</a>
       </header>
-      <section class="seller-card seller-profile kokonut-surface" data-avatar-host></section>
       <div class="seller-metrics">
-        ${metric(t("Listed products", "刊登商品"), String(active.length))}
-        ${metric(t("You receive this month", "本月實收"), money(monthSales(orders)))}
-        ${metric(t("Pending payments", "待確認付款"), String(pendingPay.length))}
-        ${metric(t("Waiting for hand-off", "待面交"), String(waitingShip.length))}
-        ${metric(t("Completed orders", "已完成訂單"), String(completed.length))}
+        <button type="button" class="seller-metric" data-seller-view="listings"><p>${t("Active listings", "刊登中")}</p><strong>${esc(String(active.length))}</strong></button>
+        <button type="button" class="seller-metric" data-seller-view="sales"><p>${t("Earned this month", "本月實收")}</p><strong>${esc(money(monthSales(orders)))}</strong></button>
+        <button type="button" class="seller-metric${pendingPay.length ? " is-hot" : ""}" data-seller-view="orders"><p>${t("Payments to confirm", "待確認付款")}</p><strong>${esc(String(pendingPay.length))}</strong></button>
+        <button type="button" class="seller-metric" data-seller-view="meetups"><p>${t("Waiting for hand-off", "待面交")}</p><strong>${esc(String(waitingShip.length))}</strong></button>
       </div>
-      <section class="seller-card">
-        <h3>${t("Next hand-off", "下一場面交")}</h3>
-        ${meetups[0] ? `<p><strong>${esc(meetups[0].buyer)}</strong> · ${esc(meetups[0].title)}</p><p>${esc(meetups[0].place)} · ${esc(meetups[0].when)}</p>` : `<p>${t("No meetups yet.", "還沒有面交。")}</p>`}
-      </section>
+      <div class="seller-split">
+        <section class="seller-card">
+          <h3>${t("Next campus hand-off", "下一場面交")}</h3>
+          ${meetups[0] ? `<p><strong>${esc(meetups[0].buyer)}</strong> · ${esc(meetups[0].title)}</p><p>${esc(meetups[0].place)} · ${esc(meetups[0].when)}</p>` : `<p>${t("No meetups yet.", "還沒有面交。")}</p>`}
+        </section>
+        ${settled ? sellerIdentityCard() : `<section class="seller-card"><p>${t("Add the name and portrait buyers see.", "加上買家會看到的名字和頭像。")}</p><button type="button" class="btn btn-primary" data-profile-edit>${t("Customize portrait and name", "設定頭像與名字")}</button></section>`}
+      </div>
+      ${showPicker ? `<dialog class="seller-dialog portrait-dialog" data-portrait><div class="portrait-card"><form method="dialog"><button class="shop-close" value="cancel" data-portrait-close aria-label="${t("Close", "關閉")}">×</button></form><div class="kokonut-surface" data-avatar-host></div></div></dialog>` : ""}
     `;
-    mountSellerAvatar(root);
+    if (showPicker) {
+      root.querySelector("[data-portrait]")?.showModal();
+      mountSellerAvatar(root);
+    }
     return;
   }
 
@@ -501,7 +549,7 @@ const paintHub = () => {
         </div>
         <a class="btn btn-primary" href="list.html">${t("Create listing", "建立刊登")}</a>
       </header>
-      <div class="seller-list">${shown.length ? shown.map(listingCard).join("") : `<p class="seller-empty">${t("No books on the shelf yet.", "書架上還沒有書。")}</p>`}</div>
+      <div class="seller-list">${shown.length ? shown.map(listingCard).join("") : `<div class="seller-empty-card"><h3>${t("No textbooks on your shelf yet", "書架上還沒有書")}</h3><p>${t("Scan or type an ISBN to fill the title, author, and cover.", "輸入 ISBN，就會帶入書名、作者和書封。")}</p><a class="btn btn-primary" href="list.html">${t("Create your first listing", "建立第一則刊登")}</a></div>`}</div>
       <h3 class="seller-subhead">${t("Sold listings", "已售出的刊登")}</h3>
       <div class="seller-list">${sold.length ? sold.map(listingCard).join("") : `<p class="seller-empty">${t("Sold books stay here as a record.", "售出的書會留在這裡。")}</p>`}</div>`;
     return;
@@ -511,13 +559,18 @@ const paintHub = () => {
     const pay = orders.filter((order) => order.status === "waiting_payment");
     const ship = orders.filter((order) => order.status === "payment_confirmed" || order.status === "ready_to_ship" || order.status === "shipped");
     const done = orders.filter((order) => order.status === "completed");
-    const block = (title, list) =>
-      `<section class="seller-card"><h3>${title}</h3><div class="seller-list">${list.length ? list.map(orderCard).join("") : `<p class="seller-empty">${t("Nothing in this step.", "這一步目前沒有訂單。")}</p>`}</div></section>`;
+    const block = (key, title, list) =>
+      `<section class="seller-card" data-order-panel="${key}" ${key === "pay" ? "" : "hidden"}><h3>${title}</h3><div class="seller-list">${list.length ? list.map(orderCard).join("") : `<p class="seller-empty">${t("All caught up.", "目前都處理完了。")}</p>`}</div></section>`;
     root.innerHTML = `
       <header class="seller-head"><h2>${t("Orders to process", "待處理訂單")}</h2></header>
-      ${block(t("Payments to confirm", "待確認付款"), pay)}
-      ${block(t("Ready for hand-off", "待面交"), ship)}
-      ${block(t("Completed records", "已完成紀錄"), done)}`;
+      <div class="seller-order-tabs" role="tablist">
+        <button type="button" data-order-tab="pay" aria-selected="true">${t("Payments to confirm", "待確認付款")} (${pay.length})</button>
+        <button type="button" data-order-tab="ship" aria-selected="false">${t("Ready for hand-off", "待面交")} (${ship.length})</button>
+        <button type="button" data-order-tab="done" aria-selected="false">${t("Completed", "已完成")} (${done.length})</button>
+      </div>
+      ${block("pay", t("Payments to confirm", "待確認付款"), pay)}
+      ${block("ship", t("Ready for hand-off", "待面交"), ship)}
+      ${block("done", t("Completed", "已完成"), done)}`;
     return;
   }
 
@@ -528,7 +581,7 @@ const paintHub = () => {
           <h2>${t("Sales records", "銷售紀錄")}</h2>
           <p>${t("Completed orders are kept. Nothing here is deleted.", "完成的訂單會保留，不會刪除。")}</p>
         </div>
-        <button type="button" class="btn btn-primary" data-csv>${t("Download CSV", "下載 CSV")}</button>
+        <button type="button" class="btn btn-ghost" data-csv>${t("Download CSV", "下載 CSV")}</button>
       </header>
       <div class="seller-metrics">
         ${metric(t("You receive this month", "本月實收"), money(monthSales(orders)))}
@@ -627,10 +680,11 @@ const bumpMark = () =>
   `<span class="shop-bump" aria-label="${t("Bumped", "已置頂")}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2.2 4.6 13.4h6.1l-.9 8.4 9.6-12.6h-6.3z" fill="currentColor"/></svg></span>`;
 
 const previewCard = () => `<article class="shop-card seller-preview">
-  <div class="shop-cover">${draft.bumped ? bumpMark() : ""}${draft.photos[0] ? `<img src="${esc(draft.photos[0])}" alt="">` : ""}</div>
-  <p class="shop-card-kicker">${esc(draft.course || t("Course", "課程"))}</p>
-  <h2>${esc(draft.title || t("Title", "書名"))}</h2>
-  <p class="shop-price-row">${draft.price === "" ? "NT$" : odo("seller-preview", money(draft.price))}${draft.firm ? "" : ` · ${t("Negotiable", "可議價")}`}</p>
+  <div class="shop-cover">${draft.bumped ? bumpMark() : ""}${draft.course ? `<span class="shop-code">${esc(draft.course)}</span>` : ""}${draft.photos[0] ? `<img src="${esc(draft.photos[0])}" alt="">` : `<span class="shop-cover-empty"></span>`}</div>
+  <div class="shop-card-body">
+    <div class="shop-card-titleline"><h2>${esc(draft.title || t("Title", "書名"))}</h2><p class="shop-price-row">${draft.price === "" ? "NT$" : money(draft.price)}</p></div>
+    <p class="shop-meta"><span class="shop-cond">${esc(draft.condition ? conditionLabel() : t("Condition", "書況"))}</span></p>
+  </div>
 </article>`;
 
 const choiceRow = (field, checked, title, detail = "") => `<label class="choice-row">
@@ -706,8 +760,10 @@ const paintWizard = () => {
         <div class="kokonut-surface" data-file-upload></div>
         <p class="wizard-note">${t("Add a real cover if you have one. A valid ISBN can fetch the cover. Up to 4 photos.", "有書封就上傳。有效的 ISBN 也能帶入書封。最多 4 張。")}</p>
         <div class="wizard-photos">
-          ${draft.photos.map((src, index) => `<figure><img src="${esc(src)}" alt=""><button type="button" data-remove-photo="${index}" aria-label="${t("Remove photo", "移除照片")}">×</button></figure>`).join("")}
+          ${draft.photos.map((src, index) => `<figure><img src="${esc(src)}" alt=""><button type="button" data-remove-photo="${index}" aria-label="${t("Remove photo", "移除照片")}">×</button>${index === 0 ? `<span>${t("Cover", "封面")}</span>` : ""}</figure>`).join("")}
         </div>
+        <h2>${t("Live preview", "即時預覽")}</h2>
+        ${previewCard()}
         ${
           draft.kind === "item"
             ? `<p class="wizard-note">${t("This listing has no ISBN.", "這則刊登沒有 ISBN。")} <a href="list.html">${t("This is a book", "這是一本書")}</a></p>`
@@ -751,6 +807,7 @@ const paintWizard = () => {
         <div class="cond-pills" role="group" aria-label="${t("Condition", "書況")}">
           <p>${t("Condition", "書況")}</p>
           <div>${conditionPills()}</div>
+          <p class="wizard-note">${draft.condition === "New" ? t("Unread. No marks.", "未讀過，沒有筆跡。") : draft.condition === "Like New" ? t("Read once. Almost no wear.", "讀過一次，幾乎沒有磨損。") : draft.condition === "Good" ? t("Light notes or wear. Complete.", "有輕微筆記或磨損，內容完整。") : draft.condition === "Fair" ? t("Visible wear. Still usable.", "看得出使用痕跡，仍可使用。") : draft.condition === "Worn" ? t("Heavy notes or damage. Say so in the description.", "筆記或損傷較多，請在說明裡寫清楚。") : t("Pick the closest condition.", "選最接近的書況。")}</p>
         </div>
         <label>${t("Description", "說明")}
           <textarea data-field="description" rows="4">${esc(draft.description)}</textarea>
@@ -779,6 +836,7 @@ const paintWizard = () => {
       <button type="button" class="btn btn-primary" data-wizard-publish ${!draft.bumped || draft.bumpTerms ? "" : "disabled"}>${t("Post listing", "刊登")}</button>
     </div>`;
   mountListingPhotos(root);
+  root.querySelectorAll("select").forEach((select) => bindSelectDrop(select));
 };
 
 const showWizard = (book) => {
@@ -1022,6 +1080,25 @@ const retireSoldBooks = () => {
 };
 
 const onHubClick = (event) => {
+  if (event.target.closest("[data-profile-edit]")) {
+    profileEditing = true;
+    paintHub();
+    return;
+  }
+  if (event.target.closest("[data-portrait-close]")) {
+    profileEditing = false;
+    if (profileSettled()) paintHub();
+    return;
+  }
+  const orderTab = event.target.closest("[data-order-tab]");
+  if (orderTab) {
+    const key = orderTab.getAttribute("data-order-tab");
+    document.querySelectorAll("[data-order-tab]").forEach((button) => button.setAttribute("aria-selected", button === orderTab ? "true" : "false"));
+    document.querySelectorAll("[data-order-panel]").forEach((panel) => {
+      panel.hidden = panel.getAttribute("data-order-panel") !== key;
+    });
+    return;
+  }
   const viewButton = event.target.closest("[data-seller-view]");
   if (viewButton && !wizardOn) {
     showHub(viewButton.getAttribute("data-seller-view"));

@@ -1,4 +1,11 @@
 @source "./components/kokonutui";
+@source "./shop-kokonut.tsx";
+@source "./fluid-menu-mount.tsx";
+@source "./components/ui/fluid-menu.tsx";
+@source "./components/ui/kinetic-text.tsx";
+@source "./components/ui/interactive-hover-button.tsx";
+@source "./components/ui/dock.tsx";
+@source "./components/ui/light-rays.tsx";
 @layer theme, utilities;
 
 @import "tailwindcss/theme.css" layer(theme);

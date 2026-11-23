@@ -1,0 +1,66 @@
+.apply-hover-host {
+  display: contents;
+}
+
+a.apply-hover.btn {
+  background: var(--ctrl-primary-bg);
+  color: var(--ctrl-primary-text);
+  border: 0;
+  box-shadow: var(--shadow-subtle);
+  overflow: hidden;
+  text-decoration: none;
+  padding: 0 2.4rem;
+  transition: background 0.3s ease;
+}
+
+a.apply-hover.btn:hover {
+  background: var(--ctrl-primary-text);
+}
+
+a.apply-hover .apply-hover-label {
+  position: relative;
+  z-index: 1;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+a.apply-hover:hover .apply-hover-label {
+  opacity: 0;
+  transform: translateX(0.45rem);
+}
+
+a.apply-hover .apply-hover-reveal {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 1.7rem;
+  padding-right: 2.5rem;
+  color: var(--ctrl-primary-bg);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+a.apply-hover:hover .apply-hover-reveal {
+  opacity: 1;
+}
+
+a.apply-hover .apply-hover-reveal span {
+  color: var(--ctrl-primary-bg);
+}
+
+a.apply-hover svg {
+  position: absolute;
+  top: 50%;
+  right: 0.7rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  transform: translateY(-50%);
+}
+
+a.apply-hover[href^="http://"]::after,
+a.apply-hover[href^="https://"]::after {
+  content: none;
+  display: none;
+}

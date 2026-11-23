@@ -1,0 +1,32 @@
+.login-page {
+  position: relative;
+  isolation: isolate;
+}
+
+.login-rays {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.login-rays > div {
+  width: 100%;
+  height: 100%;
+}
+
+.login-page .login-rays [class*="mix-blend-screen"] {
+  mix-blend-mode: multiply;
+  width: 5.5rem;
+}
+
+.login-page .login-rays [class*="opacity-60"] {
+  opacity: 0.22;
+}
+
+.login-page .login-top,
+.login-page .login-stage,
+.login-page .login-foot {
+  position: relative;
+  z-index: 1;
+}

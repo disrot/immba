@@ -26,7 +26,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=trade18" />
+    <link rel="stylesheet" href="css/styles.css?v=name1" />
     <link rel="preload" as="video" href="images/hero-loop.mp4" type="video/mp4" />
   </head>
   <body>
@@ -74,20 +74,20 @@
         <div class="nav-desktop-wrap" data-nav-tier>
           <nav class="nav-desktop" aria-label="Primary" data-i18n-attr="aria-label:nav.primary">
             <div class="nav-item">
-              <a href="about.html" data-i18n="nav.about">About</a>
+              <span data-i18n="nav.about">About</span>
               <div class="nav-dropdown" role="menu">
                 <a href="about.html#overview" role="menuitem" data-i18n="nav.overview">Overview and Ranking</a>
                 <a href="environment.html" role="menuitem" data-i18n="nav.environment">Our Learning Environment</a>
               </div>
             </div>
             <div class="nav-item">
-              <a href="admissions.html" data-i18n="nav.admissions">Admissions</a>
+              <span data-i18n="nav.admissions">Admissions</span>
               <div class="nav-dropdown" role="menu">
                 <a href="admissions.html" role="menuitem" data-i18n="nav.apply">Apply for Fu Jen imMBA</a>
               </div>
             </div>
             <div class="nav-item">
-              <a href="curriculum.html" data-i18n="nav.courses">Courses</a>
+              <span data-i18n="nav.courses">Courses</span>
               <div class="nav-dropdown" role="menu">
                 <a href="curriculum.html" role="menuitem" data-i18n="nav.requirements">Curriculum and Requirements</a>
               </div>
@@ -224,8 +224,11 @@
           <div class="hero-copy">
             <div class="hero-intro hero-enter">
               <p class="label" data-i18n="hero.eyebrow">AACSB accredited · English-taught · Taipei</p>
-              <h1><strong data-i18n="hero.title">Fu Jen Catholic University International MBA (imMBA)</strong></h1>
-              <p class="lede" data-i18n="hero.lede">Cultivating global managers with AACSB-accredited excellence</p>
+              <h1><span data-hero-title>Fu Jen Catholic University International MBA (imMBA)</span></h1>
+              <p class="lede">
+                <span class="sr-only" data-i18n="hero.lede">Cultivating global managers with AACSB-accredited excellence</span>
+                <span data-hero-dynamic></span>
+              </p>
             </div>
             <div class="hero-ctas hero-enter hero-enter-cta">
               <a
@@ -638,7 +641,9 @@
       </div>
     </footer>
 
-    <script type="module" src="js/main.js?v=audit1"></script>
+    <script type="module" src="js/main.js?v=name1"></script>
+    <script type="module" src="./src/hero-dynamic.tsx"></script>
+    <script type="module" src="./src/hero-title.tsx?v=still1"></script>
     <script type="module" src="js/back-top.js"></script>
   </body>
 </html>

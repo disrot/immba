@@ -199,7 +199,7 @@ const cartProps = (items) => {
       const changed = shown.find((item) => Number(next[item.listing_id] ?? 0) !== Number(item.quantity));
       if (changed) commitQty(changed.listing_id, Number(next[changed.listing_id] ?? 0));
     },
-    onCheckout: () => document.querySelector("[data-place]")?.click(),
+    onCheckout: () => document.querySelector("button[data-place-order]")?.click(),
   };
 };
 
@@ -251,7 +251,7 @@ const syncBag = () => {
     }
   }
   if (shown.length && cartView) cartView.update(cartProps(shown));
-  const button = document.querySelector("[data-place]");
+  const button = document.querySelector("button[data-place-order]");
   if (button) button.disabled = shown.length === 0;
 };
 
@@ -279,7 +279,7 @@ const paintItems = (items) => {
     totalsView = null;
     if (list) list.innerHTML = `<p class="bag-empty">${zh() ? "袋子是空的。" : "Your bag is empty."}</p>`;
     document.querySelector("[data-bag-totals]")?.replaceChildren();
-    const button = document.querySelector("[data-place]");
+    const button = document.querySelector("button[data-place-order]");
     if (button) button.disabled = true;
     return;
   }
@@ -439,8 +439,8 @@ const receiveOrder = () =>
       .catch(() => finish());
   });
 
-document.querySelector("[data-place]")?.addEventListener("click", async () => {
-  const button = document.querySelector("[data-place]");
+document.querySelector("button[data-place-order]")?.addEventListener("click", async () => {
+  const button = document.querySelector("button[data-place-order]");
   const session = getAuthSession();
   if (!session?.email) {
     status.textContent = "Sign in before placing an order.";
@@ -493,6 +493,10 @@ document.querySelector("[data-place]")?.addEventListener("click", async () => {
 
 window.addEventListener("immba:lang", () => {
   if (shown.length) paintItems(shown);
+});
+
+window.addEventListener("immba:bag", () => {
+  paint().catch(() => {});
 });
 
 window.setInterval(() => {

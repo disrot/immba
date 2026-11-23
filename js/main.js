@@ -4,12 +4,15 @@ import { applyOfficialLinks } from "./official.js";
 import { initGallery, refreshGalleryCaptions } from "./gallery.js";
 import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage, watchOfficeAccess } from "./auth.js?v=login1";
 import { initFacultyDirectory } from "./faculty.js?v=notice3";
-import { initMarketplace, initListing, paintBagBadge } from "./marketplace.js?v=odo3";
-import { initMarketAccount } from "./market-account.js?v=odo3";
+import { initMarketplace, initListing, paintBagBadge } from "./marketplace.js?v=slide1";
+import { initShopChrome } from "./shop-chrome.js?v=profile7";
+import { initShopKokonut } from "../src/shop-kokonut.tsx?v=slide1";
+import { initMarketAccount } from "./market-account.js?v=profile6";
 import { initAnalytics } from "./analytics.js";
 import { initAdminDash } from "./admin-dash.js?v=bento1";
 import { initPageHero } from "./page-hero.js?v=audit1";
-import { initSelectDrops, refreshSelectDrop } from "./ui-drop.js?v=drop2";
+import { initSelectDrops, refreshSelectDrop } from "./ui-drop.js?v=drop3";
+import "../src/apply-hover.tsx";
 
 const translations = {
   en: {
@@ -312,6 +315,7 @@ const translations = {
     "bag.pageTitle": "Your bag",
     "orders.pageTitle": "Your orders",
     "market.lede": "Course books and packets, passed from one imMBA cohort to the next.",
+    "market.share": "Share",
     "market.bag": "Bag",
     "market.promise1": "Student to student",
     "market.promise1b": "Listings come from classmates, not a bookstore.",
@@ -992,6 +996,7 @@ const translations = {
     "bag.pageTitle": "你的袋子",
     "orders.pageTitle": "你的訂單",
     "market.lede": "課程用書與教材，由一屆 imMBA 同學交到下一屆。",
+    "market.share": "分享",
     "market.bag": "袋子",
     "market.promise1": "同學之間",
     "market.promise1b": "刊登來自同學，不是書店。",
@@ -1716,6 +1721,8 @@ initFacultyDirectory();
 initMarketplace();
 paintBagBadge();
 initListing();
+initShopChrome();
+initShopKokonut();
 
 const counters = document.querySelectorAll(".stat-count");
 if (counters.length) {

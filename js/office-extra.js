@@ -1,5 +1,6 @@
 import { rpc } from "./supabase.js?v=secure1";
-import { allOrders, isAbnormal, money as tradeMoney, statusText, when as tradeWhen } from "./trade.js?v=hold4";
+import { allOrders, isAbnormal, money as tradeMoney, when as tradeWhen } from "./trade.js?v=hold4";
+import { statusRail } from "./order-status.js?v=expand1";
 
 const esc = (value) =>
   String(value ?? "")
@@ -77,8 +78,8 @@ const paintTradeMonitor = () => {
           return `<article class="trade-card">
             <header>
               <p class="trade-id">${esc(order.id)}</p>
-              <strong>${esc(statusText(order.status, zh()))}</strong>
             </header>
+            ${order.status === "expired" ? `<p>${esc(t("Returned to the marketplace", "已退回市集"))}</p>` : statusRail(order, zh())}
             <p>${esc(order.buyer)} → ${esc(order.sellerName)}</p>
             <p>${esc(tradeWhen(order.createdAt, zh()))}</p>
             <p>${esc((order.items || []).map((item) => item.title).join(", "))}</p>

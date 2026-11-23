@@ -40,7 +40,7 @@ export const mountCart = (
       icon: BookOpen,
       tint: "bg-zinc-100 text-zinc-700",
     }));
-    root.render(<CartButton className="max-w-none" items={items} {...rest} />);
+    root.render(<CartButton className="max-w-none" items={items} {...rest} showCheckout={false} />);
   };
   draw(props);
   return {

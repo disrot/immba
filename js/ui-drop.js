@@ -9,6 +9,18 @@ const closeAll = (except) => {
 
 const selectedLabel = (select) => select.options[select.selectedIndex]?.textContent?.trim() || select.value || "Select";
 
+const placeHighlight = (panel, item) => {
+  const highlight = panel.querySelector(".menu-drop-highlight");
+  if (!highlight) return;
+  if (!item) {
+    highlight.hidden = true;
+    return;
+  }
+  highlight.hidden = false;
+  highlight.style.height = `${item.offsetHeight}px`;
+  highlight.style.transform = `translateY(${item.offsetTop}px)`;
+};
+
 export const refreshSelectDrop = (select) => {
   const wrap = select.closest(".menu-drop");
   if (!wrap) return;
@@ -16,12 +28,25 @@ export const refreshSelectDrop = (select) => {
   const panel = wrap.querySelector("[data-drop-panel]");
   if (btn) btn.textContent = selectedLabel(select);
   if (!panel) return;
-  panel.innerHTML = [...select.options]
-    .map(
-      (option) =>
-        `<button type="button" class="menu-drop-item${option.selected ? " is-on" : ""}" data-value="${option.value}">${option.textContent}</button>`
-    )
-    .join("");
+  let highlight = panel.querySelector(".menu-drop-highlight");
+  if (!highlight) {
+    highlight = document.createElement("span");
+    highlight.className = "menu-drop-highlight";
+    highlight.hidden = true;
+    panel.prepend(highlight);
+  }
+  panel.querySelectorAll(".menu-drop-item").forEach((node) => node.remove());
+  [...select.options].forEach((option) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = `menu-drop-item${option.selected ? " is-on" : ""}`;
+    item.dataset.value = option.value;
+    item.setAttribute("role", "option");
+    item.setAttribute("aria-selected", String(option.selected));
+    item.textContent = option.textContent;
+    panel.append(item);
+  });
+  placeHighlight(panel, wrap.classList.contains("is-open") ? panel.querySelector(".menu-drop-item.is-on") : null);
 };
 
 export const bindSelectDrop = (select) => {
@@ -51,6 +76,10 @@ export const bindSelectDrop = (select) => {
   panel.setAttribute("data-drop-panel", "");
   panel.setAttribute("role", "listbox");
   wrap.append(btn, panel);
+  panel.addEventListener("mouseover", (event) => {
+    const item = event.target.closest(".menu-drop-item");
+    if (item) placeHighlight(panel, item);
+  });
   refreshSelectDrop(select);
 
   btn.addEventListener("click", (event) => {
@@ -59,6 +88,7 @@ export const bindSelectDrop = (select) => {
     closeAll(wrap);
     wrap.classList.toggle("is-open", open);
     btn.setAttribute("aria-expanded", String(open));
+    if (open) requestAnimationFrame(() => placeHighlight(panel, panel.querySelector(".menu-drop-item.is-on")));
   });
 
   panel.addEventListener("click", (event) => {
@@ -89,6 +119,12 @@ export const bindPanelDrop = (wrap) => {
 
 export const initSelectDrops = (root = document) => {
   root.querySelectorAll("select").forEach(bindSelectDrop);
+  if (root === document && !window.__immbaDropWatch) {
+    window.__immbaDropWatch = true;
+    new MutationObserver(() => {
+      document.querySelectorAll("select:not([data-drop-bound])").forEach(bindSelectDrop);
+    }).observe(document.body, { childList: true, subtree: true });
+  }
 };
 
 if (!window.__immbaDropDoc) {

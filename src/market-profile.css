@@ -1,0 +1,16 @@
+.shop-atelier [data-shop-account][hidden] {
+  display: none;
+}
+
+.market-profile > button {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 12px;
+  border-color: #e6e4dd;
+  background: #fff;
+}
+
+.market-profile button[data-row="sign-out"] > span[aria-hidden="true"] {
+  background: #163300;
+  color: #9fe870;
+}

@@ -1,4 +1,7 @@
 import { rpc } from "./supabase.js?v=secure1";
+import { initSelectDrops } from "./ui-drop.js?v=drop3";
+
+initSelectDrops();
 
 const form = document.querySelector("[data-application]");
 const status = document.querySelector("[data-application-status]");

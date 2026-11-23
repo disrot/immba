@@ -1,6 +1,6 @@
 import { ALL_OFFICE_PAGES, OFFICE_PAGES, isSuperAdmin, pagesForRole } from "./auth.js?v=block1";
 import { getAuthSession, rest, rpc } from "./supabase.js?v=secure1";
-import { bindPanelDrop } from "./ui-drop.js?v=drop2";
+import { bindPanelDrop } from "./ui-drop.js?v=drop3";
 
 const ROLES = [
   { key: "pending", en: "Waiting", zh: "等候核准" },

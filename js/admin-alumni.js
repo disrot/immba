@@ -1,5 +1,5 @@
 import { isAdminAuthed } from "./auth.js?v=notice4";
-import { bindPanelDrop, refreshSelectDrop } from "./ui-drop.js?v=drop2";
+import { bindPanelDrop, refreshSelectDrop } from "./ui-drop.js?v=drop3";
 import {
   DEGREES,
   FIELDS,
