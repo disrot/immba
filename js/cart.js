@@ -1,7 +1,8 @@
 import { getAuthSession, rpc } from "./supabase.js?v=secure1";
-import { PACKETS } from "./marketplace.js?v=apple7";
+import { PACKETS } from "./marketplace.js?v=lab6";
 import { rotatedPackets } from "./shelf-rotation.js?v=pass2";
-import { HOLD_MS, availableQty, clearHold, defaultOnHand, holdListing, isGeneratedListing, placeOrders, quoteLines, releaseExpired } from "./trade.js?v=stock1";
+import { HOLD_MS, availableQty, clearHold, defaultOnHand, holdListing, isGeneratedListing, placeOrders, quoteLines, releaseExpired, syncC2c } from "./trade.js?v=lab2";
+import { pushTradeNotice } from "./trade-notices.js?v=lab1";
 
 const list = document.querySelector("[data-cart]");
 const status = document.querySelector("[data-cart-status]");
@@ -137,10 +138,21 @@ const commitQty = (id, quantity) => {
   const item = shown.find((row) => row.listing_id === id);
   if (!item) return;
   if (quantity <= 0) {
+    if (status) {
+      status.textContent = zh()
+        ? "數量不能是 0 或負數，這項已從袋子移除。"
+        : "Quantity cannot be 0 or negative, so this item left the bag.";
+    }
     queueMicrotask(() => forgetLine(id));
     return;
   }
-  const nextQty = Math.min(stockCap(item), Math.max(1, quantity));
+  const cap = stockCap(item);
+  const nextQty = Math.min(cap, Math.max(1, quantity));
+  if (quantity > cap && status) {
+    status.textContent = zh()
+      ? `超過可售數量，已改為 ${nextQty}。`
+      : `That is more than the available stock, so the quantity is now ${nextQty}.`;
+  }
   const until = Number(item.holdUntil) > Date.now() ? Number(item.holdUntil) : Date.now() + HOLD_MS;
   holdListing(id, nextQty, until);
   const next = readLocal().filter((row) => row.listing_id !== id);
@@ -472,6 +484,26 @@ document.querySelector("button[data-place-order]")?.addEventListener("click", as
         };
       }),
     });
+    for (const order of created) {
+      pushTradeNotice({
+        id: `${order.id}-placed-buyer`,
+        email: session.email,
+        audience: "buyer",
+        orderId: order.id,
+        text: `Order ${order.id} is saved. The seller can see it. Watch My orders as payment, hand-off, and completion change.`,
+        textZh: `訂單 ${order.id} 已儲存。賣方看得到。付款、面交和完成時，請看「我的訂單」。`,
+      });
+      if (String(order.sellerId || "").includes("@")) {
+        pushTradeNotice({
+          id: `${order.id}-placed-seller`,
+          email: order.sellerId,
+          audience: "seller",
+          orderId: order.id,
+          text: `New order ${order.id} from ${order.buyer}. Confirm payment, then mark the hand-off.`,
+          textZh: `${order.buyer} 下了新訂單 ${order.id}。請先確認付款，再標示面交。`,
+        });
+      }
+    }
     writeLocal([]);
     for (const item of shown) {
       try {
@@ -523,6 +555,7 @@ if (params.get("listing")) {
       }
     });
 } else {
+  void syncC2c();
   paint().catch((error) => {
     status.textContent = error.message;
   });

@@ -49,6 +49,7 @@ export const isSellerAuthed = () => {
   const session = getAuthSession();
   const role = session?.role;
   if (role === "admin" || role === "super_admin" || role === "pending" || role === "rejected") return false;
+  if (session?.user && session.user.email_confirmed_at == null && Object.prototype.hasOwnProperty.call(session.user, "email_confirmed_at")) return false;
   const intent = session?.intent || session?.user?.user_metadata?.intent;
   return role === "marketplace" || intent === "marketplace";
 };
@@ -232,6 +233,35 @@ export const initLogoGate = () => {
   });
 };
 
+const passwordProblem = (pass, zh) => {
+  if (pass.length < 8) return zh ? "密碼至少 8 個字元。" : "Use at least 8 characters.";
+  if (!/[A-Za-z]/.test(pass) || !/\d/.test(pass)) {
+    return zh ? "密碼需要同時包含字母和數字。" : "Use both a letter and a number.";
+  }
+  return "";
+};
+
+const emailOk = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+const friendlyAuthError = (error) => {
+  const zh = document.body?.dataset.lang === "zh";
+  const raw = String(error?.message || "");
+  if (/invalid login|invalid credentials|email or password/i.test(raw)) {
+    return zh ? "電子郵件或密碼不正確。" : "Email or password is incorrect.";
+  }
+  if (/email not confirmed|not confirmed/i.test(raw)) {
+    return zh
+      ? "請先到信箱點確認信，再登入。沒確認的帳號不能使用賣方功能。"
+      : "Confirm your email before signing in. Open the message we sent, then try again. An unconfirmed account cannot use seller tools.";
+  }
+  if (/already registered|already been registered|user already/i.test(raw)) {
+    return zh
+      ? "這個電子郵件已經有帳號。請登入，或使用忘記密碼。"
+      : "This email already has an account. Sign in, or use Forgot password.";
+  }
+  return raw || (zh ? "無法完成這個動作。" : "Could not complete that request.");
+};
+
 const showLoginError = (form, message, tone = "error") => {
   const err = form.querySelector("[data-login-error]");
   if (!err) return;
@@ -245,11 +275,11 @@ const loginCopy = (mode, intent = "staff") => {
   const seller = intent === "marketplace";
   const pack = {
     signin: {
-      title: zh ? "登入" : "Sign in",
+      title: seller ? (zh ? "登入你的帳號" : "Sign in to your account") : zh ? "登入" : "Sign in",
       lede: seller
         ? zh
-          ? "繼續刊登教材。"
-          : "Continue to post a listing."
+          ? "輸入資料即可登入。"
+          : "Enter your details to sign in."
         : zh
           ? "繼續進入後台。"
           : "Continue to the back office.",
@@ -283,6 +313,7 @@ const loginCopy = (mode, intent = "staff") => {
 export const initLoginForm = () => {
   const form = document.querySelector("[data-login-form]");
   if (!form) return;
+  form.noValidate = true;
 
   const card = document.querySelector("[data-login-card]") || form.closest(".login-card");
   const modeButtons = [...document.querySelectorAll("[data-login-mode]")];
@@ -303,17 +334,36 @@ export const initLoginForm = () => {
       });
     });
     const copy = loginCopy(mode, form.dataset.intent);
-    const title = document.querySelector("[data-login-title]");
-    const lede = document.querySelector("[data-login-lede]");
-    const submit = form.querySelector("[data-login-submit]") || form.querySelector(".login-submit");
-    if (title) title.textContent = copy.title;
     const sellerDesk = form.dataset.intent === "marketplace";
-    if (lede && !(sellerDesk && isSellerAuthed())) lede.textContent = copy.lede;
+    document.querySelectorAll("[data-login-title]").forEach((title) => {
+      title.textContent = copy.title;
+    });
+    document.querySelectorAll("[data-login-lede]").forEach((lede) => {
+      const onCard = Boolean(lede.closest("[data-login-card]"));
+      if (!onCard && sellerDesk && isSellerAuthed()) return;
+      lede.textContent = copy.lede;
+    });
+    const submit = form.querySelector("[data-login-submit]") || form.querySelector(".login-submit");
     if (submit) submit.textContent = copy.submit;
     const err = form.querySelector("[data-login-error]");
     if (err && mode !== "newpass") {
       err.hidden = true;
       err.classList.remove("is-note");
+    }
+    const zh = document.body?.dataset.lang === "zh";
+    let rule = form.querySelector("[data-password-rule]");
+    if (!rule) {
+      rule = document.createElement("p");
+      rule.className = "login-lede";
+      rule.dataset.passwordRule = "";
+      form.querySelector("[data-login-error]")?.before(rule);
+    }
+    const showRule = mode === "register" || mode === "newpass";
+    rule.hidden = !showRule;
+    if (showRule) {
+      const password = zh ? "密碼至少 8 個字元，而且要同時有字母和數字。" : "Password: at least 8 characters, with a letter and a number.";
+      const verify = zh ? "我們會寄確認信。點了信裡的連結後再登入。" : "We'll email a confirmation link. Sign in after you open it.";
+      rule.textContent = mode === "register" ? `${password} ${verify}` : password;
     }
   };
   modeButtons.forEach((btn) => btn.addEventListener("click", () => applyMode(btn.dataset.loginMode)));
@@ -361,11 +411,22 @@ export const initLoginForm = () => {
       return;
     }
 
+    const zh = document.body?.dataset.lang === "zh";
+    const needsEmail = intent === "marketplace" || mode === "register" || mode === "reset";
+    if (needsEmail && !emailOk(email)) {
+      showLoginError(form, zh ? "請輸入有效的電子郵件，例如 name@mail.fju.edu.tw。" : "Enter a valid email address, such as name@mail.fju.edu.tw.");
+      return;
+    }
+    if ((mode === "register" || mode === "newpass") && passwordProblem(pass, zh)) {
+      showLoginError(form, passwordProblem(pass, zh));
+      return;
+    }
+
     void (async () => {
       try {
         if (mode === "newpass") {
           if (!pass) {
-            showLoginError(form, "Password is required.");
+            showLoginError(form, zh ? "請輸入密碼。" : "Password is required.");
             return;
           }
           await authApi("user", {
@@ -377,12 +438,18 @@ export const initLoginForm = () => {
         }
         if (mode === "reset") {
           await resetPassword(email, HERE());
-          showLoginError(form, "Check your email to reset your password.");
+          showLoginError(
+            form,
+            zh
+              ? "重設信已寄出。請到信箱依照指示設定新密碼。"
+              : "Check your email to reset your password. The message explains the next step.",
+            "note"
+          );
           return;
         }
         if (mode === "register") {
           if (!pass) {
-            showLoginError(form, "Password is required to create an account.");
+            showLoginError(form, zh ? "建立帳號需要密碼。" : "Password is required to create an account.");
             return;
           }
           const result = await signUpAccount({ email, password: pass, intent, displayName });
@@ -390,13 +457,12 @@ export const initLoginForm = () => {
             location.replace(routeAfterAuth(getAuthSession() || result));
             return;
           }
-          const zh = document.body?.dataset.lang === "zh";
           showLoginError(
             form,
             intent === "marketplace"
               ? zh
-                ? "帳號已建立。請到信箱點確認信，然後再登入。賣方不需要後台核准。"
-                : "Account created. Open the confirmation email, then sign in. Sellers do not need office approval."
+                ? "帳號已建立。請到信箱點確認信，然後再登入。"
+                : "Account created. Open the confirmation email, then sign in."
               : zh
                 ? "帳號已建立。請到信箱點確認信，然後等待 super admin 核准。"
                 : "Account created. Confirm your email, then wait for a super admin to approve access.",
@@ -418,7 +484,7 @@ export const initLoginForm = () => {
           );
           return;
         }
-        showLoginError(form, error.message || "Could not complete that request.");
+        showLoginError(form, friendlyAuthError(error));
       }
     })();
   });

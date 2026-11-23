@@ -26,7 +26,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=profile6" />
+    <link rel="stylesheet" href="css/styles.css?v=pill1" />
   </head>
   <body data-title-key="market.accountTitle" data-desc-key="market.accountMeta">
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
@@ -184,48 +184,59 @@
           <div class="account-split-main">
           <p class="shop-kicker"><a href="marketplace.html" data-i18n="market.headline">Marketplace</a></p>
           <h1 class="shop-hero-title" data-i18n="market.accountTitle">Seller account</h1>
-          <p class="login-lede" data-login-lede data-i18n="market.accountLede">Sign in to post a listing.</p>
+          <p class="login-lede" data-i18n="market.accountLede">Sign in to post a listing.</p>
           <div class="shop-account" data-market-account></div>
           <div data-market-auth>
-            <section class="market-auth-card" data-login-card>
-              <div class="login-switch" data-login-switch>
-                <button type="button" data-login-mode="signin" aria-current="true" data-i18n="login.submit">Sign in</button>
-                <button type="button" data-login-mode="register" data-i18n="login.register">Register</button>
+            <section class="market-auth-card signin-panel" data-login-card>
+              <div class="signin-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.1" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M5.4 19.2c1.3-2.7 3.6-4 6.6-4s5.3 1.3 6.6 4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
               </div>
+              <h2 data-login-title>Sign in to your account</h2>
+              <p data-login-lede>Enter your details to sign in.</p>
               <form class="login-form market-login" data-login-form data-mode="signin" data-intent="marketplace">
                 <div class="login-collapse" data-for-mode="register">
                   <div class="login-collapse-inner">
                     <label class="login-field">
-                      <span class="sr-only" data-i18n="login.name">Display name</span>
+                      <span data-i18n="login.name">Display name</span>
                       <input type="text" name="displayName" autocomplete="name" data-i18n-attr="placeholder:login.name" placeholder="Display name" />
                     </label>
                   </div>
                 </div>
                 <label class="login-field">
-                  <span class="sr-only" data-i18n="login.email">Email</span>
-                  <input type="email" name="email" autocomplete="username" required data-i18n-attr="placeholder:login.email" placeholder="Email" />
+                  <span data-i18n="login.email">Email</span>
+                  <input type="email" name="email" autocomplete="username" required placeholder="you@mail.fju.edu.tw" />
                 </label>
-                <div class="login-collapse" data-for-mode="signin register newpass">
-                  <div class="login-collapse-inner">
-                    <label class="login-field">
-                      <span class="sr-only" data-i18n="login.pass">Password</span>
-                      <input type="password" name="password" autocomplete="current-password" data-i18n-attr="placeholder:login.pass" placeholder="Password" />
-                    </label>
+                <div class="login-field" data-for-mode="signin register newpass">
+                  <div class="signin-pass-head">
+                    <span id="market-pass-label" data-i18n="login.pass">Password</span>
+                    <button type="button" class="login-forgot" data-for-mode="signin" data-login-mode="reset" data-i18n="login.forgot">Forgot password?</button>
+                  </div>
+                  <div class="signin-pass">
+                    <input type="password" name="password" autocomplete="current-password" aria-labelledby="market-pass-label" />
+                    <button type="button" class="signin-eye" data-password-toggle aria-label="Show password">
+                      <svg class="eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.8 12S6.2 6.8 12 6.8 21.2 12 21.2 12 17.8 17.2 12 17.2 2.8 12 2.8 12z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+                      <svg class="eye-on" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M3 4.5 20 19" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M9.2 9.4A3.2 3.2 0 0 0 12 15.2c.7 0 1.3-.2 1.8-.6M6.1 7.6C4.2 8.9 2.8 12 2.8 12S6.2 17.2 12 17.2c1.3 0 2.5-.3 3.5-.8M14.6 8.2c2.6.6 4.8 2.6 6.6 3.8 0 0-1.2 2.2-3.4 3.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                    </button>
                   </div>
                 </div>
                 <div class="login-collapse" data-for-mode="signin">
                   <div class="login-collapse-inner">
-                    <div class="login-aux">
-                      <label class="login-keep">
-                        <input type="checkbox" name="remember" />
-                        <span data-i18n="login.keep">Keep me signed in</span>
-                      </label>
-                      <button type="button" class="login-forgot" data-login-mode="reset" data-i18n="login.forgot">Forgot password?</button>
-                    </div>
+                    <label class="login-keep">
+                      <input type="checkbox" name="remember" />
+                      <span data-i18n="login.keep">Keep me signed in</span>
+                    </label>
                   </div>
                 </div>
                 <p class="login-error" data-login-error hidden>Could not complete that request.</p>
-                <button type="submit" class="btn btn-primary login-submit" data-login-submit data-i18n="login.submit">Sign in</button>
+                <button type="submit" class="btn btn-primary login-submit" data-login-submit>Sign in</button>
+                <p class="signin-join" data-for-mode="signin">
+                  <span data-i18n="login.notMember">Not a member yet?</span>
+                  <button type="button" data-login-mode="register" data-i18n="login.join">Join now</button>
+                </p>
+                <p class="signin-join" data-for-mode="register">
+                  <span data-i18n="login.haveAccount">Already have an account?</span>
+                  <button type="button" data-login-mode="signin" data-i18n="login.submit">Sign in</button>
+                </p>
                 <div class="login-collapse" data-for-mode="reset newpass">
                   <div class="login-collapse-inner">
                     <button type="button" class="login-back" data-login-mode="signin" data-i18n="login.back">Back to sign in</button>
@@ -394,7 +405,7 @@
       </div>
     </footer>
 
-    <script type="module" src="js/main.js?v=profile7"></script>
+    <script type="module" src="js/main.js?v=lab7"></script>
     <script type="module" src="js/back-top.js"></script>
   </body>
 </html>

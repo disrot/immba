@@ -63,7 +63,6 @@ export const purchasedQty = (id) => Number(read().purchased[id] || 0);
 
 export const availableQty = (id, fallbackOnHand) => {
   const data = fresh(read());
-  if (isGeneratedListing(id)) return defaultOnHand();
   const hand = data.stock[id] != null ? Number(data.stock[id]) : fallbackOnHand == null ? defaultOnHand() : Number(fallbackOnHand);
   return Math.max(0, hand - Number(data.purchased[id] || 0) - heldQty(data, id));
 };
@@ -72,6 +71,7 @@ export const setOnHand = (id, qty) => {
   const data = read();
   data.stock[id] = Math.max(0, Math.round(Number(qty) || 0));
   write(data);
+  void pushC2c({ id, onHand: data.stock[id] }, "hand");
 };
 
 export const statusText = (status, zh) => {
@@ -216,10 +216,9 @@ export const placeOrders = ({ buyer, buyerEmail, lines }) => {
   const groups = new Map();
   for (const line of lines) {
     const qty = Math.max(1, Math.round(Number(line.qty) || 1));
-    const generatedLine = Boolean(line.generated) || line.sellerId === "shelf" || isGeneratedListing(line.id);
     const hand = data.stock[line.id] != null ? Number(data.stock[line.id]) : Number(line.onHand ?? defaultOnHand());
-    const listed = Math.max(1, Math.round(hand));
-    const left = generatedLine ? listed : Math.max(0, listed - Number(data.purchased[line.id] || 0));
+    const listed = Math.max(0, Math.round(hand));
+    const left = Math.max(0, listed - Number(data.purchased[line.id] || 0));
     if (qty > left) {
       const error = new Error(left ? `Only ${left} left for ${line.title}.` : `${line.title} is sold out.`);
       error.code = "stock";
@@ -273,6 +272,7 @@ export const placeOrders = ({ buyer, buyerEmail, lines }) => {
       deliveryFee: quote.deliveryFee,
       sellerNet: quote.sellerNet,
       total: quote.total,
+      updatedAt: now,
       status: shelfOrder ? "payment_confirmed" : "waiting_payment",
       payBy: shelfOrder ? "" : new Date(payByMs).toISOString(),
       createdAt: now,
@@ -291,6 +291,7 @@ export const placeOrders = ({ buyer, buyerEmail, lines }) => {
     created.push(order);
   }
   write(data);
+  for (const order of created) void pushC2c(order, "place");
   return created;
 };
 
@@ -300,8 +301,10 @@ export const advanceOrder = (id) => {
   const next = order ? NEXT[order.status] : "";
   if (!order || !next) return order || null;
   order.status = next;
-  order.history = [...(order.history || []), { status: next, at: new Date().toISOString() }];
+  order.updatedAt = new Date().toISOString();
+  order.history = [...(order.history || []), { status: next, at: order.updatedAt }];
   write(data);
+  void pushC2c(order, "advance");
   return order;
 };
 
@@ -364,4 +367,50 @@ export const downloadCsv = (filename, rows) => {
   link.download = filename;
   link.click();
   URL.revokeObjectURL(url);
+};
+
+const newer = (order, other) => {
+  const stamp = (row) => Date.parse(row?.updatedAt || row?.createdAt || "") || 0;
+  return stamp(order) >= stamp(other);
+};
+
+const pushC2c = async (payload, kind) => {
+  try {
+    const { rpc, supabase } = await import("./supabase.js?v=secure2");
+    if (kind === "place") await rpc("c2c_place", { p_order: payload });
+    else if (kind === "advance") await rpc("c2c_advance", { p_order: payload });
+    else await rpc("c2c_hand", { p_listing: payload.id, p_on_hand: payload.onHand });
+    if (kind !== "hand") await supabase.functions.invoke("process-email-outbox", { body: {} });
+  } catch {
+    /* This browser keeps the order when the shared desk is offline. */
+  }
+};
+
+let pulling = false;
+
+export const syncC2c = async () => {
+  if (pulling) return;
+  pulling = true;
+  try {
+    const { rpc } = await import("./supabase.js?v=secure2");
+    const remote = await rpc("c2c_pull");
+    const local = read();
+    const byId = new Map(local.orders.map((order) => [order.id, order]));
+    for (const order of remote?.orders || []) {
+      if (!order?.id) continue;
+      const current = byId.get(order.id);
+      if (!current || newer(order, current)) byId.set(order.id, order);
+    }
+    local.orders = [...byId.values()].sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+    const stock = remote?.stock && typeof remote.stock === "object" ? remote.stock : {};
+    for (const [id, row] of Object.entries(stock)) {
+      if (row?.onHand != null) local.stock[id] = Number(row.onHand);
+      if (row?.purchased != null) local.purchased[id] = Math.max(Number(local.purchased[id] || 0), Number(row.purchased));
+    }
+    write(local);
+  } catch {
+    /* Local orders stay available. */
+  } finally {
+    pulling = false;
+  }
 };

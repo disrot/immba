@@ -1,7 +1,8 @@
-import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=notice4";
+import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=lab3";
 import { ackRemovedNotices, listRemovedNotices } from "./listings-store.js?v=notice3";
-import { initSellerHub } from "./seller-hub.js?v=profile6";
-import { marketMode, setMarketMode } from "./trade.js?v=hold4";
+import { initSellerHub } from "./seller-hub.js?v=lab4";
+import { marketMode, setMarketMode } from "./trade.js?v=lab2";
+import { ackTradeNotices, tradeNoticesFor } from "./trade-notices.js?v=lab1";
 
 const esc = (value) =>
   String(value ?? "")
@@ -17,6 +18,17 @@ export const initMarketAccount = () => {
   const form = document.querySelector("[data-market-form]");
   const listingPage = document.body.hasAttribute("data-list-page");
   if (!bar && !desk && !form && !listingPage) return;
+
+  document.querySelector("[data-password-toggle]")?.addEventListener("click", (event) => {
+    const button = event.currentTarget;
+    const input = button.parentElement?.querySelector("input");
+    if (!(input instanceof HTMLInputElement) || !(button instanceof HTMLButtonElement)) return;
+    const show = input.type === "password";
+    input.type = show ? "text" : "password";
+    button.setAttribute("aria-label", show ? (zh() ? "隱藏密碼" : "Hide password") : zh() ? "顯示密碼" : "Show password");
+    button.querySelector(".eye-off")?.toggleAttribute("hidden", show);
+    button.querySelector(".eye-on")?.toggleAttribute("hidden", !show);
+  });
 
   const session = currentProfile();
   const seller = isSellerAuthed();
@@ -88,20 +100,27 @@ export const initMarketAccount = () => {
 
   const paintBell = (rows) => {
     if (!slot) return;
-    if (!seller || !rows.length) {
+    const notices = tradeNoticesFor(session?.email);
+    const removed = seller ? rows : [];
+    if (!removed.length && !notices.length) {
       slot.innerHTML = "";
       if (document.querySelector("[data-market-profile]") && bar && !document.querySelector("[data-market-desk]")) {
         bar.hidden = true;
       }
       return;
     }
-    const n = rows.length;
-    const items = rows
-      .map((row) => `<li>${esc(row.title || row.title_zh || (zh() ? "刊登" : "Listing"))}</li>`)
-      .join("");
-    const lede = zh()
-      ? "後台已從市集下架你的刊登。"
-      : "The office removed a listing of yours from Marketplace.";
+    const n = removed.length + notices.length;
+    const items = [
+      ...notices.map((row) => `<li>${esc(zh() ? row.textZh : row.text)}</li>`),
+      ...removed.map((row) => `<li>${esc(row.title || row.title_zh || (zh() ? "刊登" : "Listing"))}</li>`),
+    ].join("");
+    const lede = notices.length
+      ? zh()
+        ? "訂單有新的進度。"
+        : "An order changed."
+      : zh()
+        ? "後台已從市集下架你的刊登。"
+        : "The office removed a listing of yours from Marketplace.";
     if (bar && document.querySelector("[data-market-profile]") && !document.querySelector("[data-market-desk]")) {
       bar.hidden = false;
     }
@@ -126,9 +145,10 @@ export const initMarketAccount = () => {
       panel.hidden = open;
     });
     wrap.querySelector("[data-market-ack]")?.addEventListener("click", () => {
-      void ackRemovedNotices(rows.map((row) => row.id)).then(() => {
-        slot.innerHTML = "";
-      });
+      ackTradeNotices(session?.email);
+      const finish = () => paintBell([]);
+      if (removed.length) void ackRemovedNotices(removed.map((row) => row.id)).then(finish);
+      else finish();
     });
   };
 
@@ -137,8 +157,14 @@ export const initMarketAccount = () => {
   });
 
   if (seller) void listRemovedNotices().then(paintBell);
+  else paintBell([]);
+  window.addEventListener("immba:notices", () => {
+    if (seller) void listRemovedNotices().then(paintBell);
+    else paintBell([]);
+  });
   window.addEventListener("immba:lang", () => {
     if (seller) void listRemovedNotices().then(paintBell);
+    else paintBell([]);
     if (!listingPage || seller) return;
     const gate = document.querySelector("[data-list-gate]");
     const heading = document.querySelector("[data-list-title]");

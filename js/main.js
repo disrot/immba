@@ -2,12 +2,12 @@ import { renderNewsArticle, renderNewsCards } from "./news-ui.js";
 import { hydrateNews } from "./news-store.js?v=news2";
 import { applyOfficialLinks } from "./official.js";
 import { initGallery, refreshGalleryCaptions } from "./gallery.js";
-import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage, watchOfficeAccess } from "./auth.js?v=login1";
+import { guardAdminPage, initLoginForm, initLogoGate, initPendingPage, watchOfficeAccess } from "./auth.js?v=lab3";
 import { initFacultyDirectory } from "./faculty.js?v=notice3";
-import { initMarketplace, initListing, paintBagBadge } from "./marketplace.js?v=slide1";
-import { initShopChrome } from "./shop-chrome.js?v=profile7";
-import { initShopKokonut } from "../src/shop-kokonut.tsx?v=slide1";
-import { initMarketAccount } from "./market-account.js?v=profile6";
+import { initMarketplace, initListing, paintBagBadge } from "./marketplace.js?v=lab6";
+import { initShopChrome } from "./shop-chrome.js?v=lab6";
+import { initShopKokonut } from "../src/shop-kokonut.tsx?v=lab7";
+import { initMarketAccount } from "./market-account.js?v=lab4";
 import { initAnalytics } from "./analytics.js";
 import { initAdminDash } from "./admin-dash.js?v=bento1";
 import { initPageHero } from "./page-hero.js?v=audit1";
@@ -314,7 +314,7 @@ const translations = {
     "market.headline": "Textbooks from your cohort",
     "bag.pageTitle": "Your bag",
     "orders.pageTitle": "Your orders",
-    "market.lede": "Course books and packets, passed from one imMBA cohort to the next.",
+    "market.lede": "Are you looking for Onboarding Pack, Workbooks, Textbook, or Slide Decks.",
     "market.share": "Share",
     "market.bag": "Bag",
     "market.promise1": "Student to student",
@@ -589,6 +589,9 @@ const translations = {
     "login.pass": "Password",
     "login.submit": "Sign in",
     "login.keep": "Keep me signed in",
+    "login.notMember": "Not a member yet?",
+    "login.join": "Join now",
+    "login.haveAccount": "Already have an account?",
     "login.error": "Email or password is incorrect.",
     "login.register": "Register",
     "login.reset": "Reset password",
@@ -995,7 +998,7 @@ const translations = {
     "market.headline": "這一屆的教科書",
     "bag.pageTitle": "你的袋子",
     "orders.pageTitle": "你的訂單",
-    "market.lede": "課程用書與教材，由一屆 imMBA 同學交到下一屆。",
+    "market.lede": "你在找新生包、練習冊、教科書，或簡報。",
     "market.share": "分享",
     "market.bag": "袋子",
     "market.promise1": "同學之間",
@@ -1256,6 +1259,9 @@ const translations = {
     "login.pass": "密碼",
     "login.submit": "登入",
     "login.keep": "保持登入",
+    "login.notMember": "還沒有帳號？",
+    "login.join": "立即加入",
+    "login.haveAccount": "已經有帳號？",
     "login.error": "電子郵件或密碼不正確。",
     "login.register": "註冊",
     "login.reset": "重設密碼",

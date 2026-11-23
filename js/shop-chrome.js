@@ -1,7 +1,7 @@
-import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=notice4";
-import { addBagLine, readBag, removeBagLine, setBagQty } from "./bag-store.js?v=bag1";
-import { paintBagBadge, shelfItem } from "./marketplace.js?v=slide1";
-import { marketMode, setMarketMode } from "./trade.js?v=hold4";
+import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=lab3";
+import { addBagLine, readBag, removeBagLine, setBagQty } from "./bag-store.js?v=lab2";
+import { paintBagBadge, shelfItem } from "./marketplace.js?v=lab6";
+import { marketMode, setMarketMode } from "./trade.js?v=lab2";
 
 const zh = () => document.body?.dataset.lang === "zh";
 const t = (en, tw) => (zh() ? tw : en);

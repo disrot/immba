@@ -1,4 +1,4 @@
-import { statusText } from "./trade.js?v=hold4";
+import { statusText } from "./trade.js?v=lab2";
 
 const esc = (value) =>
   String(value ?? "")

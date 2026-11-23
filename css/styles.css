@@ -2584,6 +2584,27 @@ a.shop-card:hover {
   color: var(--text-muted);
 }
 
+.shop-atelier .shop-empty {
+  margin: 0.25rem 0 1.5rem;
+}
+
+.shop-atelier .shop-empty[hidden] {
+  display: none;
+}
+
+.shop-slide {
+  margin-top: 0.85rem;
+  max-width: 280px;
+}
+
+.wizard-alert {
+  margin: 0.5rem 0 1rem;
+}
+
+.wizard-alert[hidden] {
+  display: none;
+}
+
 @media (min-width: 900px) {
   .shop-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -7034,13 +7055,17 @@ body[data-lang="zh"] [data-dd-lang="en"] {
 }
 
 @media (max-width: 860px) {
-  .account-split {
+  .account-split,
+  .account-split:has([data-market-auth]:not([hidden])) {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1rem;
+    min-height: 0;
   }
 
-  .seller-story-card {
-    aspect-ratio: 824 / 1024;
+  .seller-story-card,
+  .account-split:has([data-market-auth]:not([hidden])) .seller-story-card {
+    aspect-ratio: 4 / 5;
+    min-height: 0;
     height: auto;
   }
 }
@@ -7135,6 +7160,218 @@ body[data-lang="zh"] [data-dd-lang="en"] {
 .market-login {
   max-width: none;
   margin: 0;
+}
+
+.account-split:has([data-market-auth]:not([hidden])) {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: stretch;
+  min-height: 40rem;
+}
+
+.account-split:has([data-market-auth]:not([hidden])) > .account-split-main {
+  display: flex;
+  min-width: 0;
+  min-height: 100%;
+}
+
+.account-split:has([data-market-auth]:not([hidden])) > .account-split-main > .shop-kicker,
+.account-split:has([data-market-auth]:not([hidden])) > .account-split-main > .shop-hero-title,
+.account-split:has([data-market-auth]:not([hidden])) > .account-split-main > .login-lede {
+  display: none;
+}
+
+.account-split:has([data-market-auth]:not([hidden])) [data-market-auth] {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 100%;
+}
+
+.shop-account[hidden] {
+  display: none !important;
+}
+
+.signin-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 2.4rem 2rem;
+  border: 1px solid #e6e4dd;
+  border-radius: 2rem;
+  background: #fff;
+  box-shadow: none;
+  text-align: center;
+  overflow: hidden;
+}
+
+.signin-mark {
+  display: grid;
+  place-items: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  margin: 0 auto 0.85rem;
+  border-radius: 999px;
+  background: #f1efea;
+  color: #141a14;
+}
+
+.signin-mark svg {
+  width: 1.45rem;
+  height: 1.45rem;
+}
+
+.signin-panel [data-login-title] {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.signin-panel [data-login-lede] {
+  margin: 0.35rem 0 1.25rem;
+  color: #5c665b;
+  font-size: 0.95rem;
+}
+
+.signin-panel .login-form {
+  width: min(100%, 22rem);
+  margin: 0 auto;
+  text-align: left;
+}
+
+.signin-panel .login-switch {
+  display: none;
+}
+
+.signin-panel .login-field > span,
+.signin-pass-head > span {
+  display: block;
+  margin: 0 0 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.signin-pass-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.signin-pass-head .login-forgot {
+  margin: 0 0 0.35rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.signin-pass {
+  position: relative;
+}
+
+.market-auth-card.signin-panel .signin-pass input {
+  padding-right: 2.7rem;
+  border-radius: 0.85rem;
+}
+
+.signin-eye {
+  position: absolute;
+  top: 50%;
+  right: 0.35rem;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #5c665b;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.signin-eye svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.signin-eye svg[hidden] {
+  display: none !important;
+}
+
+.market-auth-card.signin-panel .login-keep input {
+  width: 1.05rem;
+  height: 1.05rem;
+  border: 1px solid #c8c4bb;
+  border-radius: 0.28rem;
+  background: #fff;
+}
+
+.market-auth-card.signin-panel .login-keep input::after,
+.market-auth-card.signin-panel .login-keep input:checked::after {
+  content: none;
+}
+
+.market-auth-card.signin-panel .login-keep input:checked {
+  border-color: #163300;
+  background: #163300 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.2 8.2 6.3 11.2 12.8 4.6' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 0.85rem no-repeat;
+}
+
+.market-auth-card.signin-panel .login-submit {
+  width: 100%;
+  border-radius: 0.9rem;
+  background: #163300;
+  color: #fff;
+}
+
+.signin-join {
+  margin: 0.15rem 0 0;
+  color: #5c665b;
+  font-size: 0.92rem;
+  text-align: center;
+}
+
+.signin-join[hidden] {
+  display: none;
+}
+
+.signin-join button {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #163300;
+  font: inherit;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+}
+
+.account-split:has([data-market-auth]:not([hidden])) .seller-story {
+  display: flex;
+  min-width: 0;
+  min-height: 100%;
+}
+
+.account-split:has([data-market-auth]:not([hidden])) .seller-story > h2 {
+  display: none;
+}
+
+.account-split:has([data-market-auth]:not([hidden])) .seller-story-card {
+  flex: 1;
+  width: 100%;
+  height: auto;
+  min-height: 40rem;
+  aspect-ratio: auto;
+  border-radius: 2rem;
 }
 
 .market-auth-card .login-collapse.is-off {
@@ -8186,13 +8423,17 @@ body[data-lang="zh"] .shop-atelier * {
   color: var(--shop-ink);
 }
 
+.shop-atelier .shop-plp {
+  padding-top: 0;
+}
+
 .shop-atelier .shop-mast {
   position: relative;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 1.25rem;
-  padding: 2.1rem 0 1.65rem;
+  padding: 0.2rem 0 1.15rem;
   overflow: hidden;
   border-bottom: 1px solid var(--shop-line);
 }
@@ -8238,6 +8479,31 @@ body[data-lang="zh"] .shop-atelier * {
   margin: 0.85rem 0 0;
   color: #3a342c;
   line-height: 1.6;
+}
+
+.shop-atelier .shop-looking {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+  color: #163300;
+}
+
+.shop-atelier .shop-type {
+  display: inline-flex !important;
+  width: auto !important;
+  min-height: 1.4em;
+  justify-content: flex-start !important;
+  color: #163300 !important;
+  font-family: inherit !important;
+}
+
+.shop-atelier .shop-type-words {
+  font-family: inherit !important;
+  font-size: 1.05rem !important;
+  font-weight: 560;
+  letter-spacing: -0.02em !important;
+  line-height: 1.2 !important;
 }
 
 .listing-gate {
@@ -8756,35 +9022,33 @@ body.is-gated .pdp-dock {
 }
 
 .shop-atelier .shop-found {
-  display: grid;
-  justify-items: end;
-  gap: 0.2rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
   margin: 0;
-  line-height: 1.1;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
-.shop-atelier .shop-found [data-shop-flap] {
-  display: block;
-  line-height: 1;
+.shop-atelier .shop-found [data-shop-count-n],
+.shop-atelier .shop-found [data-shop-count-noun] {
+  font-size: 1.15rem;
+  line-height: 1.2;
 }
 
-.shop-atelier .shop-found strong {
-  font-size: 1.35rem;
-  font-weight: var(--weight-semibold);
+.shop-atelier .shop-found [data-shop-count-n] {
+  color: #163300;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
 .shop-atelier .shop-found [data-shop-count-noun] {
-  color: #6f675d;
-  font-size: 0.75rem;
+  color: #5c665b;
 }
 
-.shop-atelier .shop-results-bar .shop-tool select {
-  min-height: 2.25rem;
-  padding: 0 0.7rem;
-  border: 1px solid rgba(28, 26, 23, 0.12);
-  border-radius: 10px;
-  background: #fff;
+.shop-atelier .shop-sort {
+  display: inline-flex;
+  align-items: center;
 }
 
 .shop-atelier .shop-toolbar {
@@ -9411,9 +9675,14 @@ body.is-gated .pdp-dock {
   margin-top: 3.5rem;
 }
 
-.shop-atelier .pdp-related h2 {
+.shop-atelier .pdp-related > h2 {
   font-weight: var(--weight-semibold);
-  font-size: 2rem;
+  font-size: 1.35rem;
+}
+
+.shop-atelier .pdp-related .shop-card h2,
+.shop-atelier .pdp-related .shop-price-row {
+  font-size: 0.95rem;
 }
 
 .shop-atelier .pdp-dock {
@@ -12420,6 +12689,22 @@ body:has(dialog[open]) .shop-hold {
 
 .shop-atelier .menu-drop-btn {
   justify-content: flex-start;
+}
+
+.shop-atelier .shop-sort .menu-drop {
+  display: inline-block;
+  width: auto;
+  min-width: 0;
+}
+
+.shop-atelier .shop-sort .menu-drop-btn {
+  width: auto;
+  padding: 0 2.35rem 0 1rem;
+  white-space: nowrap;
+}
+
+.shop-atelier .shop-sort .menu-drop-btn::after {
+  right: 1rem;
 }
 
 .menu-drop.is-open .menu-drop-btn,

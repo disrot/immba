@@ -1,10 +1,10 @@
-import { isSellerAuthed } from "./auth.js?v=notice4";
+import { currentProfile, isSellerAuthed } from "./auth.js?v=lab3";
 import { getAuthSession, rpc } from "./supabase.js?v=secure1";
 import { listCloudListings } from "./listings-store.js?v=notice3";
-import { BUYER_ITEM_FEE, DELIVERY_FEE, availableQty, defaultOnHand, marketMode, releaseExpired, setMarketMode } from "./trade.js?v=hold4";
+import { BUYER_ITEM_FEE, DELIVERY_FEE, availableQty, defaultOnHand, marketMode, releaseExpired, setMarketMode, syncC2c } from "./trade.js?v=lab2";
 import { rotatedPackets } from "./shelf-rotation.js?v=pass2";
 import { odo } from "./odometer.js?v=odo3";
-import { addBagLine, readBag } from "./bag-store.js?v=bag1";
+import { addBagLine, readBag } from "./bag-store.js?v=lab2";
 
 export const PACKETS = [
   {
@@ -463,11 +463,8 @@ export const shelfItem = (id) => packetById(id);
 export const shelfSearch = (query, limit = 8) => {
   const q = String(query || "").trim().toLowerCase();
   const lang = currentLang();
-  const seen = new Set();
-  return [...sellerPackets(), ...rotatedPackets(), ...allPackets()]
+  return forBuyer([...sellerPackets(), ...rotatedPackets(), ...allPackets()])
     .filter((item) => {
-      if (!item || seen.has(item.id)) return false;
-      seen.add(item.id);
       if (!q) return true;
       const copy = item[lang] || item.en || {};
       const hay = [copy.title, item.en?.title, item.zh?.title, item.course, item.professor, item.isbn, item.sku]
@@ -561,6 +558,57 @@ const sellerPackets = () => {
         },
       };
     });
+};
+
+const ownKeys = () => {
+  const profile = currentProfile();
+  return new Set(
+    [profile?.email, profile?.user?.email, profile?.user?.id]
+      .map((value) => String(value || "").trim().toLowerCase())
+      .filter(Boolean),
+  );
+};
+
+const ownBookIds = () => {
+  let rows = [];
+  try {
+    rows = JSON.parse(localStorage.getItem("immba-seller-books") || "[]");
+  } catch {
+    rows = [];
+  }
+  if (!Array.isArray(rows)) return new Set();
+  const keys = ownKeys();
+  return new Set(
+    rows
+      .filter((book) => {
+        const owner = String(book?.sellerEmail || book?.sellerId || "").trim().toLowerCase();
+        if (!owner || owner === "local") return true;
+        return keys.has(owner);
+      })
+      .map((book) => book.id)
+      .filter(Boolean),
+  );
+};
+
+const isOwnListing = (item) => {
+  if (!item) return false;
+  const owner = String(item.sellerId || item.sellerEmail || "").trim().toLowerCase();
+  if (owner && ownKeys().has(owner)) return true;
+  return ownBookIds().has(item.id);
+};
+
+const forBuyer = (rows) => {
+  const mine = ownBookIds();
+  const keys = ownKeys();
+  const seen = new Set();
+  return rows.filter((item) => {
+    if (!item || seen.has(item.id)) return false;
+    seen.add(item.id);
+    const owner = String(item.sellerId || item.sellerEmail || "").trim().toLowerCase();
+    if (owner && keys.has(owner)) return false;
+    if (mine.has(item.id)) return false;
+    return true;
+  });
 };
 
 const stockOf = (item) => {
@@ -704,6 +752,7 @@ export const initMarketplace = () => {
   if (!root || root.dataset.bound === "1") return;
   if (marketMode() !== "buyer") setMarketMode("buyer");
   root.dataset.bound = "1";
+  void syncC2c();
 
   const sort = root.querySelector("[data-shop-sort]");
   const search = root.querySelector("[data-shop-search]");
@@ -743,14 +792,7 @@ export const initMarketplace = () => {
   let condition = "all";
   const pageSize = 9;
 
-  const catalog = () => {
-    const seen = new Set();
-    return [...sellerPackets(), ...rotatedPackets(), ...allPackets()].filter((item) => {
-      if (seen.has(item.id)) return false;
-      seen.add(item.id);
-      return true;
-    });
-  };
+  const catalog = () => forBuyer([...sellerPackets(), ...rotatedPackets(), ...allPackets()]);
 
   const paintMode = () => {
     if (!modeSlot) return;
@@ -926,13 +968,13 @@ export const initMarketplace = () => {
     page = Math.min(page, pages);
     if (count) {
       const noun = lang === "zh" ? "件教材" : n === 1 ? "listing" : "listings";
-      if (!count.querySelector("[data-shop-flap]")) {
-        count.innerHTML = `<span data-shop-flap></span><span data-shop-count-noun></span>`;
+      if (!count.querySelector("[data-shop-count-n]")) {
+        count.innerHTML = `<span data-shop-count-n></span><span data-shop-count-noun></span>`;
       }
       const nounNode = count.querySelector("[data-shop-count-noun]");
+      const numberNode = count.querySelector("[data-shop-count-n]");
+      if (numberNode) numberNode.textContent = String(n);
       if (nounNode) nounNode.textContent = noun;
-      count.dataset.n = String(n);
-      window.dispatchEvent(new CustomEvent("immba:shelf-count", { detail: n }));
     }
 
     const view = list.slice((page - 1) * pageSize, page * pageSize);
@@ -1012,14 +1054,18 @@ export const initMarketplace = () => {
     if (which === "max" && rangeMax) rangeMax.value = String(PRICE_MAX);
     render({ resetPage: true });
   });
+  const clearShelf = () => {
+    category = "all";
+    condition = "all";
+    if (search) search.value = "";
+    if (rangeMin) rangeMin.value = String(PRICE_MIN);
+    if (rangeMax) rangeMax.value = String(PRICE_MAX);
+    render({ resetPage: true });
+  };
+  window.addEventListener("immba:clear-shelf", clearShelf);
   filters?.addEventListener("click", (event) => {
     if (event.target.closest("[data-shop-clear]")) {
-      category = "all";
-      condition = "all";
-      if (search) search.value = "";
-      if (rangeMin) rangeMin.value = String(PRICE_MIN);
-      if (rangeMax) rangeMax.value = String(PRICE_MAX);
-      render({ resetPage: true });
+      clearShelf();
       return;
     }
     const button = event.target.closest("[data-shop-pick]");
@@ -1069,6 +1115,7 @@ export const initListing = () => {
   if (!root || root.dataset.bound === "1") return;
   if (!viewerSignedIn()) openListingGate();
   root.dataset.bound = "1";
+  void syncC2c();
 
   const params = new URLSearchParams(window.location.search);
   const crumb = root.querySelector("[data-pdp-crumb]");
@@ -1152,9 +1199,13 @@ export const initListing = () => {
 
     const mail = `mailto:imMBA@mail.fju.edu.tw?subject=${encodeURIComponent(`Marketplace: ${copy.title}`)}`;
     const bagText = soldOut ? soldLabel : `${bagLabel} — ${money(item.price * qty)}`;
-    const cta = soldOut
-      ? `<button type="button" class="pdp-bag" disabled>${soldLabel}</button>`
-      : `<button type="button" class="pdp-bag" data-pdp-add>${bagText}</button>
+    const mine = isOwnListing(item);
+    const ownNote = lang === "zh" ? "這是你的刊登，不能加入自己的袋子。" : "This is your listing, so it stays out of your bag.";
+    const cta = mine
+      ? `<a class="pdp-mail" href="${mail}">${contact}</a>`
+      : soldOut
+        ? `<button type="button" class="pdp-bag" disabled>${soldLabel}</button>`
+        : `<button type="button" class="pdp-bag" data-pdp-add>${bagText}</button>
          <a class="pdp-mail" href="${mail}">${contact}</a>`;
 
     const named = sellerLabel(item, lang);
@@ -1189,16 +1240,20 @@ export const initListing = () => {
             <p>${esc(firmLine)}<br>${esc(payLine)}</p>
           </div>
         </div>
-        <p class="pdp-stock">${soldOut ? soldLabel : lang === "zh" ? `可售 ${left}` : `${left} available`}</p>
+        <p class="pdp-stock">${mine ? ownNote : soldOut ? soldLabel : lang === "zh" ? `可售 ${left}。數量只能在 1 和可售數量之間。` : `${left} available. Quantity stays between 1 and the stock on hand.`}</p>
         ${variantRow}
-        <div class="pdp-field">
+        ${
+          mine
+            ? ""
+            : `<div class="pdp-field">
           <p class="pdp-label">${qtyLabel}</p>
           <div class="pdp-qty">
             <button type="button" data-qty="-1" ${qty <= 1 || soldOut ? "disabled" : ""} aria-label="Decrease quantity">−</button>
             <span class="trade-money">${odo(`pdp-qty-${item.id}`, String(qty))}</span>
             <button type="button" data-qty="1" ${soldOut || qty >= left ? "disabled" : ""} aria-label="Increase quantity">+</button>
           </div>
-        </div>
+        </div>`
+        }
         <div class="pdp-actions">${cta}</div>
         <div class="pdp-notes">
           <details>
@@ -1231,15 +1286,17 @@ export const initListing = () => {
 
     if (dock) {
       dock.hidden = false;
-      dock.innerHTML = soldOut
-        ? `<strong>${soldLabel}</strong><button type="button" class="pdp-bag" disabled>${soldLabel}</button>`
-        : `<strong class="trade-money">${odo(`pdp-dock-${item.id}`, money(item.price))}</strong><button type="button" class="pdp-bag" data-pdp-add>${bagLabel}</button>`;
+      dock.innerHTML = mine
+        ? `<strong>${ownNote}</strong>`
+        : soldOut
+          ? `<strong>${soldLabel}</strong><button type="button" class="pdp-bag" disabled>${soldLabel}</button>`
+          : `<strong class="trade-money">${odo(`pdp-dock-${item.id}`, money(item.price))}</strong><button type="button" class="pdp-bag" data-pdp-add>${bagLabel}</button>`;
     }
 
-    const also = [...sellerPackets(), ...rotatedPackets(), ...allPackets()]
-      .filter((other, index, rows) => other.id !== item.id && stockOf(other) > 0 && rows.findIndex((row) => row.id === other.id) === index)
+    const also = forBuyer([...sellerPackets(), ...rotatedPackets(), ...allPackets()])
+      .filter((other) => other.id !== item.id && stockOf(other) > 0)
       .sort((a, b) => Number(b.tag === item.tag) - Number(a.tag === item.tag))
-      .slice(0, 4);
+      .slice(0, 3);
     if (relatedGrid && relatedWrap) {
       relatedWrap.hidden = also.length === 0;
       relatedGrid.innerHTML = also.map(cardHTML).join("");
@@ -1280,7 +1337,7 @@ export const initListing = () => {
       render();
       return;
     }
-    if (event.target.closest("[data-pdp-add]") && item) {
+    if (event.target.closest("[data-pdp-add]") && item && !isOwnListing(item)) {
       try {
         const previous = readBag().find((row) => row.listing_id === item.id) || null;
         addBagLine({

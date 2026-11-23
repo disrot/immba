@@ -1,9 +1,9 @@
 import { odo } from "./odometer.js?v=odo3";
 import { bindSelectDrop } from "./ui-drop.js?v=drop3";
-import { currentProfile } from "./auth.js?v=notice4";
+import { currentProfile } from "./auth.js?v=lab3";
+import { pushTradeNotice } from "./trade-notices.js?v=lab1";
 import { createListing } from "./listings-store.js?v=notice3";
 import {
-  actionText,
   advanceOrder,
   availableQty,
   downloadCsv,
@@ -16,10 +16,11 @@ import {
   sellerTake,
   setMarketMode,
   setOnHand,
+  syncC2c,
   when,
   marketMode,
-} from "./trade.js?v=hold4";
-import { statusRail } from "./order-status.js?v=expand1";
+} from "./trade.js?v=lab2";
+import { statusRail } from "./order-status.js?v=lab2";
 
 const BOOKS_KEY = "immba-seller-books";
 const MEETS_KEY = "immba-seller-meetups";
@@ -68,6 +69,23 @@ const readJson = (key, fallback) => {
 
 const books = () => readJson(BOOKS_KEY, []);
 const saveBooks = (rows) => localStorage.setItem(BOOKS_KEY, JSON.stringify(rows));
+const ownsBook = (book) => {
+  const email = currentProfile()?.email || "";
+  const owner = String(book?.sellerEmail || "");
+  if (!owner || owner === "local") return true;
+  return owner === email;
+};
+const ownBooks = () => books().filter(ownsBook);
+const denyForeign = () => {
+  window.dispatchEvent(
+    new CustomEvent("immba:toast", {
+      detail: {
+        error: true,
+        message: t("You can only change listings and orders that belong to you.", "你只能修改自己的刊登和訂單。"),
+      },
+    })
+  );
+};
 
 const seedMeetups = () => {
   if (localStorage.getItem(MEETS_KEY)) return readJson(MEETS_KEY, []);
@@ -217,6 +235,11 @@ let wizardOn = false;
 let step = 1;
 let draft = emptyDraft();
 let looking = false;
+let showAlert = false;
+let slideView = null;
+let slideToken = 0;
+let alertView = null;
+let alertToken = 0;
 
 const money = (value) => `NT$${Number(value || 0).toLocaleString(zh() ? "zh-TW" : "en-US")}`;
 
@@ -260,6 +283,7 @@ const stockLine = (book) => {
   const hand = Number(book.quantity || 1);
   const bought = purchasedQty(book.id);
   const left = availableQty(book.id, hand);
+  if (left <= 0) return t("Sold out", "已售完");
   return t(
     `Available ${left} · on hand ${hand} · purchased ${bought}`,
     `可售 ${left} · 庫存 ${hand} · 已售 ${bought}`
@@ -304,6 +328,18 @@ const listingCard = (book) => `<article class="seller-row" data-book="${esc(book
   </div>
 </article>`;
 
+const slideHost = (order) => {
+  const rows = {
+    waiting_payment: ["Slide to confirm payment", "滑動以確認收款", "Confirming", "確認中", "Payment confirmed", "已確認收款"],
+    payment_confirmed: ["Slide to mark ready for hand-off", "滑動以標為可面交", "Saving", "儲存中", "Ready for hand-off", "可面交"],
+    ready_to_ship: ["Slide to confirm hand-off", "滑動以確認面交", "Saving", "儲存中", "Handed off", "已面交"],
+    shipped: ["Slide to mark completed", "滑動以標為完成", "Saving", "儲存中", "Completed", "已完成"],
+  };
+  const row = rows[order.status];
+  if (!row) return "";
+  return `<div class="shop-slide" data-slide-host data-order-id="${esc(order.id)}" data-slide-label="${esc(t(row[0], row[1]))}" data-slide-busy="${esc(t(row[2], row[3]))}" data-slide-done="${esc(t(row[4], row[5]))}"></div>`;
+};
+
 const orderCard = (order, { act = true } = {}) => {
   const items = (order.items || [])
     .map(
@@ -313,7 +349,6 @@ const orderCard = (order, { act = true } = {}) => {
       </li>`
     )
     .join("");
-  const action = actionText(order.status, zh());
   return `<article class="trade-card" data-order="${esc(order.id)}">
     <header>
       <p class="trade-id">${esc(order.id)}</p>
@@ -322,7 +357,7 @@ const orderCard = (order, { act = true } = {}) => {
     <ul class="trade-items">${items}</ul>
     ${order.status === "expired" ? `<p>${t("Returned to the marketplace", "已退回市集")}</p>` : statusRail(order, zh())}
     <p class="trade-money">${t("Buyer pays", "買家支付")} ${odo(`order-${order.id}-pay`, tradeMoney(order.total, zh()))}${order.sellerNet != null ? ` · ${t("you receive", "你收到")} ${odo(`order-${order.id}-net`, tradeMoney(sellerProceeds(order), zh()))}` : ""}</p>
-    ${act && action ? `<button type="button" class="btn btn-primary" data-advance="${esc(order.id)}">${esc(action)}</button>` : ""}
+    ${act ? slideHost(order) : ""}
   </article>`;
 };
 
@@ -353,7 +388,7 @@ const paintBuyer = (root) => {
 };
 
 const accountLede = () => {
-  const lede = document.querySelector("[data-login-lede]");
+  const lede = document.querySelector(".shop-account-page .login-lede");
   if (!lede) return;
   lede.removeAttribute("data-i18n");
   const copy =
@@ -479,7 +514,19 @@ const mountListingPhotos = (root) => {
   });
 };
 
+const mountOrderSlides = (root) => {
+  if (!root?.querySelector("[data-slide-host]")) return;
+  const token = ++slideToken;
+  void import("../src/mount-slide.tsx").then(({ mountSlides }) => {
+    if (token !== slideToken) return;
+    slideView = mountSlides(root);
+  });
+};
+
 const paintHub = () => {
+  slideToken += 1;
+  slideView?.unmount();
+  slideView = null;
   const root = document.querySelector("[data-seller-main]");
   if (!root || wizardOn) return;
   accountLede();
@@ -489,7 +536,7 @@ const paintHub = () => {
   }
   paintNav();
   ensureSellerName();
-  const rows = books();
+  const rows = ownBooks();
   const active = rows.filter((book) => book.status === "active");
   const orders = sellerOrders(currentProfile()?.email || "");
   const pendingPay = orders.filter((order) => order.status === "waiting_payment");
@@ -571,6 +618,7 @@ const paintHub = () => {
       ${block("pay", t("Payments to confirm", "待確認付款"), pay)}
       ${block("ship", t("Ready for hand-off", "待面交"), ship)}
       ${block("done", t("Completed", "已完成"), done)}`;
+    mountOrderSlides(root);
     return;
   }
 
@@ -590,6 +638,7 @@ const paintHub = () => {
         ${metric(t("Waiting for hand-off", "待面交"), String(waitingShip.length))}
       </div>
       <div class="seller-list">${orders.length ? orders.map(orderCard).join("") : `<p class="seller-empty">${t("Sales appear after a buyer places an order.", "買家下單後，紀錄會出現在這裡。")}</p>`}</div>`;
+    mountOrderSlides(root);
     return;
   }
 
@@ -616,6 +665,44 @@ const paintHub = () => {
   root.innerHTML = `
     <header class="seller-head"><h2>${t("Meetups", "面交")}</h2></header>
     <p class="seller-empty">${t("No meetups yet.", "還沒有面交。")}</p>`;
+};
+
+const listingChecks = () => {
+  const book = draft.kind !== "item";
+  const row = (name, detail, ok) => (ok ? { name, ok: true } : { name, detail, ok: false });
+  const checks = [];
+  if (book) checks.push(row(t("ISBN", "ISBN"), t("Enter a valid ISBN.", "請輸入有效的 ISBN。"), validIsbn(draft.isbn)));
+  checks.push(row(t("Title", "名稱"), t("A title is required.", "需要名稱。"), Boolean(draft.title.trim())));
+  if (book) {
+    checks.push(row(t("Course", "課程"), t("A course is required.", "需要課程。"), Boolean(draft.course.trim())));
+    checks.push(row(t("Professor", "老師"), t("A professor is required.", "需要授課老師。"), Boolean(draft.professor.trim())));
+  }
+  const priceOk = draft.price !== "" && !Number.isNaN(Number(draft.price)) && Number(draft.price) >= 0;
+  checks.push(row(t("Price", "價格"), t("Enter a price of 0 or more.", "價格需為 0 或以上。"), priceOk));
+  checks.push(row(t("Quantity", "數量"), t("Quantity must be at least 1.", "數量至少為 1。"), Number(draft.quantity) >= 1));
+  checks.push(row(t("Condition", "書況"), t("Choose a condition.", "請選擇書況。"), Boolean(draft.condition)));
+  checks.push(row(t("Category", "分類"), t("Choose a category.", "請選擇分類。"), Boolean(draft.category)));
+  if (draft.bumped) checks.push(row(t("Bump terms", "置頂條款"), t("Agree to the bump terms.", "請同意置頂條款。"), Boolean(draft.bumpTerms)));
+  return checks;
+};
+
+const listingBlock = () => {
+  if (step === 1) {
+    if (draft.kind !== "item" && !validIsbn(draft.isbn)) return t("Enter a valid ISBN before continuing.", "請先輸入有效的 ISBN。");
+    if (!draft.title.trim()) return t("A title is required.", "需要書名或物品名稱。");
+    if (draft.kind !== "item" && !draft.course.trim()) return t("A course is required.", "需要課程名稱。");
+    if (draft.kind !== "item" && !draft.professor.trim()) return t("A professor is required.", "需要授課老師。");
+  }
+  if (step === 2 || step === 3) {
+    if (draft.price === "" || Number.isNaN(Number(draft.price)) || Number(draft.price) < 0) {
+      return t("Enter a price of 0 or more. A blank or negative price is not saved.", "價格需為 0 或以上。空白或負數不會儲存。");
+    }
+    if (!(Number(draft.quantity) >= 1)) return t("Quantity must be at least 1.", "數量至少為 1。");
+    if (!draft.condition) return t("Choose a condition.", "請選擇狀況。");
+    if (!draft.category) return t("Choose a category.", "請選擇分類。");
+    if (draft.bumped && !draft.bumpTerms) return t("Agree to the bump terms before continuing.", "繼續前請先同意置頂條款。");
+  }
+  return "";
 };
 
 const stepReady = () => {
@@ -735,7 +822,20 @@ const switchRow = (field, checked, title, detail, { locked = false } = {}) => `<
   <input data-field="${field}" type="checkbox" ${checked ? "checked" : ""} ${locked ? "disabled" : ""}>
 </label>`;
 
+const mountAlert = (root) => {
+  const host = root.querySelector("[data-listing-alert]");
+  if (!(host instanceof HTMLElement) || host.hidden || !showAlert) return;
+  const token = ++alertToken;
+  void import("../src/mount-listing-alert.tsx").then(({ mountListingAlert }) => {
+    if (token !== alertToken) return;
+    alertView = mountListingAlert(host, () => listingChecks());
+  });
+};
+
 const paintWizard = () => {
+  alertToken += 1;
+  alertView?.unmount();
+  alertView = null;
   const root = document.querySelector("[data-list-wizard]");
   if (!root) return;
   const heading = document.querySelector("[data-list-title]");
@@ -830,12 +930,14 @@ const paintWizard = () => {
         ${bumpNote}
       </div>
     </div>
+    <div class="wizard-alert kokonut-surface" data-listing-alert ${showAlert ? "" : "hidden"}></div>
     <p class="wizard-status" data-wizard-status></p>
     <div class="wizard-actions">
       <button type="button" class="btn btn-ghost" data-wizard-cancel>${t("Cancel", "取消")}</button>
       <button type="button" class="btn btn-primary" data-wizard-publish ${!draft.bumped || draft.bumpTerms ? "" : "disabled"}>${t("Post listing", "刊登")}</button>
     </div>`;
   mountListingPhotos(root);
+  mountAlert(root);
   root.querySelectorAll("select").forEach((select) => bindSelectDrop(select));
 };
 
@@ -848,6 +950,7 @@ const showWizard = (book) => {
   }
   step = 1;
   wizardOn = true;
+  showAlert = false;
   document.querySelector("[data-seller-hub]")?.setAttribute("hidden", "");
   const wizard = document.querySelector("[data-list-wizard]");
   if (wizard) wizard.hidden = false;
@@ -1079,6 +1182,48 @@ const retireSoldBooks = () => {
   if (next.some((book, index) => book !== books()[index])) saveBooks(next);
 };
 
+const advancing = new Set();
+
+const confirmAdvance = (orderId) => {
+  if (!orderId || advancing.has(orderId)) return;
+  const current = sellerOrders(currentProfile()?.email || "").find((order) => order.id === orderId);
+  if (current && current.sellerId && current.sellerId !== "shelf" && current.sellerId !== "local" && current.sellerId !== (currentProfile()?.email || "")) {
+    denyForeign();
+    return;
+  }
+  advancing.add(orderId);
+  const order = advanceOrder(orderId);
+  if (order?.buyerEmail) {
+    const label = t(
+      `Order ${order.id} is now ${order.status.replaceAll("_", " ")}.`,
+      `訂單 ${order.id} 已更新為 ${order.status.replaceAll("_", " ")}。`
+    );
+    pushTradeNotice({
+      id: `${order.id}-${order.status}`,
+      email: order.buyerEmail,
+      audience: "buyer",
+      orderId: order.id,
+      text: `Order ${order.id} is now ${order.status.replaceAll("_", " ")}. Open My orders to see the next step.`,
+      textZh: `訂單 ${order.id} 已更新。請到「我的訂單」看下一步。`,
+    });
+    if (order.sellerId?.includes("@")) {
+      pushTradeNotice({
+        id: `${order.id}-${order.status}-seller`,
+        email: order.sellerId,
+        audience: "seller",
+        orderId: order.id,
+        text: label,
+        textZh: label,
+      });
+    }
+  }
+  retireSoldBooks();
+  window.setTimeout(() => {
+    advancing.delete(orderId);
+    if (!wizardOn) paintHub();
+  }, 700);
+};
+
 const onHubClick = (event) => {
   if (event.target.closest("[data-profile-edit]")) {
     profileEditing = true;
@@ -1118,11 +1263,7 @@ const onHubClick = (event) => {
   }
   const advance = event.target.closest("[data-advance]");
   if (advance) {
-    advance.disabled = true;
-    advance.classList.add("is-busy");
-    advanceOrder(advance.getAttribute("data-advance"));
-    retireSoldBooks();
-    paintHub();
+    confirmAdvance(advance.getAttribute("data-advance"));
     return;
   }
   if (event.target.closest("[data-csv]")) {
@@ -1132,12 +1273,17 @@ const onHubClick = (event) => {
   const row = event.target.closest("[data-book]");
   if (!row) return;
   const id = row.getAttribute("data-book");
+  const book = books().find((row) => row.id === id);
+  if (!ownsBook(book)) {
+    denyForeign();
+    return;
+  }
   if (event.target.closest("[data-edit]")) {
-    showWizard(books().find((book) => book.id === id));
+    showWizard(book);
     return;
   }
   if (event.target.closest("[data-delete]")) {
-    saveBooks(books().filter((book) => book.id !== id));
+    saveBooks(books().filter((row) => row.id !== id));
     paintHub();
   }
 };
@@ -1160,6 +1306,11 @@ const onHubChange = (event) => {
   const stock = event.target.closest("[data-stock]");
   const id = row?.getAttribute("data-book");
   if (stock && id) {
+    if (!ownsBook(books().find((row) => row.id === id))) {
+      denyForeign();
+      paintHub();
+      return;
+    }
     const quantity = Math.max(0, Number(stock.value) || 0);
     setOnHand(id, quantity);
     saveBooks(books().map((book) => (book.id === id ? { ...book, quantity } : book)));
@@ -1167,6 +1318,11 @@ const onHubChange = (event) => {
     return;
   }
   if (!select || !id) return;
+  if (!ownsBook(books().find((row) => row.id === id))) {
+    denyForeign();
+    paintHub();
+    return;
+  }
   saveBooks(books().map((book) => (book.id === id ? { ...book, status: select.value } : book)));
   paintHub();
 };
@@ -1194,20 +1350,18 @@ const onWizard = async (event) => {
     paintWizard();
     return;
   }
-  if (event.target.closest("[data-wizard-next]")) {
+  if (event.target.closest("[data-wizard-next]") || event.target.closest("[data-wizard-publish]")) {
     readFields();
-    if (!stepReady()) return;
-    step = Math.min(3, step + 1);
-    paintWizard();
-    return;
-  }
-  if (event.target.closest("[data-wizard-publish]")) {
-    readFields();
-    const ready =
-      draft.kind === "item"
-        ? draft.title.trim() && draft.condition && Number(draft.quantity) >= 1
-        : validIsbn(draft.isbn) && draft.title.trim() && draft.course.trim() && draft.professor.trim() && draft.condition && Number(draft.quantity) >= 1;
-    if (!ready) return;
+    if (listingChecks().some((check) => !check.ok)) {
+      showAlert = true;
+      paintWizard();
+      return;
+    }
+    if (event.target.closest("[data-wizard-next]")) {
+      step = Math.min(3, step + 1);
+      paintWizard();
+      return;
+    }
     await publish();
     return;
   }
@@ -1242,8 +1396,7 @@ const syncField = (field) => {
     return true;
   }
   paintPriceGuide();
-  const next = document.querySelector("[data-wizard-next]");
-  if (next) next.disabled = !stepReady();
+  if (showAlert) window.dispatchEvent(new Event("immba:listing-checks"));
   return false;
 };
 
@@ -1333,13 +1486,18 @@ export const initSellerHub = () => {
     window.addEventListener("immba:mode", () => {
       if (!wizardOn) paintHub();
     });
+    document.addEventListener("immba:slide-confirm", (event) => {
+      confirmAdvance(event.detail);
+    });
   }
     if (document.body.hasAttribute("data-list-page")) {
     const params = new URLSearchParams(location.search);
     const existing = params.get("id") ? books().find((book) => book.id === params.get("id")) : null;
     const starter = !existing && params.get("kind") === "item" ? { kind: "item" } : null;
     showWizard(existing || starter);
+    void syncC2c();
     return;
   }
   showHub(view);
+  void syncC2c();
 };

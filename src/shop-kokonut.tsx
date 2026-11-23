@@ -7,7 +7,6 @@ import ActionSearchBar, {
 } from "@/components/kokonutui/action-search-bar";
 import BackgroundPaths from "@/components/kokonutui/background-paths";
 import CommandButton from "@/components/kokonutui/command-button";
-import { Mark, MarkerText } from "@/components/kokonutui/marker-text";
 import {
   Toaster,
   usePromiseToast,
@@ -17,11 +16,12 @@ import {
   StatusIsland,
   type IslandTask,
 } from "@/components/kokonutui/status-island";
-import SplitFlapText from "@/components/kokonutui/split-flap-text";
-import { addBagLine, readBag, removeBagLine } from "../js/bag-store.js?v=bag1";
-import { shelfSearch } from "../js/marketplace.js?v=slide1";
-import { HOLD_MS } from "../js/trade.js?v=hold4";
-import "./kokonut.css?v=shopk2";
+import EmptyState from "@/components/kokonutui/empty-state";
+import TypewriterTitle from "@/components/kokonutui/type-writer";
+import { addBagLine, readBag, removeBagLine } from "../js/bag-store.js?v=lab2";
+import { shelfSearch } from "../js/marketplace.js?v=lab6";
+import { HOLD_MS } from "../js/trade.js?v=lab2";
+import "./kokonut.css?v=lab2";
 
 type ShelfHit = {
   id: string;
@@ -79,6 +79,11 @@ const ShelfPaths = () => (
   </BackgroundPaths>
 );
 
+const LOOKING = {
+  en: ["Onboarding Pack", "Workbooks", "Textbook", "Slide Decks"],
+  zh: ["新生包", "練習冊", "教科書", "簡報"],
+};
+
 const HeroLede = () => {
   const [zh, setZh] = useState(isZh);
   useEffect(() => {
@@ -86,26 +91,24 @@ const HeroLede = () => {
     window.addEventListener("immba:lang", sync);
     return () => window.removeEventListener("immba:lang", sync);
   }, []);
+  const words = zh ? LOOKING.zh : LOOKING.en;
   return (
-    <MarkerText as="span" key={zh ? "zh" : "en"}>
-      {zh ? (
-        <>
-          課程用書與教材，由一屆 imMBA 同學交到
-          <Mark color="#9fe870" type="highlight">
-            下一屆
-          </Mark>
-          。
-        </>
-      ) : (
-        <>
-          Course books and packets, passed from one imMBA{" "}
-          <Mark color="#9fe870" type="highlight">
-            cohort
-          </Mark>{" "}
-          to the next.
-        </>
-      )}
-    </MarkerText>
+    <span className="shop-looking">
+      <span>{zh ? "你在找" : "Are you looking for"}</span>
+      <TypewriterTitle
+        as="span"
+        autoLoop
+        className="shop-type"
+        deleteSpeed={36}
+        key={zh ? "zh" : "en"}
+        loopDelay={500}
+        pauseBeforeDelete={1400}
+        seed={24}
+        sequences={words.map((text) => ({ text, deleteAfter: true }))}
+        textClassName="shop-type-words"
+        typingSpeed={72}
+      />
+    </span>
   );
 };
 
@@ -204,24 +207,25 @@ const ShopSearch = () => {
   );
 };
 
-const ShelfCount = () => {
-  const read = () =>
-    Number(document.querySelector("[data-shop-count]")?.getAttribute("data-n") || "0");
-  const [n, setN] = useState(read);
+const ShelfEmpty = () => {
+  const [zh, setZh] = useState(isZh);
   useEffect(() => {
-    const onCount = (event: Event) =>
-      setN(Number((event as CustomEvent<number>).detail) || 0);
-    window.addEventListener("immba:shelf-count", onCount);
-    setN(read());
-    return () => window.removeEventListener("immba:shelf-count", onCount);
+    const onLang = () => setZh(isZh());
+    window.addEventListener("immba:lang", onLang);
+    return () => window.removeEventListener("immba:lang", onLang);
   }, []);
   return (
-    <SplitFlapText
-      className="text-[1.15rem]"
-      direct
-      flipMs={180}
-      text={String(n)}
-      tileClassName="rounded-[0.2em] bg-white text-[#163300] shadow-[inset_0_0_0_1px_#e6e4dd]"
+    <EmptyState
+      actionLabel={zh ? "清除篩選" : "Clear filters"}
+      className="min-h-[260px] max-w-none border-[#e6e4dd] bg-white shadow-none"
+      description={
+        zh
+          ? "放寬篩選或清掉搜尋，這一屆的書就會回來。"
+          : "Widen the filters or clear the search, and this cohort’s books come back."
+      }
+      heading={zh ? "書架" : "Shelf"}
+      onAction={() => window.dispatchEvent(new Event("immba:clear-shelf"))}
+      title={zh ? "沒有符合的教材" : "No books match"}
     />
   );
 };
@@ -351,7 +355,7 @@ export const initShopKokonut = () => {
   mount(document.querySelector("[data-shop-paths]"), <ShelfPaths />);
   mount(document.querySelector("[data-shop-marker]"), <HeroLede />);
   mount(document.querySelector("[data-shop-search-host]"), <ShopSearch />);
-  mount(document.querySelector("[data-shop-flap]"), <ShelfCount />);
+  mount(document.querySelector("[data-shop-empty]"), <ShelfEmpty />);
   if (!document.querySelector("[data-shop-feedback]")) {
     const host = document.createElement("div");
     host.setAttribute("data-shop-feedback", "");

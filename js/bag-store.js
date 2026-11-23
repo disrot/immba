@@ -1,4 +1,4 @@
-import { HOLD_MS, availableQty, clearHold, holdListing } from "./trade.js?v=hold4";
+import { HOLD_MS, availableQty, clearHold, holdListing } from "./trade.js?v=lab2";
 
 const KEY = "immba-local-bag";
 
