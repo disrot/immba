@@ -1,6 +1,6 @@
 import { isAdminAuthed } from "./auth.js?v=notice4";
 import { rest } from "./supabase.js?v=notice1";
-import { removeListing } from "./listings-store.js?v=notice4";
+import { removeListing } from "./listings-store.js?v=notice5";
 
 const root = document.querySelector("[data-listings-admin]");
 if (!root) {

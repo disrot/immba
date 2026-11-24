@@ -1,6 +1,6 @@
 import { currentProfile, isSellerAuthed } from "./auth.js?v=lab4";
 import { getAuthSession, rpc } from "./supabase.js?v=secure1";
-import { listCloudListings } from "./listings-store.js?v=notice4";
+import { listCloudListings } from "./listings-store.js?v=notice5";
 import { BUYER_ITEM_FEE, DELIVERY_FEE, availableQty, defaultOnHand, marketMode, releaseExpired, setMarketMode, syncC2c } from "./trade.js?v=lab4";
 import { rotatedPackets } from "./shelf-rotation.js?v=pass2";
 import { odo } from "./odometer.js?v=odo3";

@@ -1,5 +1,5 @@
 import { getAuthSession, rpc } from "./supabase.js?v=secure1";
-import { PACKETS } from "./marketplace.js?v=lab8";
+import { PACKETS } from "./marketplace.js?v=lab9";
 import { rotatedPackets } from "./shelf-rotation.js?v=pass2";
 import { HOLD_MS, availableQty, clearHold, defaultOnHand, holdListing, isGeneratedListing, placeOrders, quoteLines, releaseExpired, syncC2c } from "./trade.js?v=lab4";
 import { pushTradeNotice } from "./trade-notices.js?v=lab1";

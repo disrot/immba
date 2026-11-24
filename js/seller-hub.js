@@ -2,7 +2,7 @@ import { odo } from "./odometer.js?v=odo3";
 import { bindSelectDrop } from "./ui-drop.js?v=drop3";
 import { currentProfile } from "./auth.js?v=lab4";
 import { pushTradeNotice } from "./trade-notices.js?v=lab1";
-import { createListing } from "./listings-store.js?v=notice4";
+import { createListing, saveSellerFace } from "./listings-store.js?v=notice5";
 import {
   advanceOrder,
   availableQty,
@@ -177,6 +177,9 @@ const writeSellerProfile = (next) => {
   all[email] = saved;
   localStorage.setItem(PROFILE_KEY, JSON.stringify(all));
   window.dispatchEvent(new CustomEvent("immba:seller-profile"));
+  if (email !== "local" && saved.name) {
+    void saveSellerFace(saved.name, saved.photo).catch(() => {});
+  }
   saveBooks(
     books().map((book) =>
       book.sellerEmail === email || book.sellerEmail === "local"
@@ -230,6 +233,7 @@ const emptyDraft = () => ({
 });
 
 let view = "dashboard";
+let orderTab = "pay";
 let wizardOn = false;
 let step = 1;
 let draft = emptyDraft();
@@ -605,14 +609,15 @@ const paintHub = () => {
     const pay = orders.filter((order) => order.status === "waiting_payment");
     const ship = orders.filter((order) => order.status === "payment_confirmed" || order.status === "ready_to_ship" || order.status === "shipped");
     const done = orders.filter((order) => order.status === "completed");
+    const tab = ["pay", "ship", "done"].includes(orderTab) ? orderTab : "pay";
     const block = (key, title, list) =>
-      `<section class="seller-card" data-order-panel="${key}" ${key === "pay" ? "" : "hidden"}><h3>${title}</h3><div class="seller-list">${list.length ? list.map(orderCard).join("") : `<p class="seller-empty">${t("All caught up.", "目前都處理完了。")}</p>`}</div></section>`;
+      `<section class="seller-card" data-order-panel="${key}" ${key === tab ? "" : "hidden"}><h3>${title}</h3><div class="seller-list">${list.length ? list.map(orderCard).join("") : `<p class="seller-empty">${t("All caught up.", "目前都處理完了。")}</p>`}</div></section>`;
     root.innerHTML = `
       <header class="seller-head"><h2>${t("Orders to process", "待處理訂單")}</h2></header>
       <div class="seller-order-tabs" role="tablist">
-        <button type="button" data-order-tab="pay" aria-selected="true">${t("Payments to confirm", "待確認付款")} (${pay.length})</button>
-        <button type="button" data-order-tab="ship" aria-selected="false">${t("Ready for hand-off", "待面交")} (${ship.length})</button>
-        <button type="button" data-order-tab="done" aria-selected="false">${t("Completed", "已完成")} (${done.length})</button>
+        <button type="button" data-order-tab="pay" aria-selected="${tab === "pay" ? "true" : "false"}">${t("Payments to confirm", "待確認付款")} (${pay.length})</button>
+        <button type="button" data-order-tab="ship" aria-selected="${tab === "ship" ? "true" : "false"}">${t("Ready for hand-off", "待面交")} (${ship.length})</button>
+        <button type="button" data-order-tab="done" aria-selected="${tab === "done" ? "true" : "false"}">${t("Completed", "已完成")} (${done.length})</button>
       </div>
       ${block("pay", t("Payments to confirm", "待確認付款"), pay)}
       ${block("ship", t("Ready for hand-off", "待面交"), ship)}
@@ -1217,6 +1222,8 @@ const confirmAdvance = (orderId) => {
   }
   advancing.add(orderId);
   const order = advanceOrder(orderId);
+  if (order?.status === "completed" || order?.status === "expired") orderTab = "done";
+  else if (order?.status && order.status !== "waiting_payment" && order.status !== "placed") orderTab = "ship";
   if (order?.buyerEmail) {
     const [text, textZh] = buyerNotice(order);
     pushTradeNotice({
@@ -1257,10 +1264,11 @@ const onHubClick = (event) => {
     if (profileSettled()) paintHub();
     return;
   }
-  const orderTab = event.target.closest("[data-order-tab]");
-  if (orderTab) {
-    const key = orderTab.getAttribute("data-order-tab");
-    document.querySelectorAll("[data-order-tab]").forEach((button) => button.setAttribute("aria-selected", button === orderTab ? "true" : "false"));
+  const orderTabButton = event.target.closest("[data-order-tab]");
+  if (orderTabButton) {
+    const key = orderTabButton.getAttribute("data-order-tab");
+    if (key === "pay" || key === "ship" || key === "done") orderTab = key;
+    document.querySelectorAll("[data-order-tab]").forEach((button) => button.setAttribute("aria-selected", button === orderTabButton ? "true" : "false"));
     document.querySelectorAll("[data-order-panel]").forEach((panel) => {
       panel.hidden = panel.getAttribute("data-order-panel") !== key;
     });

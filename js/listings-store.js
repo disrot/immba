@@ -14,6 +14,9 @@ const toItem = (row) => ({
   sellerSeen: row.seller_seen !== false,
   sellerId: row.seller_id,
   sellerUserId: row.seller_id,
+  sellerName: row.seller_name || "",
+  sellerPhoto: row.seller_photo || "",
+  sellerEmail: row.seller_email || "",
   posted: true,
   en: {
     title: row.title,
@@ -42,7 +45,23 @@ export const listCloudListings = async () => {
     } catch {
       rows = await rest("listings?select=*&order=created_at.desc");
     }
-    return Array.isArray(rows) ? rows.filter((row) => !row.removed).map(toItem) : [];
+    const items = Array.isArray(rows) ? rows.filter((row) => !row.removed).map(toItem) : [];
+    let faces = {};
+    try {
+      faces = (await rpc("market_seller_faces")) || {};
+    } catch {
+      faces = {};
+    }
+    return items.map((item) => {
+      const face = faces[item.sellerUserId] || {};
+      const name = String(face.name || item.sellerName || "").trim();
+      return {
+        ...item,
+        sellerName: name,
+        sellerPhoto: String(face.photo || item.sellerPhoto || ""),
+        sellerEmail: String(face.email || item.sellerEmail || ""),
+      };
+    });
   } catch {
     return [];
   }
@@ -72,6 +91,16 @@ export const removeListing = async (id) => {
 };
 
 export const deleteListing = removeListing;
+
+export const saveSellerFace = async (name, photo) => {
+  if (!isCloud() || !getAuthSession()?.user?.id) return;
+  const portrait = String(photo || "");
+  if (portrait.length > 400000) return;
+  await rpc("market_save_portrait", {
+    p_name: String(name || "").trim().slice(0, 80),
+    p_photo: portrait,
+  });
+};
 
 export const createListing = async (input) => {
   const session = getAuthSession();
