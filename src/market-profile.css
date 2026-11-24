@@ -5,9 +5,15 @@
 .market-profile > button {
   width: 2.5rem;
   height: 2.5rem;
-  border-radius: 12px;
+  border-radius: 999px;
+  overflow: hidden;
   border-color: #e6e4dd;
   background: #fff;
+}
+
+.market-profile > button img,
+.market-profile > button span[aria-hidden="true"] {
+  border-radius: 999px;
 }
 
 .market-profile button[data-row="sign-out"] > span[aria-hidden="true"] {

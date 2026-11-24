@@ -12515,6 +12515,16 @@ body:has(dialog[open]) .shop-hold {
   padding: 0;
 }
 
+.shop-bar .market-profile > button,
+.shop-bar .market-profile > button img,
+.shop-bar .market-profile > button span[aria-hidden="true"] {
+  border-radius: 999px;
+}
+
+.shop-bar .market-profile > button {
+  overflow: hidden;
+}
+
 .shop-bar .shop-sell,
 .shop-bar .shop-login,
 .shop-bar .shop-search-trigger {
