@@ -19,7 +19,7 @@ import {
 import EmptyState from "@/components/kokonutui/empty-state";
 import TypewriterTitle from "@/components/kokonutui/type-writer";
 import { addBagLine, readBag, removeBagLine } from "../js/bag-store.js?v=lab4";
-import { shelfSearch } from "../js/marketplace.js?v=lab9";
+import { shelfSearch } from "../js/marketplace.js?v=bump1";
 import { HOLD_MS } from "../js/trade.js?v=lab4";
 import "./kokonut.css?v=lab2";
 

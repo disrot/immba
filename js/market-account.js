@@ -1,6 +1,6 @@
 import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=lab4";
-import { ackRemovedNotices, listRemovedNotices } from "./listings-store.js?v=notice5";
-import { initSellerHub } from "./seller-hub.js?v=lab9";
+import { ackRemovedNotices, listRemovedNotices } from "./listings-store.js?v=bump1";
+import { initSellerHub, syncSellerFace } from "./seller-hub.js?v=bump1";
 import { marketMode, setMarketMode } from "./trade.js?v=lab4";
 import { ackTradeNotices, tradeNoticesFor } from "./trade-notices.js?v=lab1";
 
@@ -32,6 +32,7 @@ export const initMarketAccount = () => {
 
   const session = currentProfile();
   const seller = isSellerAuthed();
+  if (seller) syncSellerFace();
   const zh = () => document.body?.dataset.lang === "zh";
 
   const modeSwitch = () => {

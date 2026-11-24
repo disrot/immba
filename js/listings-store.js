@@ -1,4 +1,4 @@
-import { getAuthSession, isCloud, rest, rpc, uploadMarketPhoto } from "./supabase.js?v=secure1";
+import { getAuthSession, isCloud, rest, rpc, supabase, uploadMarketPhoto } from "./supabase.js?v=secure1";
 
 const toItem = (row) => ({
   id: row.id,
@@ -17,6 +17,7 @@ const toItem = (row) => ({
   sellerName: row.seller_name || "",
   sellerPhoto: row.seller_photo || "",
   sellerEmail: row.seller_email || "",
+  bumped: row.bumped === true,
   posted: true,
   en: {
     title: row.title,
@@ -92,14 +93,87 @@ export const removeListing = async (id) => {
 
 export const deleteListing = removeListing;
 
+const PORTRAIT_MAX = 400000;
+
+/** Give an SVG data URL a real pixel size so it can be drawn down to a small JPEG. */
+const withSvgSize = (raw) => {
+  if (!raw.startsWith("data:image/svg")) return raw;
+  const comma = raw.indexOf(",");
+  if (comma < 0) return raw;
+  let body = raw.slice(comma + 1);
+  try {
+    body = decodeURIComponent(body);
+  } catch {
+    return raw;
+  }
+  if (!/<svg\b/i.test(body)) return raw;
+  if (!/\swidth=/i.test(body)) body = body.replace(/<svg\b/i, '<svg width="160" height="160"');
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(body)}`;
+};
+
+/** A phone photo is far past the portrait cap. Keep a 160px JPEG instead of dropping it. */
+const shrinkPortrait = (photo) =>
+  new Promise((resolve) => {
+    const raw = String(photo || "").trim();
+    if (!raw) {
+      resolve("");
+      return;
+    }
+    if (!raw.startsWith("data:image")) {
+      resolve(raw.length <= PORTRAIT_MAX ? raw : "");
+      return;
+    }
+    const src = withSvgSize(raw);
+    const image = new Image();
+    image.onload = () => {
+      const side = 160;
+      const width = image.naturalWidth || 0;
+      const height = image.naturalHeight || 0;
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!width || !height || !ctx) {
+        resolve(src.length <= PORTRAIT_MAX ? src : "");
+        return;
+      }
+      canvas.width = side;
+      canvas.height = side;
+      const scale = Math.max(side / width, side / height);
+      const dw = width * scale;
+      const dh = height * scale;
+      ctx.drawImage(image, (side - dw) / 2, (side - dh) / 2, dw, dh);
+      let quality = 0.86;
+      let url = canvas.toDataURL("image/jpeg", quality);
+      while (url.length > PORTRAIT_MAX && quality > 0.4) {
+        quality -= 0.12;
+        url = canvas.toDataURL("image/jpeg", quality);
+      }
+      resolve(url.length <= PORTRAIT_MAX ? url : src.length <= PORTRAIT_MAX ? src : "");
+    };
+    image.onerror = () => resolve(src.length <= PORTRAIT_MAX ? src : raw.length <= PORTRAIT_MAX ? raw : "");
+    image.src = src;
+  });
+
 export const saveSellerFace = async (name, photo) => {
-  if (!isCloud() || !getAuthSession()?.user?.id) return;
-  const portrait = String(photo || "");
-  if (portrait.length > 400000) return;
+  if (!isCloud()) return;
+  const { data } = await supabase.auth.getSession();
+  if (!data.session?.user?.id && !getAuthSession()?.user?.id) return;
+  if (!data.session?.user?.id) throw new Error("Sign in before saving a portrait");
+  const portrait = await shrinkPortrait(photo);
+  if (String(photo || "").trim() && !portrait) throw new Error("Portrait is too large");
   await rpc("market_save_portrait", {
     p_name: String(name || "").trim().slice(0, 80),
     p_photo: portrait,
   });
+  if (portrait.startsWith("data:image")) window.dispatchEvent(new Event("immba:listings"));
+};
+
+export const bumpCloudListing = async (title, price) => {
+  if (!isCloud() || !getAuthSession()?.user?.id) return 0;
+  const updated = await rpc("market_bump_listing", {
+    p_title: String(title || "").trim(),
+    p_price: Number(price) || 0,
+  });
+  return Number(updated) || 0;
 };
 
 export const createListing = async (input) => {
@@ -121,6 +195,7 @@ export const createListing = async (input) => {
     tag: input.tag || "elective",
     image_url,
     inventory_on_hand: Number(input.inventory_on_hand) || 1,
+    bumped: Boolean(input.bumped),
   };
   const saved = await rpc("market_create_listing", { p_row: row });
   return toItem(saved || { ...row, id: `tmp-${Date.now()}` });

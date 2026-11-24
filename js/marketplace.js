@@ -1,6 +1,6 @@
 import { currentProfile, isSellerAuthed } from "./auth.js?v=lab4";
 import { getAuthSession, rpc } from "./supabase.js?v=secure1";
-import { listCloudListings } from "./listings-store.js?v=notice5";
+import { listCloudListings } from "./listings-store.js?v=bump1";
 import { BUYER_ITEM_FEE, DELIVERY_FEE, availableQty, defaultOnHand, marketMode, releaseExpired, setMarketMode, syncC2c } from "./trade.js?v=lab4";
 import { rotatedPackets } from "./shelf-rotation.js?v=pass2";
 import { odo } from "./odometer.js?v=odo3";
@@ -732,7 +732,7 @@ const cardHTML = (item) => {
   const handoff = lang === "zh" ? "面交" : "Campus";
   const course = item.course ? `<span class="shop-code">${esc(item.course)}</span>` : "";
   const face = item.sellerPhoto
-    ? `<img src="${esc(item.sellerPhoto)}" alt="">`
+    ? `<img class="shop-face" src="${esc(item.sellerPhoto)}" alt="" width="22" height="22">`
     : `<span aria-hidden="true">${esc(who.slice(0, 1).toUpperCase())}</span>`;
   return `<article class="shop-card${sold ? " is-sold" : ""}${item.posted ? " is-posted" : ""}">
     <a class="shop-card-hit" href="${listingHref(item.id)}"><span class="sr-only">${esc(copy.title)}</span></a>
@@ -963,7 +963,8 @@ export const initMarketplace = () => {
             : order === "price-desc"
               ? (a, b) => b.price - a.price
               : () => 0;
-    list = [...list].sort((a, b) => Number(Boolean(b.bumped)) - Number(Boolean(a.bumped)) || compare(a, b));
+    const bumpRank = (item) => (item.bumped ? (item.posted ? 2 : 1) : 0);
+    list = [...list].sort((a, b) => bumpRank(b) - bumpRank(a) || compare(a, b));
 
     const n = list.length;
     const pages = Math.max(1, Math.ceil(n / pageSize));
@@ -1236,7 +1237,7 @@ export const initListing = () => {
             : `<p class="pdp-fee">${lang === "zh" ? `結帳每本服務費 NT$${BUYER_ITEM_FEE}${item.delivery ? `，外送 NT$${DELIVERY_FEE}` : ""}` : `NT$${BUYER_ITEM_FEE} service fee per book at checkout${item.delivery ? `. Delivery is NT$${DELIVERY_FEE}` : ""}`}</p>`
         }
         <div class="pdp-seller">
-          <span class="pdp-avatar" aria-hidden="true">${item.sellerPhoto ? `<img src="${esc(item.sellerPhoto)}" alt="">` : esc(initial)}</span>
+          <span class="pdp-avatar" aria-hidden="true">${item.sellerPhoto ? `<img src="${esc(item.sellerPhoto)}" alt="" width="42" height="42">` : esc(initial)}</span>
           <div>
             <p>${lang === "zh" ? `賣方是${who}` : `Sold by ${who}`}</p>
             <p>${esc(firmLine)}<br>${esc(payLine)}</p>

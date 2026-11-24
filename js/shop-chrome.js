@@ -1,6 +1,6 @@
 import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=lab4";
 import { addBagLine, readBag, removeBagLine, setBagQty } from "./bag-store.js?v=lab4";
-import { paintBagBadge, shelfItem } from "./marketplace.js?v=lab9";
+import { paintBagBadge, shelfItem } from "./marketplace.js?v=bump1";
 import { marketMode, setMarketMode } from "./trade.js?v=lab4";
 
 const zh = () => document.body?.dataset.lang === "zh";
@@ -210,7 +210,7 @@ export const initShopChrome = () => {
   }
   if (profileHost && slot) slot.before(profileHost);
   paintBar();
-  if (profileHost) void import("../src/market-profile.tsx?v=profile8");
+  if (profileHost) void import("../src/market-profile.tsx?v=face1");
   void paintBagBadge();
 
   bar.addEventListener("click", (event) => {

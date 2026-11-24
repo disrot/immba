@@ -2,7 +2,7 @@ import { odo } from "./odometer.js?v=odo3";
 import { bindSelectDrop } from "./ui-drop.js?v=drop3";
 import { currentProfile } from "./auth.js?v=lab4";
 import { pushTradeNotice } from "./trade-notices.js?v=lab1";
-import { createListing, saveSellerFace } from "./listings-store.js?v=notice5";
+import { bumpCloudListing, createListing, saveSellerFace } from "./listings-store.js?v=bump1";
 import {
   advanceOrder,
   availableQty,
@@ -26,29 +26,6 @@ import { statusRail } from "./order-status.js?v=lab4";
 
 const BOOKS_KEY = "immba-seller-books";
 const MEETS_KEY = "immba-seller-meetups";
-
-const CATALOG = {
-  "9780134891262": {
-    title: "International Business Management",
-    author: "Charles W. L. Hill",
-    edition: "13th edition",
-  },
-  "9781260565799": {
-    title: "Strategic Management",
-    author: "Frank T. Rothaermel",
-    edition: "5th edition",
-  },
-  "9780134731889": {
-    title: "Marketing Management",
-    author: "Philip Kotler",
-    edition: "15th edition",
-  },
-  "9780134472133": {
-    title: "Financial Management",
-    author: "Raymond Brooks",
-    edition: "4th edition",
-  },
-};
 
 const esc = (value) =>
   String(value ?? "")
@@ -111,40 +88,80 @@ const validIsbn = (value) => {
   return false;
 };
 
-const lookupBook = (code) =>
-  CATALOG[code] || {
-    title: `Campus textbook ${code.slice(-4)}`,
-    author: "Course reading",
-    edition: "Current edition",
-    cover: "",
-  };
-
-const lookupOpenLibrary = async (code) => {
-  const local = lookupBook(code);
-  const controller = new AbortController();
-  const timer = window.setTimeout(() => controller.abort(), 4000);
+const httpsCover = (raw) => {
+  const value = String(raw || "").trim();
+  if (!value) return "";
   try {
-    const res = await fetch(`https://openlibrary.org/isbn/${encodeURIComponent(code)}.json`, { signal: controller.signal });
-    if (!res.ok) return local;
-    const data = await res.json();
-    let author = local.author;
-    const authorKey = data.authors?.[0]?.key;
-    if (authorKey) {
-      const authorRes = await fetch(`https://openlibrary.org${authorKey}.json`, { signal: controller.signal });
-      if (authorRes.ok) author = (await authorRes.json()).name || author;
+    const url = new URL(value);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return "";
+    url.protocol = "https:";
+    if (url.searchParams.has("zoom")) {
+      const zoom = Number(url.searchParams.get("zoom"));
+      url.searchParams.set("zoom", String(Number.isFinite(zoom) ? Math.max(zoom, 3) : 3));
     }
-    const coverId = Array.isArray(data.covers) ? data.covers[0] : 0;
-    return {
-      title: data.title || local.title,
-      author,
-      edition: data.publish_date ? String(data.publish_date) : local.edition,
-      cover: coverId ? `https://covers.openlibrary.org/b/id/${coverId}-L.jpg` : "",
-    };
+    return url.toString();
   } catch {
-    return local;
-  } finally {
-    window.clearTimeout(timer);
+    return "";
   }
+};
+
+const googleCover = (links) => {
+  if (!links || typeof links !== "object") return "";
+  return httpsCover(links.extraLarge || links.large || links.medium || links.thumbnail || "");
+};
+
+const fetchJson = async (url, signal) => {
+  const res = await fetch(url, { signal });
+  if (!res.ok) return null;
+  return res.json();
+};
+
+const lookupIsbn = async (code, signal) => {
+  let googleTitle = "";
+  let googleAuthor = "";
+  let googleCoverUrl = "";
+  try {
+    const data = await fetchJson(`https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(code)}`, signal);
+    const info = data?.items?.[0]?.volumeInfo;
+    googleTitle = String(info?.title || "").trim();
+    googleAuthor = Array.isArray(info?.authors)
+      ? info.authors.map((name) => String(name || "").trim()).filter(Boolean).join(", ")
+      : "";
+    googleCoverUrl = googleCover(info?.imageLinks);
+    if (googleTitle && googleCoverUrl) return { title: googleTitle, author: googleAuthor, edition: "", cover: googleCoverUrl };
+  } catch {
+    if (signal.aborted) return null;
+  }
+  let openTitle = "";
+  let openAuthor = "";
+  let openEdition = "";
+  let openCover = "";
+  try {
+    const data = await fetchJson(`https://openlibrary.org/isbn/${encodeURIComponent(code)}.json`, signal);
+    openTitle = String(data?.title || "").trim();
+    openEdition = data?.publish_date ? String(data.publish_date) : "";
+    const coverId = Array.isArray(data?.covers) ? data.covers.find((id) => Number(id) > 0) : 0;
+    if (coverId) openCover = `https://covers.openlibrary.org/b/isbn/${encodeURIComponent(code)}-L.jpg`;
+    const authorKey = data?.authors?.[0]?.key;
+    if (typeof authorKey === "string" && /^\/authors\/OL\d+A$/.test(authorKey)) {
+      try {
+        const author = await fetchJson(`https://openlibrary.org${authorKey}.json`, signal);
+        openAuthor = String(author?.name || "").trim();
+      } catch {
+        if (signal.aborted) return null;
+      }
+    }
+  } catch {
+    if (signal.aborted) return null;
+  }
+  const title = googleTitle || openTitle;
+  if (!title) return null;
+  return {
+    title,
+    author: googleAuthor || openAuthor,
+    edition: openEdition,
+    cover: googleCoverUrl || openCover,
+  };
 };
 
 const PROFILE_KEY = "immba-seller-profile";
@@ -154,8 +171,14 @@ const profileEmail = () => currentProfile()?.email || "local";
 const readSellerProfile = () => {
   try {
     const all = JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
-    const row = all[profileEmail()];
-    return { name: row?.name || "", photo: row?.photo || "", variant: Number(row?.variant) || 0 };
+    const email = profileEmail();
+    const row = all[email] || {};
+    const draft = email === "local" ? {} : all.local || {};
+    return {
+      name: String(row.name || draft.name || "").trim(),
+      photo: String(row.photo || draft.photo || ""),
+      variant: Number(row.variant ?? draft.variant) || 0,
+    };
   } catch {
     return { name: "", photo: "" };
   }
@@ -178,7 +201,9 @@ const writeSellerProfile = (next) => {
   localStorage.setItem(PROFILE_KEY, JSON.stringify(all));
   window.dispatchEvent(new CustomEvent("immba:seller-profile"));
   if (email !== "local" && saved.name) {
-    void saveSellerFace(saved.name, saved.photo).catch(() => {});
+    void saveSellerFace(saved.name, saved.photo).catch(() => {
+      faceSyncing = false;
+    });
   }
   saveBooks(
     books().map((book) =>
@@ -201,12 +226,17 @@ const sellerIdentity = () => {
   };
 };
 
-const ensureSellerName = () => {
+let faceSyncing = false;
+
+/** Push a saved face even when the name is already on the profile. Buyer mode counts. */
+export const syncSellerFace = () => {
+  if (faceSyncing || profileEmail() === "local") return;
   const saved = readSellerProfile();
-  if (saved.name) return;
-  const name = sellerIdentity().name;
-  if (!name || name === "Classmate") return;
-  writeSellerProfile({ name, photo: saved.photo });
+  const name = String(saved.name || sellerIdentity().name || "").trim();
+  if (!name || ["classmate", "a classmate", "local"].includes(name.toLowerCase())) return;
+  if (saved.name && !saved.photo) return;
+  faceSyncing = true;
+  writeSellerProfile({ name, photo: saved.photo, variant: saved.variant });
 };
 
 const emptyDraft = () => ({
@@ -238,11 +268,161 @@ let wizardOn = false;
 let step = 1;
 let draft = emptyDraft();
 let looking = false;
+let isbnMiss = false;
+let isbnTimer = 0;
+let isbnSeq = 0;
+let isbnAbort = null;
+let isbnPending = "";
+let isbnFilled = "";
+const isbnAuto = { title: "", author: "", edition: "", cover: "" };
 let showAlert = false;
 let slideView = null;
 let slideToken = 0;
 let alertView = null;
 let alertToken = 0;
+
+const isbnNoteText = () => {
+  if (looking) return t("Looking up that ISBN…", "正在查詢 ISBN…");
+  if (isbnMiss) return t("No match for that ISBN. Enter the title and photo yourself.", "查不到這組 ISBN。請自行輸入書名並加上照片。");
+  return t("A valid ISBN fills the title, author, and cover.", "有效的 ISBN 會帶入書名、作者和書封。");
+};
+
+const setIsbnNote = () => {
+  const note = document.querySelector("[data-isbn-note]");
+  if (note) note.textContent = isbnNoteText();
+};
+
+const stopIsbnRequest = () => {
+  isbnAbort?.abort();
+  isbnSeq += 1;
+  isbnPending = "";
+  looking = false;
+};
+
+const resetIsbnLookup = () => {
+  window.clearTimeout(isbnTimer);
+  stopIsbnRequest();
+  isbnMiss = false;
+  isbnFilled = "";
+  isbnAuto.title = "";
+  isbnAuto.author = "";
+  isbnAuto.edition = "";
+  isbnAuto.cover = "";
+};
+
+const blankOrAuto = (current, previous) => !String(current || "").trim() || current === previous;
+
+const fillAutoText = (key, value) => {
+  if (value && blankOrAuto(draft[key], isbnAuto[key])) {
+    draft[key] = value;
+    isbnAuto[key] = value;
+    return;
+  }
+  if (!value && isbnAuto[key] && draft[key] === isbnAuto[key]) {
+    draft[key] = "";
+    isbnAuto[key] = "";
+  }
+};
+
+const applyIsbn = (found) => {
+  fillAutoText("title", found.title);
+  fillAutoText("author", found.author);
+  fillAutoText("edition", found.edition);
+  const previous = isbnAuto.cover;
+  const autoCover = previous && draft.photos[0] === previous;
+  if (!found.cover) {
+    if (autoCover) {
+      draft.photos = draft.photos.slice(1);
+      isbnAuto.cover = "";
+    }
+    return;
+  }
+  if (!draft.photos.length || autoCover) {
+    draft.photos = [found.cover, ...draft.photos.slice(autoCover ? 1 : 0)];
+    isbnAuto.cover = found.cover;
+  }
+};
+
+const fieldCaret = () => {
+  const active = document.activeElement;
+  if (!(active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement)) return null;
+  if (!active.matches("[data-list-wizard] [data-field]")) return null;
+  return { key: active.getAttribute("data-field"), start: active.selectionStart, end: active.selectionEnd };
+};
+
+const restoreCaret = (mark) => {
+  if (!mark?.key) return;
+  const input = document.querySelector(`[data-list-wizard] [data-field="${mark.key}"]`);
+  if (!(input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement)) return;
+  input.focus();
+  const end = input.value.length;
+  try {
+    input.setSelectionRange(Math.min(mark.start ?? end, end), Math.min(mark.end ?? end, end));
+  } catch {
+    /* number fields have no selection */
+  }
+};
+
+const queueIsbnLookup = () => {
+  window.clearTimeout(isbnTimer);
+  if (draft.kind === "item") return;
+  const code = isbnDigits(draft.isbn);
+  const complete = /^\d{13}$/.test(code) || /^\d{9}[\dX]$/.test(code);
+  if (!complete) {
+    stopIsbnRequest();
+    isbnFilled = "";
+    isbnMiss = false;
+    setIsbnNote();
+    document.querySelector("[data-list-wizard] [data-field='isbn']")?.setAttribute("aria-busy", "false");
+    return;
+  }
+  if (code === isbnFilled || code === isbnPending) return;
+  isbnTimer = window.setTimeout(() => {
+    if (isbnDigits(draft.isbn) !== code) return;
+    if (!validIsbn(code)) {
+      stopIsbnRequest();
+      isbnFilled = code;
+      isbnMiss = true;
+      setIsbnNote();
+      document.querySelector("[data-list-wizard] [data-field='isbn']")?.setAttribute("aria-busy", "false");
+      return;
+    }
+    isbnAbort?.abort();
+    const controller = new AbortController();
+    isbnAbort = controller;
+    const seq = ++isbnSeq;
+    isbnPending = code;
+    looking = true;
+    isbnMiss = false;
+    setIsbnNote();
+    document.querySelector("[data-list-wizard] [data-field='isbn']")?.setAttribute("aria-busy", "true");
+    const timeout = window.setTimeout(() => controller.abort(), 8000);
+    void lookupIsbn(code, controller.signal).then((found) => {
+      window.clearTimeout(timeout);
+      if (seq !== isbnSeq) return;
+      looking = false;
+      if (isbnPending === code) isbnPending = "";
+      if (isbnDigits(draft.isbn) !== code) {
+        setIsbnNote();
+        document.querySelector("[data-list-wizard] [data-field='isbn']")?.setAttribute("aria-busy", "false");
+        return;
+      }
+      readFields();
+      isbnFilled = code;
+      if (!found?.title) {
+        isbnMiss = true;
+        setIsbnNote();
+        document.querySelector("[data-list-wizard] [data-field='isbn']")?.setAttribute("aria-busy", "false");
+        return;
+      }
+      isbnMiss = false;
+      const mark = fieldCaret();
+      applyIsbn(found);
+      paintWizard();
+      restoreCaret(mark);
+    });
+  }, 500);
+};
 
 const money = (value) => `NT$${Number(value || 0).toLocaleString(zh() ? "zh-TW" : "en-US")}`;
 
@@ -438,7 +618,7 @@ const mountSellerAvatar = (root) => {
   const generation = ++avatarGen;
   const saved = readSellerProfile();
   const zhOn = zh();
-  void import("../src/mount-avatar.tsx").then(({ mountAvatarPicker, faceDataUrl }) => {
+  void import("../src/mount-avatar.tsx?v=face1").then(({ mountAvatarPicker, faceDataUrl }) => {
     if (generation !== avatarGen || !host.isConnected) return;
     avatarView = mountAvatarPicker(host, {
       defaultValue: {
@@ -533,12 +713,12 @@ const paintHub = () => {
   const root = document.querySelector("[data-seller-main]");
   if (!root || wizardOn) return;
   accountLede();
+  syncSellerFace();
   if (marketMode() !== "seller") {
     paintBuyer(root);
     return;
   }
   paintNav();
-  ensureSellerName();
   const rows = ownBooks();
   const active = rows.filter((book) => book.status === "active");
   const orders = sellerOrders(currentProfile() || "");
@@ -785,9 +965,9 @@ const choiceRow = (field, checked, title, detail = "") => `<label class="choice-
 
 const bookStep = () => `<section class="wizard-step ${step === 1 ? "is-on" : ""}">
   <label>${t("ISBN", "ISBN")}
-    <input data-field="isbn" value="${esc(draft.isbn)}" inputmode="numeric" autocomplete="off" placeholder="9780134891262">
+    <input data-field="isbn" value="${esc(draft.isbn)}" inputmode="numeric" autocomplete="off" placeholder="9780134891262" aria-busy="${looking ? "true" : "false"}">
   </label>
-  <p class="wizard-note" data-isbn-note>${looking ? t("Looking up that ISBN…", "正在查詢 ISBN…") : t("A valid ISBN fills the title, author, and edition.", "有效的 ISBN 會帶入書名、作者與版次。")}</p>
+  <p class="wizard-note" data-isbn-note aria-live="polite">${isbnNoteText()}</p>
   <p class="not-book"><a href="list.html?kind=item">${t("Not a book?", "不是書？")}</a></p>
   <label>${t("Title", "書名")}<input data-field="title" value="${esc(draft.title)}"></label>
   <div class="wizard-split">
@@ -880,9 +1060,9 @@ const paintWizard = () => {
             ? ""
             : `<section class="list-id">
                 <label>${t("ISBN", "ISBN")}
-                  <input data-field="isbn" value="${esc(draft.isbn)}" inputmode="numeric" autocomplete="off" placeholder="9780134891262">
+                  <input data-field="isbn" value="${esc(draft.isbn)}" inputmode="numeric" autocomplete="off" placeholder="9780134891262" aria-busy="${looking ? "true" : "false"}">
                 </label>
-                <p class="wizard-note" data-isbn-note>${looking ? t("Looking up that ISBN…", "正在查詢 ISBN…") : t("A valid ISBN fills the title, author, and edition, and adds a cover if you have not uploaded one.", "有效的 ISBN 會帶入書名、作者、版次；若你還沒上傳照片，也會加上書封。")}</p>
+                <p class="wizard-note" data-isbn-note aria-live="polite">${isbnNoteText()}</p>
                 <div class="wizard-split">
                   <label>${t("Author", "作者")}<input data-field="author" value="${esc(draft.author)}"></label>
                   <label>${t("Edition", "版次")}<input data-field="edition" value="${esc(draft.edition)}"></label>
@@ -946,6 +1126,7 @@ const paintWizard = () => {
 };
 
 const showWizard = (book) => {
+  resetIsbnLookup();
   draft = book ? { ...emptyDraft(), ...book, photos: [...(book.photos || [])] } : emptyDraft();
   draft.bumpLocked = Boolean(book?.bumped);
   if (draft.bumpLocked) {
@@ -1129,8 +1310,11 @@ const publish = async () => {
   saveBooks(rows);
   try {
     let file;
-    if (row.photos[0]) {
-      const response = await fetch(row.photos[0]);
+    let image_url = "";
+    const cover = row.photos[0] || "";
+    if (/^https:\/\//i.test(cover)) image_url = cover;
+    else if (cover) {
+      const response = await fetch(cover);
       const blob = await response.blob();
       file = new File([blob], "cover.jpg", { type: blob.type || "image/jpeg" });
     }
@@ -1147,6 +1331,8 @@ const publish = async () => {
           ? `Item · ${row.delivery ? "delivery" : "campus pickup"}`
           : `${row.condition} · ${row.delivery ? "delivery" : "campus pickup"}`,
       file,
+      image_url,
+      bumped: row.bumped,
     });
     if (status) status.textContent = t("Published to the marketplace.", "已刊登到市集。");
   } catch (error) {
@@ -1439,23 +1625,12 @@ const syncField = (field) => {
   return false;
 };
 
-const onWizardInput = async (event) => {
+const onWizardInput = (event) => {
   const field = event.target.closest("[data-field]");
   if (!field) return;
   if (syncField(field)) return;
-  if (draft.kind === "item" || field.getAttribute("data-field") !== "isbn" || looking || !validIsbn(draft.isbn)) return;
-  looking = true;
-  const note = document.querySelector("[data-isbn-note]");
-  if (note) note.textContent = t("Looking up that ISBN…", "正在查詢 ISBN…");
-  const code = isbnDigits(draft.isbn);
-  await new Promise((resolve) => window.setTimeout(resolve, 650));
-  const found = await lookupOpenLibrary(code);
-  draft.title = found.title;
-  draft.author = found.author;
-  draft.edition = found.edition;
-  if (found.cover && !draft.photos.length) draft.photos = [found.cover];
-  looking = false;
-  paintWizard();
+  if (draft.kind === "item" || field.getAttribute("data-field") !== "isbn") return;
+  queueIsbnLookup();
 };
 
 const onDrop = async (event) => {
@@ -1489,6 +1664,14 @@ const onDrop = async (event) => {
 };
 
 let bound = false;
+
+const syncBumpedListings = () => {
+  const rows = books().filter((book) => book?.bumped && String(book.title || "").trim());
+  if (!rows.length) return;
+  void Promise.all(rows.map((book) => bumpCloudListing(book.title, book.price).catch(() => 0))).then((counts) => {
+    if (counts.some((count) => count > 0)) window.dispatchEvent(new Event("immba:listings"));
+  });
+};
 
 export const initSellerHub = () => {
   if (!document.querySelector("[data-seller-hub], [data-list-wizard]")) return;
@@ -1529,7 +1712,8 @@ export const initSellerHub = () => {
       confirmAdvance(event.detail);
     });
   }
-    if (document.body.hasAttribute("data-list-page")) {
+  syncBumpedListings();
+  if (document.body.hasAttribute("data-list-page")) {
     const params = new URLSearchParams(location.search);
     const existing = params.get("id") ? books().find((book) => book.id === params.get("id")) : null;
     const starter = !existing && params.get("kind") === "item" ? { kind: "item" } : null;
