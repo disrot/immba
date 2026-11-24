@@ -2597,6 +2597,11 @@ a.shop-card:hover {
   max-width: 280px;
 }
 
+.bag-summary .shop-slide {
+  max-width: none;
+  margin-top: 1rem;
+}
+
 .wizard-alert {
   margin: 0.5rem 0 1rem;
 }
@@ -9885,6 +9890,10 @@ body.is-gated .pdp-dock {
   font-size: 0.88rem;
 }
 
+.bag-page .pdp-bag[hidden] {
+  display: none;
+}
+
 .bag-page .pdp-bag {
   display: flex;
   align-items: center;
@@ -11781,6 +11790,29 @@ html[data-office-ready] [data-office-loader] {
   margin-left: auto;
   margin-right: 0;
   border-radius: 0;
+  transform: translateX(100%);
+  transition: transform 0.42s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.shop-sheet.is-shown {
+  transform: translateX(0);
+}
+
+.shop-sheet::backdrop {
+  background: rgba(20, 26, 20, 0.28);
+  opacity: 0;
+  transition: opacity 0.42s ease;
+}
+
+.shop-sheet.is-shown::backdrop {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shop-sheet,
+  .shop-sheet::backdrop {
+    transition: none;
+  }
 }
 
 .shop-command input,

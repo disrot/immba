@@ -241,6 +241,18 @@ const paintExtras = (items) => {
   }
 };
 
+let placing = false;
+let bagSlide = null;
+
+const slideCopy = () => ({
+  label: zh() ? "滑動即可下單" : "Slide to place order",
+  confirmingLabel: zh() ? "正在下單" : "Placing the order",
+  doneLabel: zh() ? "已下單" : "Order placed",
+  disabled: placing || shown.length === 0,
+});
+
+const refreshSlide = () => bagSlide?.update(slideCopy());
+
 const syncBag = () => {
   const locale = zh() ? "zh-TW" : "en-US";
   const totals = document.querySelector("[data-bag-totals]");
@@ -264,7 +276,8 @@ const syncBag = () => {
   }
   if (shown.length && cartView) cartView.update(cartProps(shown));
   const button = document.querySelector("button[data-place-order]");
-  if (button) button.disabled = shown.length === 0;
+  if (button) button.disabled = placing || shown.length === 0;
+  refreshSlide();
 };
 
 const paintItems = (items) => {
@@ -293,6 +306,7 @@ const paintItems = (items) => {
     document.querySelector("[data-bag-totals]")?.replaceChildren();
     const button = document.querySelector("button[data-place-order]");
     if (button) button.disabled = true;
+    refreshSlide();
     return;
   }
   if (!list.querySelector("[data-cart-button]")) {
@@ -451,18 +465,22 @@ const receiveOrder = () =>
       .catch(() => finish());
   });
 
-document.querySelector("button[data-place-order]")?.addEventListener("click", async () => {
+const placeBagOrder = async () => {
   const button = document.querySelector("button[data-place-order]");
   const session = getAuthSession();
   if (!session?.email) {
-    status.textContent = "Sign in before placing an order.";
-    return;
+    if (status) status.textContent = zh() ? "下單前請先登入。" : "Sign in before placing an order.";
+    throw new Error("Sign in before placing an order.");
   }
-  if (!shown.length) return;
-  button.disabled = true;
-  button.classList.add("is-busy");
-  await receiveOrder();
+  if (!shown.length || placing) return;
+  placing = true;
+  if (button) {
+    button.disabled = true;
+    button.classList.add("is-busy");
+  }
+  refreshSlide();
   try {
+    await receiveOrder();
     const created = placeOrders({
       buyer: session.email.split("@")[0],
       buyerEmail: session.email,
@@ -516,15 +534,31 @@ document.querySelector("button[data-place-order]")?.addEventListener("click", as
   } catch (error) {
     document.querySelector(".listing-gate")?.remove();
     document.body.classList.remove("is-gated");
-    status.textContent = error.message || "Could not place this order.";
-    button.disabled = false;
-    button.classList.remove("is-busy");
-    button.textContent = "Place order";
+    if (status) status.textContent = error.message || "Could not place this order.";
+    placing = false;
+    if (button) {
+      button.disabled = shown.length === 0;
+      button.classList.remove("is-busy");
+    }
+    refreshSlide();
+    throw error;
   }
+};
+
+document.querySelector("button[data-place-order]")?.addEventListener("click", () => {
+  void placeBagOrder().catch(() => {});
 });
+
+const slideHost = document.querySelector("[data-bag-slide]");
+if (slideHost) {
+  void import("../src/mount-bag-slide.tsx?v=tip1").then(({ mountBagSlide }) => {
+    bagSlide = mountBagSlide(slideHost, slideCopy(), () => placeBagOrder());
+  });
+}
 
 window.addEventListener("immba:lang", () => {
   if (shown.length) paintItems(shown);
+  else refreshSlide();
 });
 
 window.addEventListener("immba:bag", () => {

@@ -1,6 +1,6 @@
 import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=lab3";
 import { ackRemovedNotices, listRemovedNotices } from "./listings-store.js?v=notice3";
-import { initSellerHub } from "./seller-hub.js?v=lab4";
+import { initSellerHub } from "./seller-hub.js?v=lab5";
 import { marketMode, setMarketMode } from "./trade.js?v=lab2";
 import { ackTradeNotices, tradeNoticesFor } from "./trade-notices.js?v=lab1";
 

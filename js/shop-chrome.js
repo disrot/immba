@@ -47,12 +47,49 @@ const paintDrawer = () => {
     .join("");
 };
 
+const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+let bagClosing = false;
+
 const openBag = () => {
   paintDrawer();
-  document.querySelector("[data-bag-sheet]")?.showModal();
+  const sheet = document.querySelector("[data-bag-sheet]");
+  if (!sheet) return;
+  bagClosing = false;
+  sheet.classList.remove("is-shown");
+  if (!sheet.open) sheet.showModal();
+  if (reduceMotion()) {
+    sheet.classList.add("is-shown");
+    return;
+  }
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => sheet.classList.add("is-shown"));
+  });
 };
 
-const closeBag = () => document.querySelector("[data-bag-sheet]")?.close();
+const closeBag = () => {
+  const sheet = document.querySelector("[data-bag-sheet]");
+  if (!sheet?.open || bagClosing) return;
+  if (reduceMotion()) {
+    sheet.classList.remove("is-shown");
+    sheet.close();
+    return;
+  }
+  bagClosing = true;
+  sheet.classList.remove("is-shown");
+  const finish = () => {
+    if (!bagClosing) return;
+    bagClosing = false;
+    sheet.removeEventListener("transitionend", onEnd);
+    if (sheet.open) sheet.close();
+  };
+  const onEnd = (event) => {
+    if (event.target !== sheet || event.propertyName !== "transform") return;
+    finish();
+  };
+  sheet.addEventListener("transitionend", onEnd);
+  window.setTimeout(finish, 520);
+};
 
 const addQuick = (id) => {
   const item = shelfItem(id);
@@ -197,7 +234,19 @@ export const initShopChrome = () => {
     }
   });
 
+  sheet.querySelector("form")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    closeBag();
+  });
+  sheet.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    closeBag();
+  });
   sheet.addEventListener("click", (event) => {
+    if (event.target === sheet) {
+      closeBag();
+      return;
+    }
     const step = event.target.closest("[data-bag-step]");
     if (step) {
       const id = step.getAttribute("data-id");

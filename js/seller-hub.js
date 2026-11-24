@@ -517,7 +517,7 @@ const mountListingPhotos = (root) => {
 const mountOrderSlides = (root) => {
   if (!root?.querySelector("[data-slide-host]")) return;
   const token = ++slideToken;
-  void import("../src/mount-slide.tsx").then(({ mountSlides }) => {
+  void import("../src/mount-slide.tsx?v=tip1").then(({ mountSlides }) => {
     if (token !== slideToken) return;
     slideView = mountSlides(root);
   });

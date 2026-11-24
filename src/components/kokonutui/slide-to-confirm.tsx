@@ -88,6 +88,7 @@ export default function SlideToConfirm({
   className,
 }: SlideToConfirmProps) {
   const [phase, setPhase] = useState<Phase>("idle");
+  const phaseRef = useRef<Phase>("idle");
   const [armed, setArmed] = useState(false);
   const reduceMotion = useReducedMotion();
 
@@ -99,6 +100,10 @@ export default function SlideToConfirm({
 
   const x = useMotionValue(0);
   const width = useMotionValue(0);
+  const setPhaseNow = (next: Phase) => {
+    phaseRef.current = next;
+    setPhase(next);
+  };
   // 0: the ink ends at the thumb. 1: it fills the whole track, thumb and all.
   const cover = useMotionValue(0);
 
@@ -125,10 +130,11 @@ export default function SlideToConfirm({
     }
     const observer = new ResizeObserver(() => {
       const before = width.get();
-      width.set(track.offsetWidth);
+      const inner = track.clientWidth;
+      width.set(inner);
       // Keep a thumb that sits at the end at the end when the track resizes.
       if (before > 0 && x.get() >= before - THUMB - INSET * 2) {
-        x.set(track.offsetWidth - THUMB - INSET * 2);
+        x.set(Math.max(0, inner - THUMB - INSET * 2));
       }
     });
     observer.observe(track);
@@ -150,7 +156,7 @@ export default function SlideToConfirm({
   // The ink drains back behind the thumb as it springs home.
   const settleBack = (velocity = 0) => {
     setArmed(false);
-    setPhase("idle");
+    setPhaseNow("idle");
     animate(cover, 0, { duration: reduceMotion ? 0 : 0.3, ease: EASE_OUT });
     animate(x, 0, spring(velocity));
   };
@@ -158,7 +164,7 @@ export default function SlideToConfirm({
   // The reset nobody asked for runs slower, so it reads as a rewind.
   const rewind = () => {
     setArmed(false);
-    setPhase("idle");
+    setPhaseNow("idle");
     const duration = reduceMotion ? 0 : 0.6;
     animate(cover, 0, { duration: duration * 0.6, ease: EASE_OUT });
     animate(x, 0, { duration, ease: EASE_IN_OUT });
@@ -168,9 +174,10 @@ export default function SlideToConfirm({
   // the ink floods the track and the label turns to "Paying", and the work
   // starts at once instead of waiting for the thumb to land.
   const commit = async (velocity: number, glide = false) => {
+    if (phaseRef.current === "confirming" || phaseRef.current === "done") return;
     const run = ++runRef.current;
     const alive = () => runRef.current === run;
-    setPhase("confirming");
+    setPhaseNow("confirming");
     setArmed(true);
 
     const landing = animate(
@@ -197,7 +204,7 @@ export default function SlideToConfirm({
     if (!alive()) {
       return;
     }
-    setPhase("done");
+    setPhaseNow("done");
     if (resetAfter === null) {
       return;
     }
@@ -208,17 +215,17 @@ export default function SlideToConfirm({
   };
 
   const onPointerDown = (event: PointerEvent<HTMLButtonElement>) => {
-    if (disabled || phase !== "idle" || event.button !== 0) {
+    if (disabled || phaseRef.current !== "idle" || event.button !== 0) {
       return;
     }
     event.currentTarget.setPointerCapture(event.pointerId);
     x.stop();
     dragRef.current = { pointer: event.clientX, from: x.get(), moved: false };
-    setPhase("dragging");
+    setPhaseNow("dragging");
   };
 
   const onPointerMove = (event: PointerEvent<HTMLButtonElement>) => {
-    if (phase !== "dragging") {
+    if (phaseRef.current !== "dragging") {
       return;
     }
     const drag = dragRef.current;
@@ -234,26 +241,43 @@ export default function SlideToConfirm({
     }
   };
 
-  const onPointerUp = () => {
-    if (phase !== "dragging") {
+  const release = () => {
+    if (phaseRef.current !== "dragging") {
       return;
     }
     if (!dragRef.current.moved) {
-      setPhase("idle");
+      setPhaseNow("idle");
       return;
     }
     const velocity = x.getVelocity();
-    const progress = x.get() / Math.max(1, max());
+    const limit = Math.max(1, max());
+    const progress = x.get() / limit;
     const flicked = velocity > FLICK_SPEED && progress > FLICK_FROM;
-    if (progress >= COMMIT_AT || flicked) {
+    // The rounded tip is the end. Releasing there finishes the slide.
+    const atTip = limit - x.get() <= 16;
+    if (progress >= COMMIT_AT || atTip || flicked) {
       commit(velocity);
     } else {
       settleBack(velocity);
     }
   };
+  const releaseRef = useRef(release);
+  releaseRef.current = release;
+
+  useEffect(() => {
+    const onUp = () => releaseRef.current();
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    return () => {
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+  }, []);
+
+  const onPointerUp = () => release();
 
   const onClick = async (event: MouseEvent<HTMLButtonElement>) => {
-    if (disabled || phase !== "idle") {
+    if (disabled || phaseRef.current !== "idle") {
       return;
     }
     // Enter and Space click with no pointer, and confirm in one go.
@@ -295,7 +319,7 @@ export default function SlideToConfirm({
           disabled && "opacity-50"
         )}
         ref={trackRef}
-        style={{ height: HEIGHT }}
+        style={{ height: HEIGHT, boxSizing: "content-box", overflow: "hidden" }}
       >
         {/* The label as it reads on the empty track. Nudged off the thumb by
             half its width, so it sits between the track and free-space
@@ -363,8 +387,8 @@ export default function SlideToConfirm({
           // Offsets are from inside the 1px border.
           style={{
             x,
-            left: INSET - 1,
-            top: INSET - 1,
+            left: INSET,
+            top: INSET,
             width: THUMB,
             height: THUMB,
           }}
