@@ -1,17 +1,19 @@
 import { odo } from "./odometer.js?v=odo3";
 import { bindSelectDrop } from "./ui-drop.js?v=drop3";
-import { currentProfile } from "./auth.js?v=lab3";
+import { currentProfile } from "./auth.js?v=lab4";
 import { pushTradeNotice } from "./trade-notices.js?v=lab1";
-import { createListing } from "./listings-store.js?v=notice3";
+import { createListing } from "./listings-store.js?v=notice4";
 import {
   advanceOrder,
   availableQty,
+  buyerOrders,
   downloadCsv,
   DELIVERY_FEE,
   money as tradeMoney,
   monthSales,
   purchasedQty,
   sellerOrders,
+  sellerOwns,
   sellerProceeds,
   sellerTake,
   setMarketMode,
@@ -19,8 +21,8 @@ import {
   syncC2c,
   when,
   marketMode,
-} from "./trade.js?v=lab2";
-import { statusRail } from "./order-status.js?v=lab2";
+} from "./trade.js?v=lab4";
+import { statusRail } from "./order-status.js?v=lab4";
 
 const BOOKS_KEY = "immba-seller-books";
 const MEETS_KEY = "immba-seller-meetups";
@@ -76,15 +78,12 @@ const ownsBook = (book) => {
   return owner === email;
 };
 const ownBooks = () => books().filter(ownsBook);
+const hubToast = (message, error = false) => {
+  window.dispatchEvent(new CustomEvent("immba:toast", { detail: { message, error } }));
+};
+
 const denyForeign = () => {
-  window.dispatchEvent(
-    new CustomEvent("immba:toast", {
-      detail: {
-        error: true,
-        message: t("You can only change listings and orders that belong to you.", "你只能修改自己的刊登和訂單。"),
-      },
-    })
-  );
+  hubToast(t("You can only change listings and orders that belong to you.", "你只能修改自己的刊登和訂單。"), true);
 };
 
 const seedMeetups = () => {
@@ -244,7 +243,7 @@ let alertToken = 0;
 const money = (value) => `NT$${Number(value || 0).toLocaleString(zh() ? "zh-TW" : "en-US")}`;
 
 const navItems = () => {
-  const waiting = sellerOrders(currentProfile()?.email || "").filter((order) => order.status === "waiting_payment").length;
+  const waiting = sellerOrders(currentProfile() || "").filter((order) => order.status === "waiting_payment").length;
   return [
     ["dashboard", t("Desk", "書桌")],
     ["listings", t("Inventory", "庫存")],
@@ -368,7 +367,7 @@ const paintBuyer = (root) => {
   document.querySelector("[data-seller-nav]")?.replaceChildren();
   document.querySelector("[data-seller-tabs]")?.replaceChildren();
   const email = currentProfile()?.email || "";
-  const rows = sellerOrders(email).filter((order) => order.buyerEmail === email);
+  const rows = buyerOrders(email);
   root.innerHTML = `
     <header class="seller-head">
       <div>
@@ -538,7 +537,7 @@ const paintHub = () => {
   ensureSellerName();
   const rows = ownBooks();
   const active = rows.filter((book) => book.status === "active");
-  const orders = sellerOrders(currentProfile()?.email || "");
+  const orders = sellerOrders(currentProfile() || "");
   const pendingPay = orders.filter((order) => order.status === "waiting_payment");
   const waitingShip = orders.filter((order) => order.status === "payment_confirmed" || order.status === "ready_to_ship");
   const completed = orders.filter((order) => order.status === "completed");
@@ -1115,6 +1114,7 @@ const publish = async () => {
     bumped: Boolean(draft.bumpLocked || (draft.bumped && draft.bumpTerms)),
     quantity: Math.max(1, Number(draft.quantity) || 1),
     sellerEmail: profile?.email || "local",
+    sellerUserId: profile?.user?.id || "",
     sellerName: sellerIdentity().name,
     sellerPhoto: sellerIdentity().photo,
   };
@@ -1168,7 +1168,7 @@ const publish = async () => {
 
 const retireSoldBooks = () => {
   const committed = {};
-  for (const order of sellerOrders(currentProfile()?.email || "")) {
+  for (const order of sellerOrders(currentProfile() || "")) {
     if (order.status === "waiting_payment" || order.status === "expired" || order.status === "placed") continue;
     for (const item of order.items || []) {
       committed[item.id] = (committed[item.id] || 0) + Number(item.qty || 0);
@@ -1184,36 +1184,58 @@ const retireSoldBooks = () => {
 
 const advancing = new Set();
 
+const buyerNotice = (order) => {
+  const id = order.id;
+  const copy = {
+    payment_confirmed: [
+      `Payment received for ${id}. The seller will arrange the campus hand-off. Open My orders for the next step.`,
+      `已收到 ${id} 的付款。賣方會安排校園面交。請到「我的訂單」看下一步。`,
+    ],
+    ready_to_ship: [
+      `${id} is ready for campus hand-off. Open My orders to see where to meet.`,
+      `${id} 可以面交了。請到「我的訂單」看碰面方式。`,
+    ],
+    shipped: [
+      `${id} has been handed off. Open My orders if you still need to confirm completion.`,
+      `${id} 已完成面交。若還需要確認完成，請到「我的訂單」。`,
+    ],
+    completed: [`${id} is complete.`, `${id} 已完成。`],
+  };
+  return copy[order.status] || [
+    `Order ${id} moved forward. Open My orders to see the next step.`,
+    `訂單 ${id} 已更新。請到「我的訂單」看下一步。`,
+  ];
+};
+
 const confirmAdvance = (orderId) => {
   if (!orderId || advancing.has(orderId)) return;
-  const current = sellerOrders(currentProfile()?.email || "").find((order) => order.id === orderId);
-  if (current && current.sellerId && current.sellerId !== "shelf" && current.sellerId !== "local" && current.sellerId !== (currentProfile()?.email || "")) {
+  const profile = currentProfile() || "";
+  const current = sellerOrders(profile).find((order) => order.id === orderId);
+  if (!current || !sellerOwns(current, profile)) {
     denyForeign();
     return;
   }
   advancing.add(orderId);
   const order = advanceOrder(orderId);
   if (order?.buyerEmail) {
-    const label = t(
-      `Order ${order.id} is now ${order.status.replaceAll("_", " ")}.`,
-      `訂單 ${order.id} 已更新為 ${order.status.replaceAll("_", " ")}。`
-    );
+    const [text, textZh] = buyerNotice(order);
     pushTradeNotice({
       id: `${order.id}-${order.status}`,
       email: order.buyerEmail,
       audience: "buyer",
       orderId: order.id,
-      text: `Order ${order.id} is now ${order.status.replaceAll("_", " ")}. Open My orders to see the next step.`,
-      textZh: `訂單 ${order.id} 已更新。請到「我的訂單」看下一步。`,
+      text,
+      textZh,
     });
-    if (order.sellerId?.includes("@")) {
+    const sellerMail = order.sellerEmail || (String(order.sellerId || "").includes("@") ? order.sellerId : profile?.email);
+    if (sellerMail) {
       pushTradeNotice({
         id: `${order.id}-${order.status}-seller`,
-        email: order.sellerId,
+        email: sellerMail,
         audience: "seller",
         orderId: order.id,
-        text: label,
-        textZh: label,
+        text,
+        textZh,
       });
     }
   }
@@ -1267,7 +1289,7 @@ const onHubClick = (event) => {
     return;
   }
   if (event.target.closest("[data-csv]")) {
-    downloadCsv("immba-sales.csv", sellerOrders(currentProfile()?.email || ""));
+    downloadCsv("immba-sales.csv", sellerOrders(currentProfile() || ""));
     return;
   }
   const row = event.target.closest("[data-book]");
@@ -1311,7 +1333,16 @@ const onHubChange = (event) => {
       paintHub();
       return;
     }
-    const quantity = Math.max(0, Number(stock.value) || 0);
+    const raw = Number(stock.value);
+    if (!Number.isFinite(raw) || raw < 0) {
+      hubToast(t("Quantity cannot be negative. Stock stays unchanged.", "數量不能是負數。庫存沒有改動。"), true);
+      paintHub();
+      return;
+    }
+    if (raw === 0) {
+      hubToast(t("Quantity is 0, so buyers can no longer add this listing.", "數量是 0，買家不能再把這項加入袋子。"));
+    }
+    const quantity = Math.max(0, Math.round(raw));
     setOnHand(id, quantity);
     saveBooks(books().map((book) => (book.id === id ? { ...book, quantity } : book)));
     paintHub();

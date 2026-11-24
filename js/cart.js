@@ -1,7 +1,7 @@
 import { getAuthSession, rpc } from "./supabase.js?v=secure1";
-import { PACKETS } from "./marketplace.js?v=lab6";
+import { PACKETS } from "./marketplace.js?v=lab8";
 import { rotatedPackets } from "./shelf-rotation.js?v=pass2";
-import { HOLD_MS, availableQty, clearHold, defaultOnHand, holdListing, isGeneratedListing, placeOrders, quoteLines, releaseExpired, syncC2c } from "./trade.js?v=lab2";
+import { HOLD_MS, availableQty, clearHold, defaultOnHand, holdListing, isGeneratedListing, placeOrders, quoteLines, releaseExpired, syncC2c } from "./trade.js?v=lab4";
 import { pushTradeNotice } from "./trade-notices.js?v=lab1";
 
 const list = document.querySelector("[data-cart]");
@@ -49,8 +49,10 @@ const productFor = (id) => {
     unit: Number(book.price) || 0,
     image: book.photos?.[0] || "",
     onHand: Number(book.quantity || 1),
-    sellerId: book.sellerEmail || "local",
-    sellerName: book.sellerName || "Classmate",
+      sellerId: book.sellerUserId || book.sellerEmail || "local",
+      sellerEmail: String(book.sellerEmail || "").includes("@") ? book.sellerEmail : "",
+      sellerUserId: book.sellerUserId || "",
+      sellerName: book.sellerName || "Classmate",
     delivery: Boolean(book.delivery),
     bumped: Boolean(book.bumped),
   };
@@ -472,7 +474,15 @@ const placeBagOrder = async () => {
     if (status) status.textContent = zh() ? "下單前請先登入。" : "Sign in before placing an order.";
     throw new Error("Sign in before placing an order.");
   }
-  if (!shown.length || placing) return;
+  if (!shown.length) return;
+  if (placing) {
+    if (status) {
+      status.textContent = zh()
+        ? "訂單正在送出，請等這一次完成，不要再送一次。"
+        : "This order is already being placed. Wait for it to finish instead of sending it again.";
+    }
+    throw new Error("This order is already being placed.");
+  }
   placing = true;
   if (button) {
     button.disabled = true;
@@ -494,6 +504,8 @@ const placeBagOrder = async () => {
           image: item.image || product?.image || "",
           onHand: item.onHand ?? product?.onHand,
           sellerId: item.sellerId || product?.sellerId || "local",
+          sellerEmail: item.sellerEmail || product?.sellerEmail || "",
+          sellerUserId: item.sellerUserId || product?.sellerUserId || "",
           sellerName: item.sellerName || product?.sellerName || "imMBA shelf",
           generated: Boolean(item.generated || product?.generated),
           delivery: Boolean(item.delivery),
@@ -508,13 +520,14 @@ const placeBagOrder = async () => {
         email: session.email,
         audience: "buyer",
         orderId: order.id,
-        text: `Order ${order.id} is saved. The seller can see it. Watch My orders as payment, hand-off, and completion change.`,
-        textZh: `訂單 ${order.id} 已儲存。賣方看得到。付款、面交和完成時，請看「我的訂單」。`,
+        text: `Order ${order.id} is saved. The seller can see it, and a confirmation email is queued. Watch My orders as payment, hand-off, and completion change.`,
+        textZh: `訂單 ${order.id} 已儲存。賣方看得到，確認信也已排入寄送。付款、面交和完成時，請看「我的訂單」。`,
       });
-      if (String(order.sellerId || "").includes("@")) {
+      const sellerMail = order.sellerEmail || (String(order.sellerId || "").includes("@") ? order.sellerId : "");
+      if (sellerMail) {
         pushTradeNotice({
           id: `${order.id}-placed-seller`,
-          email: order.sellerId,
+          email: sellerMail,
           audience: "seller",
           orderId: order.id,
           text: `New order ${order.id} from ${order.buyer}. Confirm payment, then mark the hand-off.`,

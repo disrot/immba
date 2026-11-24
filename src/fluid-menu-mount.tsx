@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { FluidMenu, type FluidMenuItem } from "@/components/ui/fluid-menu";
 import { allowedOfficePages } from "../js/auth.js?v=login1";
-import { setMarketMode } from "../js/trade.js?v=hold4";
+import { setMarketMode } from "../js/trade.js?v=lab4";
 import "./kokonut.css?v=fluid2";
 
 const pageName = () => location.pathname.split("/").pop() || "";

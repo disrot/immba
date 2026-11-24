@@ -1,10 +1,10 @@
-import { currentProfile, isSellerAuthed } from "./auth.js?v=lab3";
+import { currentProfile, isSellerAuthed } from "./auth.js?v=lab4";
 import { getAuthSession, rpc } from "./supabase.js?v=secure1";
-import { listCloudListings } from "./listings-store.js?v=notice3";
-import { BUYER_ITEM_FEE, DELIVERY_FEE, availableQty, defaultOnHand, marketMode, releaseExpired, setMarketMode, syncC2c } from "./trade.js?v=lab2";
+import { listCloudListings } from "./listings-store.js?v=notice4";
+import { BUYER_ITEM_FEE, DELIVERY_FEE, availableQty, defaultOnHand, marketMode, releaseExpired, setMarketMode, syncC2c } from "./trade.js?v=lab4";
 import { rotatedPackets } from "./shelf-rotation.js?v=pass2";
 import { odo } from "./odometer.js?v=odo3";
-import { addBagLine, readBag } from "./bag-store.js?v=lab2";
+import { addBagLine, readBag } from "./bag-store.js?v=lab4";
 
 export const PACKETS = [
   {
@@ -537,7 +537,9 @@ const sellerPackets = () => {
         sold: left <= 0,
         stock: left,
         onHand: hand,
-        sellerId: book.sellerEmail || "local",
+        sellerId: book.sellerUserId || book.sellerEmail || "local",
+        sellerEmail: String(book.sellerEmail || "").includes("@") ? book.sellerEmail : "",
+        sellerUserId: book.sellerUserId || "",
         sellerName: book.sellerName || "Classmate",
         sellerPhoto: book.sellerPhoto || "",
         course: book.course || "",
@@ -1346,8 +1348,11 @@ export const initListing = () => {
           unit: item.price,
           image: item.image,
           onHand: Math.max(stockOf(item), 1),
-          sellerId: item.sellerEmail || "shelf",
+          sellerId: item.sellerId,
+          sellerEmail: item.sellerEmail,
+          sellerUserId: item.sellerUserId,
           sellerName: item.sellerName || "imMBA shelf",
+          posted: Boolean(item.posted),
           generated: !item.posted,
           delivery: Boolean(item.delivery),
           bumped: Boolean(item.bumped),

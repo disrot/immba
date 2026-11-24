@@ -1,8 +1,8 @@
 import { createRoot, type Root } from "react-dom/client";
 import { BookOpen, ClipboardList, ShoppingBag } from "lucide-react";
 import ProfileDropdown from "@/components/kokonutui/profile-dropdown";
-import { currentProfile, isSellerAuthed, logoutAdmin } from "../js/auth.js?v=notice4";
-import { marketMode } from "../js/trade.js?v=hold4";
+import { currentProfile, isSellerAuthed, logoutAdmin } from "../js/auth.js?v=lab4";
+import { marketMode } from "../js/trade.js?v=lab4";
 import "./kokonut.css?v=profile1";
 import "./market-profile.css";
 

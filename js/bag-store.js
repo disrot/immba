@@ -1,4 +1,4 @@
-import { HOLD_MS, availableQty, clearHold, holdListing } from "./trade.js?v=lab2";
+import { HOLD_MS, availableQty, clearHold, holdListing, listingSeller } from "./trade.js?v=lab4";
 
 const KEY = "immba-local-bag";
 
@@ -25,6 +25,7 @@ export const addBagLine = (line) => {
   const quantity = Math.min(room, Math.max(1, Math.round(Number(line.qty) || 1)));
   const until = Date.now() + HOLD_MS;
   holdListing(id, quantity, until);
+  const seller = listingSeller(line);
   const rows = readBag().filter((row) => row.listing_id !== id);
   rows.push({
     listing_id: id,
@@ -33,9 +34,11 @@ export const addBagLine = (line) => {
     unit_amount: Math.max(0, Math.round(Number(line.unit) || 0)),
     image: line.image || "",
     onHand,
-    sellerId: line.sellerId || "shelf",
+    sellerId: seller.sellerId,
+    sellerEmail: seller.sellerEmail,
+    sellerUserId: seller.sellerUserId,
     sellerName: line.sellerName || "imMBA shelf",
-    generated: line.generated !== false,
+    generated: seller.generated,
     deliveryOffered: Boolean(line.delivery),
     delivery: false,
     bumped: Boolean(line.bumped),
@@ -53,10 +56,22 @@ export const setBagQty = (id, quantity) => {
   if (quantity <= 0) {
     clearHold(id);
     writeBag(rows.filter((row) => row.listing_id !== id));
-    return;
+    return "removed";
   }
   const cap = Math.max(1, Math.round(Number(item.onHand) || 1));
-  const nextQty = Math.min(cap, availableQty(id, cap) + Number(item.quantity || 0), Math.max(1, quantity));
+  const room = Math.min(cap, availableQty(id, cap) + Number(item.quantity || 0));
+  const nextQty = Math.min(room, Math.max(1, quantity));
+  if (nextQty < 1) {
+    clearHold(id);
+    writeBag(rows.filter((row) => row.listing_id !== id));
+    return "removed";
+  }
+  if (quantity > nextQty) {
+    const until = Number(item.holdUntil) > Date.now() ? Number(item.holdUntil) : Date.now() + HOLD_MS;
+    holdListing(id, nextQty, until);
+    writeBag(rows.map((row) => (row.listing_id === id ? { ...row, quantity: nextQty, holdUntil: until } : row)));
+    return "capped";
+  }
   const until = Number(item.holdUntil) > Date.now() ? Number(item.holdUntil) : Date.now() + HOLD_MS;
   holdListing(id, nextQty, until);
   writeBag(rows.map((row) => (row.listing_id === id ? { ...row, quantity: nextQty, holdUntil: until } : row)));

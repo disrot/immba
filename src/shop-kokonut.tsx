@@ -18,9 +18,9 @@ import {
 } from "@/components/kokonutui/status-island";
 import EmptyState from "@/components/kokonutui/empty-state";
 import TypewriterTitle from "@/components/kokonutui/type-writer";
-import { addBagLine, readBag, removeBagLine } from "../js/bag-store.js?v=lab2";
-import { shelfSearch } from "../js/marketplace.js?v=lab6";
-import { HOLD_MS } from "../js/trade.js?v=lab2";
+import { addBagLine, readBag, removeBagLine } from "../js/bag-store.js?v=lab4";
+import { shelfSearch } from "../js/marketplace.js?v=lab8";
+import { HOLD_MS } from "../js/trade.js?v=lab4";
 import "./kokonut.css?v=lab2";
 
 type ShelfHit = {
@@ -261,6 +261,9 @@ const showToast = (show: PromiseToaster["show"], detail: ToastDetail) => {
               image: previous.image,
               onHand: previous.onHand,
               sellerId: previous.sellerId,
+              sellerEmail: previous.sellerEmail,
+              sellerUserId: previous.sellerUserId,
+              posted: previous.generated === false,
               sellerName: previous.sellerName,
               generated: previous.generated,
               delivery: previous.deliveryOffered,

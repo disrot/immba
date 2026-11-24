@@ -209,13 +209,59 @@ export const quoteLines = (lines) => {
 
 export const sellerProceeds = (order) => (order?.sellerNet != null ? Number(order.sellerNet) : Number(order?.total || 0));
 
+const norm = (value) => String(value || "").trim().toLowerCase();
+
+export const listingSeller = (item = {}) => {
+  const raw = norm(item.sellerId);
+  const email = norm(item.sellerEmail || (raw.includes("@") ? raw : ""));
+  const userId =
+    norm(item.sellerUserId) ||
+    (raw && !raw.includes("@") && raw !== "shelf" && raw !== "local" ? raw : "");
+  const classmate = Boolean(email || userId || (raw && raw !== "shelf"));
+  return {
+    sellerId: classmate ? email || userId || (item.posted ? "local" : raw || "local") : "shelf",
+    sellerEmail: email,
+    sellerUserId: userId,
+    generated: !classmate,
+  };
+};
+
+const ownPostedIds = (who) => {
+  const email = norm(typeof who === "string" ? who : who?.email);
+  const userId = norm(typeof who === "string" ? "" : who?.user?.id || who?.id);
+  let rows = [];
+  try {
+    rows = JSON.parse(localStorage.getItem("immba-seller-books") || "[]");
+  } catch {
+    rows = [];
+  }
+  if (!Array.isArray(rows)) return new Set();
+  return new Set(
+    rows
+      .filter((book) => {
+        const owner = norm(book?.sellerEmail);
+        const ownerId = norm(book?.sellerUserId);
+        if (!owner || owner === "local") return true;
+        if (email && owner === email) return true;
+        return Boolean(userId) && ownerId === userId;
+      })
+      .map((book) => book.id)
+      .filter(Boolean),
+  );
+};
+
 const orderId = () => `C2C-${Math.floor(100000 + Math.random() * 900000)}`;
 
 export const placeOrders = ({ buyer, buyerEmail, lines }) => {
   const data = fresh(read());
   const groups = new Map();
   for (const line of lines) {
-    const qty = Math.max(1, Math.round(Number(line.qty) || 1));
+    const qty = Math.round(Number(line.qty) || 0);
+    if (qty < 1) {
+      const error = new Error(`${line.title || "This item"} needs a quantity of at least 1.`);
+      error.code = "qty";
+      throw error;
+    }
     const hand = data.stock[line.id] != null ? Number(data.stock[line.id]) : Number(line.onHand ?? defaultOnHand());
     const listed = Math.max(0, Math.round(hand));
     const left = Math.max(0, listed - Number(data.purchased[line.id] || 0));
@@ -224,10 +270,13 @@ export const placeOrders = ({ buyer, buyerEmail, lines }) => {
       error.code = "stock";
       throw error;
     }
-    const sellerId = line.sellerId || (line.generated ? "shelf" : "local");
+    const ident = listingSeller(line);
+    const sellerId = ident.sellerId || (line.generated ? "shelf" : "local");
     if (!groups.has(sellerId)) {
       groups.set(sellerId, {
         sellerId,
+        sellerEmail: ident.sellerEmail,
+        sellerUserId: ident.sellerUserId,
         sellerName: line.sellerName || "imMBA shelf",
         items: [],
       });
@@ -255,6 +304,8 @@ export const placeOrders = ({ buyer, buyerEmail, lines }) => {
       buyer: buyer || "Buyer",
       buyerEmail: buyerEmail || "",
       sellerId: group.sellerId,
+      sellerEmail: group.sellerEmail || "",
+      sellerUserId: group.sellerUserId || "",
       sellerName: group.sellerName,
       items: quote.items.map(({ id, title, qty, unit, image, delivery, buyerFee, sellerNet }) => ({
         id,
@@ -312,8 +363,21 @@ export const allOrders = () => fresh(read()).orders;
 
 export const buyerOrders = (email) => allOrders().filter((order) => order.buyerEmail === email);
 
-export const sellerOrders = (email) =>
-  allOrders().filter((order) => order.sellerId === "shelf" || order.sellerId === "local" || (email && order.sellerId === email));
+export const sellerOwns = (order, who) => {
+  if (!order) return false;
+  const email = norm(typeof who === "string" ? who : who?.email);
+  const userId = norm(typeof who === "string" ? "" : who?.user?.id || who?.id);
+  const keys = new Set([email, userId].filter(Boolean));
+  const marks = [order.sellerId, order.sellerEmail, order.sellerUserId].map(norm).filter((value) => value && value !== "shelf");
+  if (marks.includes("local")) return true;
+  if (marks.some((value) => keys.has(value))) return true;
+  const ids = (order.items || []).map((item) => item.id).filter(Boolean);
+  if (!ids.length || ids.some((id) => isGeneratedListing(id))) return false;
+  const mine = ownPostedIds(who);
+  return ids.every((id) => mine.has(id));
+};
+
+export const sellerOrders = (who) => allOrders().filter((order) => sellerOwns(order, who));
 
 export const isAbnormal = (order) => !order.buyer || !order.items?.length || Number(order.total) <= 0;
 

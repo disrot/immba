@@ -412,6 +412,10 @@ export const initLoginForm = () => {
     }
 
     const zh = document.body?.dataset.lang === "zh";
+    if (!email) {
+      showLoginError(form, zh ? "請輸入電子郵件。" : "Enter your email.");
+      return;
+    }
     const needsEmail = intent === "marketplace" || mode === "register" || mode === "reset";
     if (needsEmail && !emailOk(email)) {
       showLoginError(form, zh ? "請輸入有效的電子郵件，例如 name@mail.fju.edu.tw。" : "Enter a valid email address, such as name@mail.fju.edu.tw.");

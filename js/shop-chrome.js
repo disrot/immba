@@ -1,7 +1,7 @@
-import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=lab3";
-import { addBagLine, readBag, removeBagLine, setBagQty } from "./bag-store.js?v=lab2";
-import { paintBagBadge, shelfItem } from "./marketplace.js?v=lab6";
-import { marketMode, setMarketMode } from "./trade.js?v=lab2";
+import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=lab4";
+import { addBagLine, readBag, removeBagLine, setBagQty } from "./bag-store.js?v=lab4";
+import { paintBagBadge, shelfItem } from "./marketplace.js?v=lab8";
+import { marketMode, setMarketMode } from "./trade.js?v=lab4";
 
 const zh = () => document.body?.dataset.lang === "zh";
 const t = (en, tw) => (zh() ? tw : en);
@@ -104,8 +104,11 @@ const addQuick = (id) => {
       unit: item.price,
       image: item.image,
       onHand: item.quantity || item.onHand || 3,
-      sellerId: item.sellerEmail || "shelf",
+      sellerId: item.sellerId,
+      sellerEmail: item.sellerEmail,
+      sellerUserId: item.sellerUserId,
       sellerName: item.sellerName || "imMBA shelf",
+      posted: Boolean(item.posted),
       generated: !item.posted,
       delivery: Boolean(item.delivery),
       bumped: Boolean(item.bumped),
@@ -207,7 +210,7 @@ export const initShopChrome = () => {
   }
   if (profileHost && slot) slot.before(profileHost);
   paintBar();
-  if (profileHost) void import("../src/market-profile.tsx?v=profile7");
+  if (profileHost) void import("../src/market-profile.tsx?v=profile8");
   void paintBagBadge();
 
   bar.addEventListener("click", (event) => {
@@ -251,7 +254,12 @@ export const initShopChrome = () => {
     if (step) {
       const id = step.getAttribute("data-id");
       const row = readBag().find((item) => item.listing_id === id);
-      setBagQty(id, (Number(row?.quantity) || 1) + Number(step.getAttribute("data-bag-step")));
+      const result = setBagQty(id, (Number(row?.quantity) || 1) + Number(step.getAttribute("data-bag-step")));
+      if (result === "removed") {
+        shopToast(t("Quantity cannot be 0 or negative, so this item left the bag.", "數量不能是 0 或負數，這項已從袋子移除。"), { error: true });
+      } else if (result === "capped") {
+        shopToast(t("That is more than the available stock.", "超過可售數量。"), { error: true });
+      }
       return;
     }
     const drop = event.target.closest("[data-bag-drop]");

@@ -17,14 +17,23 @@ Deno.serve(async () => {
       await supabase.from("email_outbox").update({ attempts: row.attempts + 1, last_error: "Resend is not configured" }).eq("id", row.id);
       continue;
     }
+    const subjects = {
+      order_placed: "imMBA order confirmation",
+      payment_received: "imMBA payment received",
+      ready_for_handoff: "imMBA ready for hand-off",
+      shipping_notice: "imMBA hand-off update",
+      order_completed: "imMBA order complete",
+      order_updated: "imMBA order update",
+    };
+    const note = String(row.payload?.note || "").trim();
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from,
         to: row.to_email,
-        subject: `imMBA ${row.template.replaceAll("_", " ")}`,
-        text: `Status update for ${row.template}. Open the imMBA site for details. No documents are attached.`,
+        subject: subjects[row.template] || `imMBA ${String(row.template || "update").replaceAll("_", " ")}`,
+        text: note || `Status update for ${row.template}. Open the imMBA site for details. No documents are attached.`,
       }),
     });
     if (response.ok) {

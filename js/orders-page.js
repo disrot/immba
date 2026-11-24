@@ -1,6 +1,6 @@
 import { getAuthSession } from "./supabase.js?v=secure1";
-import { buyerOrders, money, syncC2c, when } from "./trade.js?v=lab2";
-import { statusRail } from "./order-status.js?v=lab2";
+import { buyerOrders, money, syncC2c, when } from "./trade.js?v=lab4";
+import { statusRail } from "./order-status.js?v=lab4";
 import { odo } from "./odometer.js?v=odo3";
 
 const root = document.querySelector("[data-orders]");
@@ -23,7 +23,7 @@ const paint = () => {
   const rows = buyerOrders(email);
   const placed = new URLSearchParams(location.search).get("placed");
   const banner = placed
-    ? `<p class="bag-note">${zh() ? `訂單 ${esc(placed)} 已成立。賣方看得到這筆訂單，狀態會從確認付款、面交到完成。` : `Order ${esc(placed)} is saved. The seller can see it. The status moves from payment, to hand-off, to completed.`}</p>`
+    ? `<p class="bag-note">${zh() ? `訂單 ${esc(placed)} 已成立。賣方看得到這筆訂單，確認信已排入寄送。狀態會從確認付款、面交到完成。` : `Order ${esc(placed)} is saved. The seller can see it, and a confirmation email is queued. The status moves from payment, to hand-off, to completed.`}</p>`
     : "";
   root.innerHTML = banner + (rows.length
     ? rows

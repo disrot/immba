@@ -13,6 +13,8 @@ const toItem = (row) => ({
   removed: Boolean(row.removed),
   sellerSeen: row.seller_seen !== false,
   sellerId: row.seller_id,
+  sellerUserId: row.seller_id,
+  posted: true,
   en: {
     title: row.title,
     format: row.format || (row.kind === "digital" ? "Digital packet" : "Used book · campus pickup"),

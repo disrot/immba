@@ -1,6 +1,6 @@
 import { rpc } from "./supabase.js?v=secure1";
-import { allOrders, isAbnormal, money as tradeMoney, when as tradeWhen } from "./trade.js?v=hold4";
-import { statusRail } from "./order-status.js?v=expand1";
+import { allOrders, isAbnormal, money as tradeMoney, when as tradeWhen } from "./trade.js?v=lab4";
+import { statusRail } from "./order-status.js?v=lab4";
 
 const esc = (value) =>
   String(value ?? "")
@@ -56,12 +56,32 @@ const formMark = `<span class="office-mark" aria-hidden="true"><svg viewBox="0 0
 
 const emptyRow = (cols, text) => `<tr><td class="office-blank" colspan="${cols}">${esc(text)}</td></tr>`;
 
+let campusOrders = [];
+
+const loadCampusOrders = async () => {
+  const byId = new Map();
+  const stamp = (row) => Date.parse(row?.updatedAt || row?.createdAt || "") || 0;
+  const keep = (order) => {
+    if (!order?.id) return;
+    const prev = byId.get(order.id);
+    if (!prev || stamp(order) >= stamp(prev)) byId.set(order.id, order);
+  };
+  allOrders().forEach(keep);
+  try {
+    const remote = await rpc("c2c_office");
+    if (Array.isArray(remote)) remote.forEach(keep);
+  } catch {
+    /* Staff still see the orders stored in this browser. */
+  }
+  campusOrders = [...byId.values()];
+};
+
 const paintTradeMonitor = () => {
   const root = document.querySelector("[data-trade-monitor]");
   if (!root) return;
   const query = (document.querySelector("[data-trade-search]")?.value || "").trim().toLowerCase();
   const filter = document.querySelector("[data-trade-status]")?.value || "all";
-  let rows = allOrders();
+  let rows = campusOrders;
   if (query) {
     rows = rows.filter((order) =>
       [order.id, order.buyer, order.buyerEmail, order.sellerName, order.sellerId].join(" ").toLowerCase().includes(query)
@@ -87,7 +107,7 @@ const paintTradeMonitor = () => {
           </article>`;
         })
         .join("")
-    : `<p class="seller-empty">${esc(t("No campus orders in this browser yet.", "這個瀏覽器還沒有校園訂單。"))}</p>`;
+    : `<p class="seller-empty">${esc(t("No campus orders yet.", "還沒有校園訂單。"))}</p>`;
 };
 
 document.querySelector("[data-trade-search]")?.addEventListener("input", paintTradeMonitor);
@@ -96,6 +116,7 @@ document.querySelector("[data-trade-status]")?.addEventListener("change", paintT
 const paintOrders = async () => {
   const status = document.querySelector("[data-orders-status]");
   const list = document.querySelector("[data-orders-list]");
+  await loadCampusOrders();
   paintTradeMonitor();
   if (!list) return;
   if (status) status.textContent = t("Loading platform orders…", "正在載入平台訂單…");
