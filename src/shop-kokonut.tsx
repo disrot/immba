@@ -19,9 +19,10 @@ import {
 import EmptyState from "@/components/kokonutui/empty-state";
 import TypewriterTitle from "@/components/kokonutui/type-writer";
 import { addBagLine, readBag, removeBagLine } from "../js/bag-store.js?v=lab4";
-import { shelfSearch } from "../js/marketplace.js?v=bump1";
+import { Tour, useTour, type TourStep } from "@/components/ui/product-tour";
+import { shelfSearch } from "../js/marketplace.js?v=tour1";
 import { HOLD_MS } from "../js/trade.js?v=lab4";
-import "./kokonut.css?v=lab2";
+import "./kokonut.css?v=tour1";
 
 type ShelfHit = {
   id: string;
@@ -353,6 +354,115 @@ const ShopFeedback = () => {
   );
 };
 
+const shelfPage = () => /(?:^|\/)marketplace\.html$/.test(location.pathname);
+
+const pinTourTargets = () => {
+  const pin = (selector: string, id: string) => {
+    const current = document.getElementById(id);
+    const next = document.querySelector(selector);
+    if (current && current !== next) current.removeAttribute("id");
+    if (next instanceof HTMLElement) next.id = id;
+  };
+  pin("[data-shop-search-host]", "tour-search");
+  pin("[data-shop-bag]", "tour-bag");
+  const wide = window.matchMedia("(min-width: 901px)").matches;
+  pin(wide ? "aside.shop-filters" : "[data-shop-filters-open]", "tour-filters");
+  const account =
+    document.querySelector("[data-shop-account-menu] a:not([hidden])") ||
+    document.querySelector("[data-market-profile] button") ||
+    document.querySelector("[data-shop-account-menu]");
+  const current = document.getElementById("tour-account");
+  if (current && current !== account) current.removeAttribute("id");
+  if (account instanceof HTMLElement) account.id = "tour-account";
+};
+
+const marketSteps = (zh: boolean): TourStep[] => [
+  {
+    title: zh ? "歡迎來到書架" : "Welcome to the shelf",
+    content: zh
+      ? "同學在這裡買賣教材。款項直接付給賣方。你可以隨時按 Esc 離開。"
+      : "Classmates buy and sell course materials here. You pay the seller directly. Press Esc any time to leave.",
+    placement: "center",
+  },
+  {
+    target: "#tour-search",
+    title: zh ? "搜尋" : "Search",
+    content: zh ? "用書名、課程代碼、老師或 ISBN 找書。" : "Find a book by title, course code, professor, or ISBN.",
+    placement: "bottom",
+  },
+  {
+    target: "#tour-filters",
+    title: zh ? "篩選" : "Filters",
+    content: zh ? "用課程類型、價格和書況縮小範圍。" : "Narrow the shelf by course type, price, and condition.",
+    placement: "auto",
+  },
+  {
+    target: "#tour-card",
+    title: zh ? "打開一本書" : "Open a book",
+    content: zh
+      ? "封面、價格和賣方都在卡片上。點進去再加入袋子。"
+      : "The cover, price, and seller are on the card. Open it, then add it to your bag.",
+    placement: "auto",
+  },
+  {
+    target: "#tour-bag",
+    title: zh ? "袋子" : "Bag",
+    content: zh ? "選好的書會留在袋子裡。打開它可以結帳。" : "Books you choose stay in the bag. Open it when you are ready to check out.",
+    placement: "bottom",
+  },
+  {
+    target: "#tour-account",
+    title: zh ? "你的帳戶" : "Your account",
+    content: zh ? "登入後可以用自己的名字買書，也可以刊登一本。" : "Sign in to buy under your name, or to list a book of your own.",
+    placement: "auto",
+  },
+];
+
+const MarketTour = () => {
+  const tour = useTour("immba-market-tour");
+  const [zh, setZh] = useState(isZh());
+  useEffect(() => {
+    const sync = () => setZh(isZh());
+    window.addEventListener("immba:lang", sync);
+    return () => window.removeEventListener("immba:lang", sync);
+  }, []);
+  useEffect(() => {
+    if (!shelfPage() || tour.seen()) return;
+    pinTourTargets();
+    const timer = window.setTimeout(() => {
+      pinTourTargets();
+      tour.start();
+    }, 800);
+    return () => window.clearTimeout(timer);
+  }, [tour.start, tour.seen]);
+  useEffect(() => {
+    if (!tour.open) return;
+    pinTourTargets();
+    const pin = () => pinTourTargets();
+    window.addEventListener("resize", pin);
+    return () => window.removeEventListener("resize", pin);
+  }, [tour.open, tour.index]);
+  const close = (open: boolean) => {
+    tour.setOpen(open);
+    if (!open) tour.markSeen();
+  };
+  if (!shelfPage()) return null;
+  return (
+    <Tour
+      className="shop-tour"
+      dark={false}
+      steps={marketSteps(zh)}
+      open={tour.open}
+      onOpenChange={close}
+      index={tour.index}
+      onIndexChange={tour.setIndex}
+      onFinish={tour.markSeen}
+      onSkip={tour.markSeen}
+      labels={zh ? { back: "上一則", next: "下一則", done: "完成", close: "關閉導覽" } : undefined}
+    />
+  );
+};
+
 export const initShopKokonut = () => {
   if (!document.querySelector(".shop-atelier")) return;
   mount(document.querySelector("[data-shop-paths]"), <ShelfPaths />);
@@ -364,5 +474,11 @@ export const initShopKokonut = () => {
     host.setAttribute("data-shop-feedback", "");
     document.body.append(host);
     createRoot(host).render(<ShopFeedback />);
+  }
+  if (shelfPage() && !document.querySelector("[data-market-tour]")) {
+    const host = document.createElement("div");
+    host.setAttribute("data-market-tour", "");
+    document.body.append(host);
+    createRoot(host).render(<MarketTour />);
   }
 };

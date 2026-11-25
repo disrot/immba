@@ -1,8 +1,5 @@
-"use client";
-
 import * as React from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ArrowRight, X } from "lucide-react";
 import { createPortal } from "react-dom";
 
 export type TourPlacement = "top" | "bottom" | "left" | "right" | "auto" | "center";
@@ -13,6 +10,13 @@ export type TourStep = {
   content: React.ReactNode;
   placement?: TourPlacement;
   padding?: number;
+};
+
+export type TourLabels = {
+  back?: string;
+  next?: string;
+  done?: string;
+  close?: string;
 };
 
 export type TourProps = {
@@ -27,6 +31,7 @@ export type TourProps = {
   clickToNext?: boolean;
   dark?: boolean;
   className?: string;
+  labels?: TourLabels;
 };
 
 type Rect = { top: number; left: number; width: number; height: number };
@@ -45,6 +50,7 @@ export function Tour({
   clickToNext = false,
   dark,
   className,
+  labels,
 }: TourProps) {
   const reduce = useReducedMotion();
   const [mounted, setMounted] = React.useState(false);
@@ -63,6 +69,10 @@ export function Tour({
   const [rect, setRect] = React.useState<Rect | null>(null);
   const [cardSize, setCardSize] = React.useState({ w: 320, h: 168 });
   const [vp, setVp] = React.useState({ w: 1024, h: 768 });
+  const backLabel = labels?.back ?? "Back";
+  const nextLabel = labels?.next ?? "Next";
+  const doneLabel = labels?.done ?? "Done";
+  const closeLabel = labels?.close ?? "Close tour";
 
   React.useEffect(() => setMounted(true), []);
 
@@ -219,11 +229,11 @@ export function Tour({
   const overlayInk = isDark ? "rgba(4,4,6,0.62)" : "rgba(17,17,20,0.48)";
 
   return createPortal(
-    <div ref={rootRef} className={`${isDark ? "dark" : ""} ${className ?? ""}`}>
+    <div ref={rootRef} className={`box-border ${isDark ? "dark" : ""} ${className ?? ""}`}>
       <AnimatePresence>
         <motion.div
           key="tour-layer"
-          className="fixed inset-0 z-[100]"
+          className="fixed inset-0 z-[100] box-border"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -267,7 +277,7 @@ export function Tour({
 
           <motion.div
             ref={cardRef}
-            className="absolute w-[320px] max-w-[calc(100vw-24px)] rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xl shadow-black/20 dark:border-zinc-800 dark:bg-zinc-900"
+            className="absolute box-border w-[320px] max-w-[calc(100vw-24px)] rounded-2xl border border-[#e6e4dd] bg-white p-4 shadow-2xl shadow-black/20"
             initial={reduce ? false : { opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1, left, top }}
             transition={reduce ? { duration: 0 } : SPRING}
@@ -275,22 +285,18 @@ export function Tour({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3">
-              <h3 className="text-[14px] font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
-                {step.title}
-              </h3>
+              <h3 className="text-[14px] font-semibold leading-snug text-[#141a14]">{step.title}</h3>
               <button
                 type="button"
                 onClick={skip}
-                aria-label="Close tour"
-                className="-mr-1 -mt-1 rounded-md p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+                aria-label={closeLabel}
+                className="-mr-1 -mt-1 rounded-md p-1 text-[#5c665b] transition-colors hover:bg-[#f1efea] hover:text-[#141a14]"
               >
-                <X className="h-4 w-4" strokeWidth={1.7} />
+                <IconX />
               </button>
             </div>
 
-            <div className="mt-1.5 text-[13px] leading-relaxed text-zinc-500 dark:text-zinc-400">
-              {step.content}
-            </div>
+            <div className="mt-1.5 text-[13px] leading-relaxed text-[#5c665b]">{step.content}</div>
 
             <div className="mt-4 flex items-center justify-between">
               {showProgress ? (
@@ -299,15 +305,13 @@ export function Tour({
                     <span
                       key={i}
                       className={`h-1.5 rounded-full transition-all duration-300 ${
-                        i === index
-                          ? "w-4 bg-zinc-900 dark:bg-zinc-100"
-                          : "w-1.5 bg-zinc-200 dark:bg-zinc-700"
+                        i === index ? "w-4 bg-[#163300]" : "w-1.5 bg-[#e6e4dd]"
                       }`}
                     />
                   ))}
                 </div>
               ) : (
-                <span className="text-[11px] tabular-nums text-zinc-400">
+                <span className="text-[11px] tabular-nums text-[#5c665b]">
                   {index + 1} / {count}
                 </span>
               )}
@@ -317,20 +321,20 @@ export function Tour({
                   <button
                     type="button"
                     onClick={back}
-                    className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                    className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-[#5c665b] transition-colors hover:bg-[#f1efea] hover:text-[#141a14]"
                   >
-                    <ArrowRight className="h-3.5 w-3.5 rotate-180" strokeWidth={1.9} />
-                    Back
+                    <IconArrow className="rotate-180" />
+                    {backLabel}
                   </button>
                 )}
                 <button
                   type="button"
                   data-tour-primary
                   onClick={next}
-                  className="inline-flex items-center gap-1 rounded-lg bg-zinc-900 px-3 py-1.5 text-[12.5px] font-medium text-white transition-colors hover:bg-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
+                  className="inline-flex items-center gap-1 rounded-lg bg-[#163300] px-3 py-1.5 text-[12.5px] font-medium text-white transition-colors hover:bg-[#1e4206] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#163300] focus-visible:ring-offset-2"
                 >
-                  {isLast ? "Done" : "Next"}
-                  {!isLast && <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.9} />}
+                  {isLast ? doneLabel : nextLabel}
+                  {!isLast && <IconArrow />}
                 </button>
               </div>
             </div>
@@ -370,4 +374,20 @@ export function useTour(storageKey?: string) {
   }, [storageKey]);
 
   return { open, setOpen, index, setIndex, start, seen, markSeen };
+}
+
+function IconX() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" className="h-4 w-4">
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  );
+}
+
+function IconArrow({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" className={`h-3.5 w-3.5 ${className}`}>
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  );
 }

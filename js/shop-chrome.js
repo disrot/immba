@@ -1,6 +1,6 @@
 import { currentProfile, isSellerAuthed, logoutAdmin } from "./auth.js?v=lab4";
 import { addBagLine, readBag, removeBagLine, setBagQty } from "./bag-store.js?v=lab4";
-import { paintBagBadge, shelfItem } from "./marketplace.js?v=bump1";
+import { paintBagBadge, shelfItem } from "./marketplace.js?v=tour1";
 import { marketMode, setMarketMode } from "./trade.js?v=lab4";
 
 const zh = () => document.body?.dataset.lang === "zh";
