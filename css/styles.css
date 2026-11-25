@@ -12890,3 +12890,14 @@ time,
   }
 }
 
+.shop-tour,
+.shop-tour * {
+  box-sizing: border-box;
+  font-family: var(--font-body);
+}
+
+body[data-lang="zh"] .shop-tour,
+body[data-lang="zh"] .shop-tour * {
+  font-family: var(--font-cjk), var(--font-body);
+}
+

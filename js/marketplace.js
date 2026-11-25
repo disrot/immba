@@ -702,7 +702,7 @@ const prettySeller = (item, lang) => {
   return name;
 };
 
-const cardHTML = (item) => {
+const cardHTML = (item, mark = false) => {
   const copy = item[currentLang()];
   const lang = currentLang();
   const left = stockOf(item);
@@ -734,7 +734,7 @@ const cardHTML = (item) => {
   const face = item.sellerPhoto
     ? `<img class="shop-face" src="${esc(item.sellerPhoto)}" alt="" width="22" height="22">`
     : `<span aria-hidden="true">${esc(who.slice(0, 1).toUpperCase())}</span>`;
-  return `<article class="shop-card${sold ? " is-sold" : ""}${item.posted ? " is-posted" : ""}">
+  return `<article${mark ? ' id="tour-card"' : ""} class="shop-card${sold ? " is-sold" : ""}${item.posted ? " is-posted" : ""}">
     <a class="shop-card-hit" href="${listingHref(item.id)}"><span class="sr-only">${esc(copy.title)}</span></a>
     <div class="shop-cover">${item.bumped ? bumpMark(lang) : ""}${course}${photo}</div>
     <div class="shop-card-body">
@@ -981,7 +981,7 @@ export const initMarketplace = () => {
     }
 
     const view = list.slice((page - 1) * pageSize, page * pageSize);
-    grid.innerHTML = view.map(cardHTML).join("");
+    grid.innerHTML = view.map((item, index) => cardHTML(item, index === 0)).join("");
     if (empty) empty.hidden = list.length > 0;
     if (pager) {
       pager.hidden = pages < 2;

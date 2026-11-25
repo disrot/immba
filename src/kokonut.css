@@ -6,6 +6,7 @@
 @source "./components/ui/interactive-hover-button.tsx";
 @source "./components/ui/dock.tsx";
 @source "./components/ui/light-rays.tsx";
+@source "./components/ui/product-tour.tsx";
 @layer theme, utilities;
 
 @import "tailwindcss/theme.css" layer(theme);
